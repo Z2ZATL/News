@@ -21,6 +21,10 @@ export const metadata: Metadata = {
   title: { default: "Z2Zs Labs", template: "%s — Z2Zs Labs" },
   description: "Independent technology reporting, experiments, and verifiable analysis from Bangkok.",
   applicationName: "Z2Zs Labs",
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png", sizes: "64x64" }],
+    shortcut: [{ url: "/icon.png", type: "image/png" }],
+  },
   robots: { index: true, follow: true },
 };
 

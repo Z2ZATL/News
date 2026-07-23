@@ -17,7 +17,6 @@ export function Atlas({
   return (
     <section className={styles.atlas} aria-label={ui[locale].atlasLabel}>
       <div className={styles.globeStage}>
-        <div className={styles.planetFallback} aria-hidden="true" />
         <AtlasCanvasLoader />
         <div className={styles.grid} aria-hidden="true" />
         <div className={styles.colorWash} aria-hidden="true" />

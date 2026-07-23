@@ -14,8 +14,15 @@ import {
 
 import styles from "./atlas.module.css";
 
-function Earth({ reduceMotion }: Readonly<{ reduceMotion: boolean }>) {
+function Earth({
+  onReady,
+  reduceMotion,
+}: Readonly<{
+  onReady: () => void;
+  reduceMotion: boolean;
+}>) {
   const group = useRef<Group>(null);
+  const announcedReady = useRef(false);
   const {
     earthMap,
     normalMap,
@@ -34,7 +41,14 @@ function Earth({ reduceMotion }: Readonly<{ reduceMotion: boolean }>) {
   }, [earthMap, lightsMap]);
 
   useFrame((state, delta) => {
-    if (!group.current || reduceMotion) return;
+    if (!group.current) return;
+
+    if (!announcedReady.current) {
+      announcedReady.current = true;
+      onReady();
+    }
+
+    if (reduceMotion) return;
     group.current.rotation.y += delta * 0.045;
     group.current.rotation.x = MathUtils.lerp(
       group.current.rotation.x,
@@ -125,7 +139,13 @@ function Earth({ reduceMotion }: Readonly<{ reduceMotion: boolean }>) {
   );
 }
 
-export function AtlasCanvas() {
+export function AtlasCanvas({
+  onReady,
+  onUnavailable,
+}: Readonly<{
+  onReady: () => void;
+  onUnavailable: () => void;
+}>) {
   const reduceMotion = useReducedMotion() ?? false;
 
   return (
@@ -138,6 +158,7 @@ export function AtlasCanvas() {
           gl.domElement.addEventListener("webglcontextlost", (event) => {
             event.preventDefault();
             gl.domElement.style.display = "none";
+            onUnavailable();
           });
         }}
       >
@@ -146,7 +167,7 @@ export function AtlasCanvas() {
         <pointLight position={[4, 1, 3]} intensity={52} color="#00c8ff" distance={12} />
         <pointLight position={[-4, -1.5, 2]} intensity={42} color="#ff2bc2" distance={12} />
         <pointLight position={[0, -4, 1]} intensity={30} color="#ffb347" distance={10} />
-        <Earth reduceMotion={reduceMotion} />
+        <Earth onReady={onReady} reduceMotion={reduceMotion} />
         <Stars radius={52} depth={30} count={760} factor={1.8} saturation={0.42} fade speed={0.18} />
       </Canvas>
     </div>
