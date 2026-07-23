@@ -46,7 +46,7 @@ export default async function About({ params }: { params: Promise<{ locale: stri
       ];
 
   return (
-    <main className={styles.about}>
+    <div className={styles.about}>
       <header className={styles.hero}>
         <p className="page-kicker">ABOUT / Z2ZS LAB</p>
         <h1 className="page-title">{th ? "เรื่องยากก็ควรอ่านรู้เรื่อง" : "Complex stories should still read clearly."}</h1>
@@ -128,6 +128,6 @@ export default async function About({ params }: { params: Promise<{ locale: stri
           </a>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

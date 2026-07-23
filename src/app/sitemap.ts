@@ -4,7 +4,16 @@ import { getArticles } from "@/lib/content";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://news.z2zs.space";
-  const fixed = ["", "/stories", "/projects", "/about", "/privacy", "/terms", "/search"];
+  const fixed = [
+    "",
+    "/stories",
+    "/projects",
+    "/projects/lumixia-brief",
+    "/about",
+    "/privacy",
+    "/terms",
+    "/search",
+  ];
   const entries: MetadataRoute.Sitemap = [];
   for (const locale of ["th", "en"] as const) {
     for (const path of fixed) {
