@@ -1,0 +1,24 @@
+{
+  "name": "z2zs-labs-studio",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.16.0",
+  "scripts": {
+    "dev": "sanity dev",
+    "build": "sanity build",
+    "deploy": "sanity deploy",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sanity/vision": "6.6.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "sanity": "6.6.0",
+    "styled-components": "6.1.19"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "@types/react": "19.2.17",
+    "typescript": "5.9.3"
+  }
+}

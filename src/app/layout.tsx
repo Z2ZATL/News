@@ -1,0 +1,34 @@
+import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { Noto_Sans_Thai, Space_Grotesk } from "next/font/google";
+
+import "./globals.css";
+
+const thai = Noto_Sans_Thai({
+  variable: "--font-thai",
+  subsets: ["thai", "latin"],
+  display: "swap",
+});
+
+const space = Space_Grotesk({
+  variable: "--font-space",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://news.z2zs.space"),
+  title: { default: "Z2Zs Labs", template: "%s — Z2Zs Labs" },
+  description: "Independent technology reporting, experiments, and verifiable analysis from Bangkok.",
+  applicationName: "Z2Zs Labs",
+  robots: { index: true, follow: true },
+};
+
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const locale = (await headers()).get("x-locale") === "en" ? "en" : "th";
+  return (
+    <html lang={locale} className={`${thai.variable} ${space.variable}`} suppressHydrationWarning>
+      <body>{children}</body>
+    </html>
+  );
+}

@@ -1,0 +1,275 @@
+.atlas {
+  position: relative;
+  display: grid;
+  min-height: max(780px, 100svh);
+  overflow: hidden;
+  isolation: isolate;
+  padding: 132px 4vw 86px;
+  border-bottom: 1px solid var(--line);
+  background:
+    radial-gradient(circle at 72% 44%, rgb(0 144 208 / 17%), transparent 23%),
+    linear-gradient(180deg, #05070a 0%, #070a0f 100%);
+}
+
+.canvas {
+  position: absolute;
+  z-index: -1;
+  top: 76px;
+  right: 0;
+  bottom: 0;
+  left: 36%;
+  opacity: 0.92;
+}
+
+.grid {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  opacity: 0.1;
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(to bottom, transparent, black 18%, black 84%, transparent);
+}
+
+.axis {
+  position: absolute;
+  top: 110px;
+  left: 4vw;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.axis span:first-child {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  color: var(--cyan);
+  border: 1px solid rgb(47 191 242 / 35%);
+  border-radius: 50%;
+  place-items: center;
+  letter-spacing: 0;
+}
+
+.copy {
+  z-index: 4;
+  align-self: center;
+  width: min(700px, 53vw);
+  padding-top: 2.5rem;
+}
+
+.category {
+  display: inline-flex;
+  margin-bottom: 1.25rem;
+  padding: 0.42rem 0.72rem;
+  color: var(--cyan);
+  border: 1px solid rgb(47 191 242 / 32%);
+  border-radius: 999px;
+  background: rgb(5 7 10 / 50%);
+  font-size: 0.72rem;
+}
+
+.copy h1 {
+  max-width: 12ch;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(3.6rem, 6.2vw, 6.9rem);
+  font-weight: 550;
+  line-height: 0.96;
+  letter-spacing: -0.062em;
+  text-wrap: balance;
+}
+
+.copy p {
+  max-width: 640px;
+  margin: 1.7rem 0 0;
+  color: var(--muted);
+  font-size: clamp(1rem, 1.35vw, 1.22rem);
+  line-height: 1.8;
+}
+
+.read {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.4rem;
+  margin-top: 2rem;
+  padding: 0.78rem 0.95rem 0.78rem 1.2rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: rgb(5 7 10 / 55%);
+  transition:
+    color 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    transform 180ms ease;
+}
+
+.read:hover,
+.read:focus-visible {
+  color: var(--cyan);
+  border-color: var(--cyan);
+  background: rgb(47 191 242 / 8%);
+  transform: translateY(-2px);
+}
+
+.node {
+  position: absolute;
+  z-index: 8;
+  top: 43%;
+  right: 18%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.nodeCore {
+  width: 22px;
+  height: 22px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow:
+    0 0 0 12px rgb(47 191 242 / 8%),
+    0 0 42px var(--cyan);
+  transition: transform 240ms ease;
+}
+
+.node:hover .nodeCore,
+.node:focus-visible .nodeCore {
+  transform: scale(1.3);
+}
+
+.nodeLabel {
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  background: rgb(5 7 10 / 76%);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+}
+
+.coordinate {
+  position: absolute;
+  right: 4vw;
+  bottom: 4.5rem;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  line-height: 1.7;
+  letter-spacing: 0.08em;
+  text-align: right;
+}
+
+.scrollHint {
+  position: absolute;
+  bottom: 2rem;
+  left: 4vw;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.scrollHint span {
+  width: 42px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--cyan), transparent);
+}
+
+@media (max-width: 980px) {
+  .atlas {
+    min-height: 940px;
+  }
+
+  .canvas {
+    top: 50px;
+    left: 28%;
+    opacity: 0.7;
+    transform: translateY(-20%);
+  }
+
+  .copy {
+    align-self: end;
+    width: min(760px, 90vw);
+    padding-bottom: 4rem;
+  }
+
+  .copy h1 {
+    max-width: 11ch;
+    font-size: clamp(3.4rem, 9.5vw, 6.2rem);
+  }
+
+  .node {
+    top: 25%;
+    right: 20%;
+  }
+}
+
+@media (max-width: 640px) {
+  .atlas {
+    min-height: 900px;
+    padding: 118px 20px 56px;
+  }
+
+  .axis {
+    top: 96px;
+    left: 20px;
+  }
+
+  .canvas {
+    top: 56px;
+    right: -35%;
+    bottom: 35%;
+    left: -5%;
+    opacity: 0.58;
+    transform: translateY(-8%);
+  }
+
+  .copy {
+    width: auto;
+    padding: 0;
+  }
+
+  .copy h1 {
+    max-width: 10ch;
+    font-size: clamp(3.1rem, 13.5vw, 4.8rem);
+    line-height: 0.98;
+  }
+
+  .copy p {
+    max-width: 36ch;
+    font-size: 0.98rem;
+    line-height: 1.75;
+  }
+
+  .node {
+    top: 24%;
+    right: 21%;
+  }
+
+  .coordinate,
+  .scrollHint {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas {
+    display: none;
+  }
+
+  .nodeCore,
+  .read {
+    transition: none;
+  }
+}

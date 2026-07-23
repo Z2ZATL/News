@@ -1,0 +1,44 @@
+{
+  "name": "z2zs-labs-news",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.16.0",
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build --turbopack",
+    "start": "next start",
+    "lint": "eslint --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "check": "tsc --noEmit && eslint --max-warnings=0 && next build --turbopack"
+  },
+  "dependencies": {
+    "@portabletext/react": "^5.0.0",
+    "@react-three/drei": "^10.7.6",
+    "@react-three/fiber": "^9.4.0",
+    "@sanity/client": "^7.12.0",
+    "@sanity/image-url": "^2.0.3",
+    "@sanity/webhook": "^4.0.4",
+    "framer-motion": "^12.23.24",
+    "lucide-react": "^0.548.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "next": "15.5.21",
+    "server-only": "^0.0.1",
+    "three": "^0.180.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/three": "^0.180.0",
+    "typescript": "5.9.3",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@tailwindcss/postcss": "^4",
+    "tailwindcss": "^4",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.21",
+    "@eslint/eslintrc": "^3",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-security": "^3.0.1"
+  }
+}
