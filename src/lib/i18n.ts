@@ -19,7 +19,7 @@ export const ui = {
     updated: "อัปเดต",
     by: "โพสต์โดย",
     minutes: "นาที",
-    atlasLabel: "เรื่องเด่นจาก Z2Zs Labs",
+    atlasLabel: "เรื่องเด่นจาก Z2Zs Lab",
   },
   en: {
     stories: "Stories",
@@ -33,6 +33,6 @@ export const ui = {
     updated: "Updated",
     by: "Posted by",
     minutes: "min read",
-    atlasLabel: "Z2Zs Labs content atlas",
+    atlasLabel: "Z2Zs Lab content atlas",
   },
 } as const;

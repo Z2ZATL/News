@@ -9,8 +9,8 @@ const projectId = process.env.SANITY_STUDIO_PROJECT_ID;
 if (!projectId) throw new Error("SANITY_STUDIO_PROJECT_ID is required");
 
 export default defineConfig({
-  name: "z2zs-labs",
-  title: "Z2Zs Labs",
+  name: "z2zs-lab",
+  title: "Z2Zs Lab",
   projectId,
   dataset: process.env.SANITY_STUDIO_DATASET ?? "production",
   basePath: "/",

@@ -11,8 +11,8 @@ export default async function Projects({ params }: { params: Promise<{ locale: s
       <h1 className="page-title">{ui[locale].projects}</h1>
       <p className="lede">
         {locale === "th"
-          ? "ที่นี่จะรวมเครื่องมือ ต้นแบบ และงานทดลองของ Z2Zs Labs เราจะทยอยเปิดให้ดูทั้งแนวคิด วิธีทำ และสิ่งที่ลองแล้วไม่เวิร์ก ไม่ใช่เฉพาะผลงานฉบับสวยงามตอนท้าย"
-          : "A future index of experiments, tools, and projects from Z2Zs Labs."}
+          ? "ที่นี่รวบรวมเครื่องมือ ต้นแบบ และงานทดลองของ Z2Zs Lab เราจะเปิดให้ดูตั้งแต่แนวคิด วิธีทำ ไปจนถึงสิ่งที่ลองแล้วไม่สำเร็จ ไม่ใช่เพียงผลงานฉบับสมบูรณ์ตอนท้าย"
+          : "A future index of experiments, tools, and projects from Z2Zs Lab."}
       </p>
     </div>
   );

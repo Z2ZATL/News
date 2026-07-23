@@ -65,6 +65,7 @@ img { max-width: 100%; }
 }
 .page-shell > * { position: relative; z-index: 1; }
 .page-kicker {
+  margin: 0;
   color: var(--cyan);
   font-family: var(--font-display);
   font-size: 0.72rem;
@@ -73,7 +74,7 @@ img { max-width: 100%; }
 }
 .page-title {
   max-width: 14ch;
-  margin: 1rem 0 2rem;
+  margin: clamp(1.5rem, 2.5vw, 2.5rem) 0 clamp(2.5rem, 4vw, 4rem);
   font-family: var(--font-display);
   font-size: clamp(3rem, 8vw, 8rem);
   font-weight: 560;
@@ -81,9 +82,23 @@ img { max-width: 100%; }
   letter-spacing: -0.065em;
 }
 .lede { max-width: 760px; color: #b4bec7; font-size: clamp(1.05rem, 1.7vw, 1.35rem); line-height: 1.8; }
+:lang(th) .page-title {
+  max-width: 16ch;
+  padding-block: .07em .12em;
+  font-weight: 550;
+  line-height: 1.16;
+  letter-spacing: -.035em;
+}
+:lang(th) .lede { line-height: 1.9; }
 @media (max-width: 640px) {
   .page-shell { padding-right: 20px; padding-left: 20px; }
-  .page-title { letter-spacing: -.05em; }
+  .page-title { letter-spacing: -.045em; }
+  :lang(th) .page-title {
+    margin-top: 1.75rem;
+    margin-bottom: 2.75rem;
+    line-height: 1.2;
+    letter-spacing: -.025em;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

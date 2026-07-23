@@ -18,9 +18,9 @@ const space = Space_Grotesk({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://news.z2zs.space"),
-  title: { default: "Z2Zs Labs", template: "%s — Z2Zs Labs" },
+  title: { default: "Z2Zs Lab", template: "%s — Z2Zs Lab" },
   description: "Independent technology reporting, experiments, and verifiable analysis from Bangkok.",
-  applicationName: "Z2Zs Labs",
+  applicationName: "Z2Zs Lab",
   icons: {
     icon: [{ url: "/icon.png", type: "image/png", sizes: "64x64" }],
     shortcut: [{ url: "/icon.png", type: "image/png" }],

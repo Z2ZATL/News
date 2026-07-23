@@ -8,10 +8,15 @@
   border-bottom: 1px solid var(--line);
 }
 .item > span, .item p { color: var(--cyan); font-family: var(--font-display); font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; }
-.item h2 { max-width: 20ch; margin: .65rem 0; font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 4rem); font-weight: 520; line-height: 1.05; letter-spacing: -.045em; }
+.item h2 { max-width: 20ch; margin: .9rem 0 1.1rem; font-family: var(--font-display); font-size: clamp(1.8rem, 4vw, 4rem); font-weight: 520; line-height: 1.08; letter-spacing: -.04em; }
 .item small { display: block; max-width: 720px; color: var(--muted); font-size: .96rem; line-height: 1.7; }
 .item .byline { margin-top: .8rem; color: #c7d2da; font-size: .78rem; }
 .item b { color: var(--cyan); font-size: 1.5rem; }
+:global(html[lang="th"]) .item h2 {
+  padding-block: .04em .09em;
+  line-height: 1.24;
+  letter-spacing: -.025em;
+}
 @media (max-width: 640px) {
   .item { grid-template-columns: 38px 1fr; gap: 1rem; }
   .item b { display: none; }

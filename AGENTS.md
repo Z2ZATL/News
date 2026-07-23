@@ -1,6 +1,6 @@
-# Z2Zs Labs News — Agent Instructions
+# Z2Zs Lab News — Agent Instructions
 
-This file is the repository-level operating contract for agents working on Z2Zs Labs News.
+This file is the repository-level operating contract for agents working on Z2Zs Lab News.
 
 ## Source of truth
 
@@ -9,7 +9,7 @@ Apply instructions in this order:
 1. The latest explicit user instruction.
 2. This `AGENTS.md`.
 3. Accepted ADRs and domain documentation.
-4. The Z2Zs Labs Build Plan v3.
+4. The Z2Zs Lab Build Plan v3.
 5. Existing implementation details.
 
 The latest user decision overrides Build Plan v3 on CSP: the public site uses a **nonce-based CSP**. Do not revert it to a static `script-src 'self'` policy unless the user explicitly changes that decision.

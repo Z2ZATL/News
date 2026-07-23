@@ -73,7 +73,7 @@ export default async function ArticlePage({
           author: { "@type": "Person", name: article.author.name },
           image: new URL(article.cover.src, siteUrl).toString(),
           mainEntityOfPage: `${siteUrl}/${locale}/stories/${article.slug}`,
-          publisher: { "@type": "Organization", name: "Z2Zs Labs" },
+          publisher: { "@type": "Organization", name: "Z2Zs Lab" },
         }}
       />
       <header className={styles.hero}>

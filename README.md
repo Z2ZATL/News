@@ -1,4 +1,4 @@
-# Z2Zs Labs
+# Z2Zs Lab
 
 Bilingual technology news and analysis for `news.z2zs.space`.
 

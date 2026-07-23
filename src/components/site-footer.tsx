@@ -8,7 +8,7 @@ export function SiteFooter({ locale }: Readonly<{ locale: Locale }>) {
   return (
     <footer className={styles.footer}>
       <div>
-        <p className={styles.eyebrow}>Z2Zs Labs / Bangkok</p>
+        <p className={styles.eyebrow}>Z2Zs Lab / Bangkok</p>
         <p className={styles.statement}>
           {locale === "th"
             ? "เล่าเรื่องเทคโนโลยีให้เข้าใจง่าย โดยไม่ละทิ้งรายละเอียดที่สำคัญ"
@@ -19,7 +19,7 @@ export function SiteFooter({ locale }: Readonly<{ locale: Locale }>) {
         <Link href={`/${locale}/privacy`}>{locale === "th" ? "ความเป็นส่วนตัว" : "Privacy"}</Link>
         <Link href={`/${locale}/terms`}>{locale === "th" ? "ข้อกำหนด" : "Terms"}</Link>
       </nav>
-      <p className={styles.copyright}>© 2026 Z2Zs Labs</p>
+      <p className={styles.copyright}>© 2026 Z2Zs Lab</p>
     </footer>
   );
 }

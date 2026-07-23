@@ -2,14 +2,14 @@ import type { Article } from "@/lib/content-types";
 
 const author = {
   name: "Aitthikorn Khammee",
-  role: { th: "ผู้เขียน Z2Zs Labs", en: "Writer, Z2Zs Labs" },
+  role: { th: "ผู้เขียน Z2Zs Lab", en: "Writer, Z2Zs Lab" },
 };
 
 const cover = {
   src: "/images/z2zs-logo.png",
   alt: {
-    th: "ตราสัญลักษณ์ Z2Zs Labs บนพื้นสีดำ",
-    en: "Z2Zs Labs mark on a black background",
+    th: "ตราสัญลักษณ์ Z2Zs Lab บนพื้นสีดำ",
+    en: "Z2Zs Lab mark on a black background",
   },
 };
 

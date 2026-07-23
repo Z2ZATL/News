@@ -1,4 +1,4 @@
-# Z2Zs Labs security operations
+# Z2Zs Lab security operations
 
 ## Deployment boundary
 

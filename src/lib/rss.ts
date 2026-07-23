@@ -24,7 +24,7 @@ export async function createRss(locale: Locale): Promise<Response> {
 </item>`,
     )
     .join("\n");
-  const title = locale === "th" ? "Z2Zs Labs — ข่าวและบทวิเคราะห์" : "Z2Zs Labs — Stories";
+  const title = locale === "th" ? "Z2Zs Lab — ข่าวและบทวิเคราะห์" : "Z2Zs Lab — Stories";
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"><channel>
 <title>${xml(title)}</title>

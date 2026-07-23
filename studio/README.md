@@ -1,6 +1,6 @@
-# Z2Zs Labs Studio
+# Z2Zs Lab Studio
 
-Sanity Studio for the private Z2Zs Labs dataset. This is a separate deployment from the public site so Studio dependencies and its relaxed runtime policy never affect `news.z2zs.space`.
+Sanity Studio for the private Z2Zs Lab dataset. This is a separate deployment from the public site so Studio dependencies and its relaxed runtime policy never affect `news.z2zs.space`.
 
 ## Setup
 

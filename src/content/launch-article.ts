@@ -20,7 +20,7 @@ export const launchArticle: Article = {
   category: { th: "AI ภาครัฐ", en: "Public AI" },
   author: {
     name: "Aitthikorn Khammee",
-    role: { th: "ผู้เขียน Z2Zs Labs", en: "Writer, Z2Zs Labs" },
+    role: { th: "ผู้เขียน Z2Zs Lab", en: "Writer, Z2Zs Lab" },
   },
   tags: ["OKMD", "AI Thailand", "Developer Tools", "Public Technology"],
   featured: true,
