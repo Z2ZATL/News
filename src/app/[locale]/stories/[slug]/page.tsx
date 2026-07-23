@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/json-ld";
 import { ReadingProgress } from "@/components/reading-progress";
 import { getArticle } from "@/lib/content";
+import { formatArticleDate } from "@/lib/format-date";
 import { isLocale, ui } from "@/lib/i18n";
 
 import styles from "./article.module.css";
@@ -51,10 +52,7 @@ export default async function ArticlePage({
   const article = await getArticle(slug);
   if (!article) notFound();
   const nonce = (await headers()).get("x-nonce") ?? undefined;
-  const date = new Intl.DateTimeFormat(locale === "th" ? "th-TH-u-ca-gregory" : "en-GB", {
-    dateStyle: "medium",
-    timeZone: "Asia/Bangkok",
-  }).format(new Date(article.publishedAt));
+  const date = formatArticleDate(article.publishedAt, locale);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://news.z2zs.space";
   const sections = article.body[locale]
     .map((section, index) => section.heading ? { heading: section.heading, id: `section-${index}` } : null)
@@ -84,8 +82,8 @@ export default async function ArticlePage({
           <h1>{article.title[locale]}</h1>
           <p className={styles.excerpt}>{article.excerpt[locale]}</p>
           <div className={styles.meta}>
-            <span>{article.author.name}</span>
-            <span>{date}</span>
+            <span>{ui[locale].by} {article.author.name}</span>
+            <span>{ui[locale].published} {date}</span>
             <span>{article.readingMinutes} {ui[locale].minutes}</span>
           </div>
         </div>

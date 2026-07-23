@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { AtlasCanvasLoader } from "@/components/atlas-canvas-loader";
 import type { Article } from "@/lib/content-types";
+import { formatArticleDate } from "@/lib/format-date";
 import type { Locale } from "@/lib/i18n";
 import { ui } from "@/lib/i18n";
 
@@ -49,7 +50,8 @@ export function Atlas({
       <div className={styles.copy}>
         <div className={styles.storyIdentity}>
           <span className={styles.category}>{article.category[locale]}</span>
-          <span>{locale === "th" ? "บทวิเคราะห์ 001" : "Analysis 001"}</span>
+          <span>{formatArticleDate(article.publishedAt, locale)}</span>
+          <span>{ui[locale].by} {article.author.name}</span>
         </div>
         <h1>{article.title[locale]}</h1>
         <div className={styles.deck}>

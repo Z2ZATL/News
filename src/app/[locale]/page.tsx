@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { Atlas } from "@/components/atlas";
 import { Reveal } from "@/components/reveal";
 import { getArticles } from "@/lib/content";
+import { formatArticleDate } from "@/lib/format-date";
 import { isLocale, ui } from "@/lib/i18n";
 
 import styles from "./page.module.css";
@@ -64,9 +65,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </Link>
           </div>
           <div className={styles.storyCopy}>
-            <p className={styles.meta}>{featured.category[locale]} / {featured.readingMinutes} {ui[locale].minutes}</p>
+            <p className={styles.meta}>
+              {featured.category[locale]} / {formatArticleDate(featured.publishedAt, locale)}
+            </p>
             <h3><Link href={`/${locale}/stories/${featured.slug}`}>{featured.title[locale]}</Link></h3>
             <span>{featured.excerpt[locale]}</span>
+            <p className={styles.byline}>{ui[locale].by} {featured.author.name}</p>
             <Link className={styles.textLink} href={`/${locale}/stories/${featured.slug}`}>
               {ui[locale].read} <span aria-hidden="true">↗</span>
             </Link>

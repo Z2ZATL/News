@@ -122,6 +122,13 @@
   line-height: 1.85;
 }
 
+.byline {
+  margin: 1.25rem 0 0;
+  color: #c5d0d8;
+  font-size: .82rem;
+  letter-spacing: .02em;
+}
+
 .textLink {
   display: inline-flex;
   gap: 1rem;

@@ -19,8 +19,8 @@ export const launchArticle: Article = {
   },
   category: { th: "AI ภาครัฐ", en: "Public AI" },
   author: {
-    name: "MORI",
-    role: { th: "ผู้ก่อตั้ง Z2Zs Labs", en: "Founder, Z2Zs Labs" },
+    name: "Aitthikorn Khammee",
+    role: { th: "ผู้เขียน Z2Zs Labs", en: "Writer, Z2Zs Labs" },
   },
   tags: ["OKMD", "AI Thailand", "Developer Tools", "Public Technology"],
   featured: true,

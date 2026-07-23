@@ -2,6 +2,7 @@ import "server-only";
 
 import { createClient } from "@sanity/client";
 
+import { facebookArticles } from "@/content/facebook-articles";
 import { launchArticle } from "@/content/launch-article";
 import type { Article } from "@/lib/content-types";
 import type { ArticleSection, LocalizedText } from "@/lib/content-types";
@@ -10,6 +11,7 @@ import type { Locale } from "@/lib/i18n";
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET ?? "production";
 const token = process.env.SANITY_API_READ_TOKEN;
+const localArticles = [launchArticle, ...facebookArticles];
 
 const sanity =
   projectId && token
@@ -96,14 +98,25 @@ function normalizeArticle(article: RemoteArticle): Article {
 
 export async function getArticles(): Promise<Article[]> {
   if (!sanity) {
-    return [launchArticle];
+    return [...localArticles].sort(
+      (left, right) => Date.parse(right.publishedAt) - Date.parse(left.publishedAt),
+    );
   }
 
   const remote = await sanity.fetch<RemoteArticle[]>(articleQuery, {}, {
     next: { tags: ["article"] },
   });
 
-  return remote.length > 0 ? remote.map(normalizeArticle) : [launchArticle];
+  const combined = new Map(
+    localArticles.map((article) => [article.slug, article] as const),
+  );
+  for (const article of remote.map(normalizeArticle)) {
+    combined.set(article.slug, article);
+  }
+
+  return [...combined.values()].sort(
+    (left, right) => Date.parse(right.publishedAt) - Date.parse(left.publishedAt),
+  );
 }
 
 export async function getArticle(slug: string): Promise<Article | null> {

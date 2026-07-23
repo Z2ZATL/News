@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getArticles } from "@/lib/content";
+import { formatArticleDate } from "@/lib/format-date";
 import { isLocale, ui } from "@/lib/i18n";
 
 import styles from "./stories.module.css";
@@ -25,9 +26,10 @@ export default async function Stories({ params }: { params: Promise<{ locale: st
           <Link className={styles.item} href={`/${locale}/stories/${article.slug}`} key={article.slug}>
             <span>{String(index + 1).padStart(2, "0")}</span>
             <div>
-              <p>{article.category[locale]}</p>
+              <p>{article.category[locale]} / {formatArticleDate(article.publishedAt, locale)}</p>
               <h2>{article.title[locale]}</h2>
               <small>{article.excerpt[locale]}</small>
+              <small className={styles.byline}>{ui[locale].by} {article.author.name}</small>
             </div>
             <b aria-hidden="true">↗</b>
           </Link>
