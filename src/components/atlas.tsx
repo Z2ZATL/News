@@ -8,13 +8,26 @@ import { ui } from "@/lib/i18n";
 
 import styles from "./atlas.module.css";
 
+const labels: Record<string, string> = {
+  "okmd-ai-playground-review": "OKMD / AI",
+  "gpt-5-6-luna-terra-sol": "GPT-5.6",
+  "chatgpt-gpt-live-voice-update": "GPT-LIVE",
+  "kimi-k3-frontend-arena": "KIMI K3",
+  "th-ai-passport-hands-on-review": "TH AI / REVIEW",
+  "google-weather-lab-weathernext-2": "WEATHER LAB",
+  "th-ai-passport-recap-developer-tools": "TH AI / RECAP",
+};
+
 export function Atlas({
-  article,
+  articles,
   locale,
 }: Readonly<{
-  article: Article;
+  articles: Article[];
   locale: Locale;
 }>) {
+  const article = articles[0];
+  if (!article) return null;
+
   return (
     <section className={styles.atlas} aria-label={ui[locale].atlasLabel}>
       <div className={styles.globeStage}>
@@ -23,8 +36,8 @@ export function Atlas({
         <div className={styles.colorWash} aria-hidden="true" />
 
         <div className={styles.axis}>
-          <span>01</span>
-          <span>Z2ZS / ORBIT</span>
+          <span>{String(articles.length).padStart(2, "0")}</span>
+          <span>Z2ZS / SIGNALS</span>
         </div>
 
         <div className={styles.orbitCaption} aria-hidden="true">
@@ -32,14 +45,26 @@ export function Atlas({
           <b>13.7563° N · 100.5018° E</b>
         </div>
 
-        <Link
-          href={`/${locale}/stories/${article.slug}`}
-          className={styles.node}
-          aria-label={`${ui[locale].read}: ${article.title[locale]}`}
+        <nav
+          className={styles.nodes}
+          aria-label={locale === "th" ? "ข่าวบนแผนที่โลก" : "Stories on the globe"}
         >
-          <span className={styles.nodeCore} />
-          <span className={styles.nodeLabel}>OKMD / AI</span>
-        </Link>
+          {articles.map((item, index) => (
+            <Link
+              href={`/${locale}/stories/${item.slug}`}
+              className={styles.node}
+              data-featured={index === 0 ? "true" : undefined}
+              aria-label={`${String(index + 1).padStart(2, "0")}. ${item.title[locale]}`}
+              key={item.slug}
+            >
+              <span className={styles.nodeCore} />
+              <span className={styles.nodeLabel}>
+                <b>{String(index + 1).padStart(2, "0")}</b>
+                {labels[item.slug] ?? item.category[locale]}
+              </span>
+            </Link>
+          ))}
+        </nav>
 
         <div className={styles.scrollHint} aria-hidden="true">
           <span />

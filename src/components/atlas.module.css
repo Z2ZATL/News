@@ -134,15 +134,40 @@
   letter-spacing: .12em;
 }
 
-.node {
+.nodes {
   position: absolute;
   z-index: 5;
-  top: 42%;
-  left: calc(50% + min(20vw, 240px));
+  inset: 0;
+  pointer-events: none;
+}
+
+.node {
+  position: absolute;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.7rem;
+  gap: .55rem;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+}
+
+.node:nth-child(1) { top: 39%; left: 69%; }
+.node:nth-child(2) { top: 26%; left: 57%; }
+.node:nth-child(3) { top: 33%; left: 37%; }
+.node:nth-child(4) { top: 53%; left: 31%; }
+.node:nth-child(5) { top: 66%; left: 43%; }
+.node:nth-child(6) { top: 68%; left: 61%; }
+.node:nth-child(7) { top: 53%; left: 72%; }
+.node:nth-child(8) { top: 19%; left: 45%; }
+
+.node:not([data-featured="true"]) .nodeCore {
+  width: 12px;
+  height: 12px;
+  border-width: 1px;
+  background: var(--cyan);
+  box-shadow:
+    0 0 0 7px rgb(47 191 242 / 6%),
+    0 0 24px rgb(47 191 242 / 62%);
 }
 
 .nodeCore {
@@ -166,6 +191,9 @@
 }
 
 .nodeLabel {
+  display: flex;
+  gap: .42rem;
+  align-items: center;
   padding: 0.3rem 0.5rem;
   border: 1px solid rgb(255 255 255 / 9%);
   border-radius: 4px;
@@ -174,6 +202,31 @@
   font-family: var(--font-display);
   font-size: 0.6rem;
   letter-spacing: 0.09em;
+  white-space: nowrap;
+  transition:
+    color 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    transform 180ms ease;
+}
+
+.nodeLabel b {
+  color: var(--cyan);
+  font-size: .5rem;
+  font-weight: 500;
+}
+
+.node:hover .nodeLabel,
+.node:focus-visible .nodeLabel {
+  color: #021016;
+  border-color: var(--cyan);
+  background: var(--cyan);
+  transform: translateY(-2px);
+}
+
+.node:hover .nodeLabel b,
+.node:focus-visible .nodeLabel b {
+  color: #06303e;
 }
 
 .scrollHint {
@@ -313,9 +366,33 @@
   }
 
   .node {
-    top: 43%;
-    left: auto;
-    right: 13%;
+    gap: .35rem;
+  }
+
+  .node:nth-child(1) { top: 38%; left: 78%; }
+  .node:nth-child(2) { top: 25%; left: 58%; }
+  .node:nth-child(3) { top: 32%; left: 27%; }
+  .node:nth-child(4) { top: 50%; left: 20%; }
+  .node:nth-child(5) { top: 65%; left: 34%; }
+  .node:nth-child(6) { top: 68%; left: 64%; }
+  .node:nth-child(7) { top: 54%; left: 81%; }
+  .node:nth-child(8) { top: 19%; left: 40%; }
+
+  .nodeCore {
+    width: 16px;
+    height: 16px;
+  }
+
+  .node:not([data-featured="true"]) .nodeCore {
+    width: 9px;
+    height: 9px;
+  }
+
+  .nodeLabel {
+    gap: .28rem;
+    padding: .22rem .34rem;
+    font-size: .46rem;
+    letter-spacing: .055em;
   }
 
   .orbitCaption {

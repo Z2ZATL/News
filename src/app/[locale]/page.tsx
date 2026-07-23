@@ -35,7 +35,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   return (
     <>
-      <Atlas article={featured} locale={locale} />
+      <Atlas articles={articles} locale={locale} />
       <section className={styles.editorial}>
         <Reveal className={styles.heading}>
           <div>
