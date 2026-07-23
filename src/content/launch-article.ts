@@ -3,12 +3,12 @@ import type { Article } from "@/lib/content-types";
 export const launchArticle: Article = {
   slug: "okmd-ai-playground-review",
   title: {
-    th: "OKMD AI Playground: ทดลองใช้แพลตฟอร์ม AI ของรัฐ",
-    en: "Inside OKMD AI Playground: testing Thailand’s public AI platform",
+    th: "OKMD AI Playground เปิด AI หลายค่ายให้คนไทย—แต่พร้อมทำงานจริงแค่ไหน?",
+    en: "More than another chatbot? Inside Thailand’s OKMD AI Playground",
   },
   excerpt: {
-    th: "ลองใช้หน้าแชต อ่านเอกสาร API และไล่ดูที่มาของโครงการ เพื่อหาว่าแพลตฟอร์มนี้ทำอะไรได้จริง—และยังขาดอะไรอยู่",
-    en: "A close look at OKMD’s public AI platform—its models, quotas, API, and the gap between an AI hub and a real working environment.",
+    th: "ลองใช้หน้าเว็บ แกะเอกสาร API และไล่ดูงบ 28.355 ล้านบาท เพื่อหาว่าแพลตฟอร์ม AI ภาครัฐนี้ช่วยใครได้จริง และยังติดอยู่ตรงไหน",
+    en: "We tested the interface, examined its API, and traced the THB 28.355 million programme behind it to see who this public AI platform really helps—and where it still falls short.",
   },
   cover: {
     src: "/images/okmd-ai-playground.png",

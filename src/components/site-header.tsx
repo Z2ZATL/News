@@ -13,7 +13,7 @@ export function SiteHeader({ locale }: Readonly<{ locale: Locale }>) {
   return (
     <header className={styles.header}>
       <Link href={`/${locale}`} className={styles.brand} aria-label="Z2Zs Labs home">
-        <Image src="/images/z2zs-logo.png" width={44} height={28} alt="" priority />
+        <Image src="/images/z2zs-mark.png" width={64} height={64} alt="" priority unoptimized />
         <span>Z2Zs Labs</span>
         <span className={styles.signal} aria-hidden="true" />
       </Link>
