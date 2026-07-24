@@ -194,87 +194,83 @@
   margin: 0;
 }
 
-.architectureFlow {
+.architectureIntro {
   display: grid;
-  grid-template-columns:
-    minmax(150px, 1fr) auto minmax(150px, .9fr) auto minmax(170px, 1fr)
-    auto minmax(150px, .9fr) auto minmax(210px, 1.25fr);
-  gap: clamp(.65rem, 1.2vw, 1.25rem);
-  align-items: center;
-  padding: clamp(1.25rem, 2.5vw, 2rem);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1.5rem, 4vw, 4rem);
+  margin: calc(clamp(4rem, 8vw, 8rem) * -.45) 0 clamp(3rem, 6vw, 5rem);
+}
+
+.architectureIntro p {
+  margin: 0;
+  color: #aeb9c2;
+  font-size: clamp(.95rem, 1.25vw, 1.08rem);
+  line-height: 1.85;
+}
+
+.architectureCanvas {
+  overflow-x: auto;
   border: 1px solid var(--line-strong);
   background:
     linear-gradient(rgb(47 191 242 / 4%) 1px, transparent 1px),
     linear-gradient(90deg, rgb(47 191 242 / 4%) 1px, transparent 1px),
-    radial-gradient(circle at 50% 50%, rgb(47 191 242 / 7%), transparent 52%);
+    radial-gradient(circle at 50% 50%, rgb(47 191 242 / 8%), transparent 55%);
   background-size: 38px 38px, 38px 38px, auto;
+  scrollbar-color: rgb(47 191 242 / 48%) transparent;
 }
 
-.architectureColumn {
-  display: grid;
-  gap: .75rem;
-  min-width: 0;
+.architectureDiagram {
+  display: block;
+  width: 100%;
+  min-width: 1000px;
+  height: auto;
+  padding: clamp(1rem, 2vw, 1.75rem);
 }
 
-.architectureLabel {
-  margin: 0 0 .25rem;
-  color: #82909a;
+.architectureEdges path {
+  fill: none;
+  stroke: rgb(47 191 242 / 72%);
+  stroke-width: 3;
+  marker-end: url("#lumixia-arrow");
+  vector-effect: non-scaling-stroke;
+}
+
+.architectureEdges .architectureLoopEdge {
+  stroke: rgb(213 56 199 / 82%);
+}
+
+.architectureMarker {
+  fill: var(--cyan);
+}
+
+.architectureNodeSvg rect {
+  fill: rgb(4 11 15 / 96%);
+  stroke: rgb(140 160 174 / 52%);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.architectureNodeSvg text {
+  fill: #f4f8fa;
   font-family: var(--font-display);
-  font-size: .6rem;
-  letter-spacing: .11em;
-  text-transform: uppercase;
+  font-size: 17px;
+  font-weight: 520;
 }
 
-.architectureNode,
-.architectureLoop {
-  display: grid;
-  gap: .35rem;
-  min-height: 76px;
-  align-content: center;
-  padding: .9rem;
-  border: 1px solid var(--line-strong);
-  background: rgb(4 11 15 / 92%);
-  font-family: var(--font-display);
-  font-size: clamp(.78rem, 1vw, .95rem);
-  line-height: 1.35;
-}
-
-.architectureNode small,
-.architectureLoop small {
-  color: #8c9aa4;
+.architectureNodeSvg .architectureSubtext {
+  fill: #93a2ac;
   font-family: var(--font-body);
-  font-size: .68rem;
-  line-height: 1.45;
+  font-size: 13px;
+  font-weight: 400;
 }
 
-.architectureNodeAccent {
-  border-color: rgb(47 191 242 / 52%);
-  box-shadow: inset 0 0 28px rgb(47 191 242 / 7%);
+.architectureNodePrimary rect {
+  stroke: rgb(47 191 242 / 82%);
+  filter: drop-shadow(0 0 12px rgb(47 191 242 / 12%));
 }
 
-.architectureLoop {
-  min-height: 64px;
-  border-color: rgb(213 56 199 / 38%);
-  background: linear-gradient(135deg, rgb(213 56 199 / 8%), rgb(4 11 15 / 92%));
-}
-
-.architectureArrow {
-  color: var(--cyan);
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  opacity: .75;
-}
-
-.architectureOutputs {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.architectureOutputs .architectureLabel {
-  grid-column: 1 / -1;
-}
-
-.architectureOutputs .architectureNode {
-  min-height: 92px;
+.architectureNodeLoop rect {
+  stroke: rgb(213 56 199 / 76%);
 }
 
 .architectureFigure figcaption {
@@ -372,6 +368,7 @@
 
 :global(html[lang="th"]) .hero h1 {
   padding-block: .05em .1em;
+  font-size: clamp(3.6rem, 7.6vw, 8rem);
   line-height: 1.16;
   letter-spacing: -.035em;
 }
@@ -420,18 +417,10 @@
     margin-top: 4rem;
   }
 
-  .architectureFlow {
+  .architectureIntro {
     grid-template-columns: 1fr;
-    gap: .8rem;
-  }
-
-  .architectureArrow {
-    justify-self: center;
-    transform: rotate(90deg);
-  }
-
-  .architectureOutputs {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin-top: -1.5rem;
   }
 }
 
@@ -445,6 +434,10 @@
     font-size: clamp(3.5rem, 17vw, 5rem);
   }
 
+  :global(html[lang="th"]) .hero h1 {
+    font-size: clamp(3rem, 13vw, 4.4rem);
+  }
+
   .flow li {
     grid-template-columns: 48px 1fr;
   }
@@ -453,11 +446,7 @@
     grid-column: 2;
   }
 
-  .architectureOutputs {
-    grid-template-columns: 1fr;
-  }
-
-  .architectureOutputs .architectureLabel {
-    grid-column: auto;
+  .architectureDiagram {
+    min-width: 920px;
   }
 }

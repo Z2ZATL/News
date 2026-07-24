@@ -25,12 +25,12 @@ const covers = {
     },
   },
   kimiK3: {
-    src: "/images/articles/kimi-k3-facebook.png",
-    width: 1454,
-    height: 797,
+    src: "/images/articles/kimi-k3-facebook.jpg",
+    width: 2048,
+    height: 2048,
     alt: {
-      th: "หน้ากิจกรรม Kimi ที่เชื่อมจากโพสต์ Facebook เรื่อง Kimi K3",
-      en: "Kimi activity page linked from the Facebook post about Kimi K3",
+      th: "กราฟ Frontend Code Arena แสดง Kimi-K3 อยู่อันดับหนึ่งด้วยคะแนน 1,679",
+      en: "Frontend Code Arena chart ranking Kimi-K3 first with a score of 1,679",
     },
   },
   thAiPassport: {
