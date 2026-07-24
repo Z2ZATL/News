@@ -88,15 +88,36 @@ export default async function ArticlePage({
           </div>
         </div>
       </header>
-      <figure className={styles.cover}>
-        <Image
-          src={article.cover.src}
-          alt={article.cover.alt[locale]}
-          width={article.cover.width ?? 1456}
-          height={article.cover.height ?? 1456}
-          priority
-        />
-      </figure>
+      {article.video ? (
+        <figure className={`${styles.cover} ${styles.videoCover}`}>
+          <div className={styles.videoFrame}>
+            <iframe
+              src={article.video.embedUrl}
+              title={article.video.title[locale]}
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowFullScreen
+              loading="eager"
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
+          </div>
+          <figcaption>
+            {locale === "th" ? "วิดีโอต้นฉบับจาก " : "Original video from "}
+            <a href={article.video.sourceUrl} target="_blank" rel="noopener noreferrer">
+              OpenAI <span aria-hidden="true">↗</span>
+            </a>
+          </figcaption>
+        </figure>
+      ) : (
+        <figure className={styles.cover}>
+          <Image
+            src={article.cover.src}
+            alt={article.cover.alt[locale]}
+            width={article.cover.width ?? 1456}
+            height={article.cover.height ?? 1456}
+            priority
+          />
+        </figure>
+      )}
       <div className={styles.articleGrid}>
         <aside className={styles.rail}>
           <p>{locale === "th" ? "ในบทความนี้" : "In this story"}</p>

@@ -16,7 +16,7 @@ function createCsp(nonce: string) {
     "media-src 'self'",
     "form-action 'none'",
     "frame-ancestors 'none'",
-    "frame-src 'none'",
+    "frame-src https://player.vimeo.com",
     "base-uri 'none'",
     "object-src 'none'",
     "upgrade-insecure-requests",

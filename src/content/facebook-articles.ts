@@ -228,6 +228,14 @@ export const facebookArticles: Article[] = [
       ],
     },
     cover: covers.gptLive,
+    video: {
+      embedUrl: "https://player.vimeo.com/video/1208152658?h=c944a411bd&badge=0&autopause=0",
+      sourceUrl: "https://openai.com/index/introducing-gpt-live/?video=1208152658",
+      title: {
+        th: "วิดีโอแนะนำ GPT-Live จาก OpenAI",
+        en: "Introducing GPT-Live video from OpenAI",
+      },
+    },
     category: { th: "Voice AI", en: "Voice AI" },
     author,
     tags: ["OpenAI", "ChatGPT", "GPT-Live", "Voice AI"],
@@ -235,6 +243,10 @@ export const facebookArticles: Article[] = [
       {
         label: { th: "รีลต้นฉบับบน Facebook", en: "Original Facebook reel" },
         url: "https://www.facebook.com/reel/2438812816625778/",
+      },
+      {
+        label: { th: "Introducing GPT-Live โดย OpenAI", en: "Introducing GPT-Live by OpenAI" },
+        url: "https://openai.com/index/introducing-gpt-live/?video=1208152658",
       },
     ],
     featured: false,

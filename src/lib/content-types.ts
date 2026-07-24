@@ -22,6 +22,11 @@ export interface Article {
     width?: number;
     height?: number;
   };
+  video?: {
+    embedUrl: string;
+    sourceUrl: string;
+    title: LocalizedText;
+  };
   category: LocalizedText;
   author: {
     name: string;

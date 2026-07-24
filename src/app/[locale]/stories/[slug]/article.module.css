@@ -84,6 +84,37 @@
   background: var(--surface);
 }
 
+.videoCover {
+  display: block;
+}
+
+.videoFrame {
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  background: #000;
+}
+
+.videoFrame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.videoCover figcaption {
+  margin-top: .9rem;
+  color: var(--muted);
+  font-size: .78rem;
+  line-height: 1.6;
+}
+
+.videoCover figcaption a {
+  color: var(--cyan);
+  border-bottom: 1px solid rgb(47 191 242 / 38%);
+}
+
 .articleGrid {
   display: grid;
   grid-template-columns: minmax(180px, 240px) minmax(0, 780px);
