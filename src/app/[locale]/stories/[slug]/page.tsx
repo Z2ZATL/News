@@ -3,6 +3,7 @@ import { draftMode, headers } from "next/headers";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
+import { ArticleReactions } from "@/components/article-reactions";
 import { JsonLd } from "@/components/json-ld";
 import { ReadingProgress } from "@/components/reading-progress";
 import { getArticle } from "@/lib/content";
@@ -174,6 +175,11 @@ export default async function ArticlePage({
               {section.bullets ? <ul>{section.bullets.map((item) => <li key={item}>{item}</li>)}</ul> : null}
             </section>
           ))}
+          <ArticleReactions
+            articleTitle={article.title[locale]}
+            locale={locale}
+            slug={article.slug}
+          />
           <section className={styles.sources}>
             <p className="page-kicker">SOURCES / {String(article.sources.length).padStart(2, "0")}</p>
             <h2>{ui[locale].sources}</h2>

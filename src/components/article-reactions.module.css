@@ -1,0 +1,126 @@
+.reactions {
+  margin-bottom: clamp(4rem, 8vw, 6.5rem);
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border: 1px solid var(--line-strong);
+  background:
+    radial-gradient(circle at 92% 10%, rgb(255 57 200 / 9%), transparent 28%),
+    linear-gradient(135deg, rgb(47 191 242 / 7%), rgb(255 255 255 / 2%));
+}
+
+.heading {
+  display: flex;
+  gap: 1.5rem;
+  align-items: end;
+  justify-content: space-between;
+}
+
+.kicker {
+  margin: 0 0 .7rem;
+  color: var(--cyan);
+  font-family: var(--font-display);
+  font-size: .64rem;
+  letter-spacing: .16em;
+}
+
+.heading h2 {
+  max-width: none;
+  margin: 0;
+  font-size: clamp(1.65rem, 3vw, 2.4rem);
+  line-height: 1.28;
+  letter-spacing: -.025em;
+}
+
+.privacy {
+  max-width: 25ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: .75rem;
+  line-height: 1.6;
+  text-align: right;
+}
+
+.options {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: .55rem;
+  margin-top: 1.8rem;
+}
+
+.option {
+  display: grid;
+  gap: .38rem;
+  min-width: 0;
+  padding: .9rem .35rem .75rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgb(3 6 11 / 72%);
+  color: var(--muted);
+  font: inherit;
+  font-size: .72rem;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.option:hover,
+.option:focus-visible {
+  color: var(--text);
+  border-color: rgb(47 191 242 / 68%);
+  background: rgb(47 191 242 / 9%);
+  transform: translateY(-2px);
+}
+
+.option[data-active="true"] {
+  color: #fff;
+  border-color: #ff55ce;
+  background: linear-gradient(145deg, rgb(47 191 242 / 16%), rgb(255 57 200 / 16%));
+  box-shadow: 0 0 24px rgb(255 57 200 / 15%);
+}
+
+.emoji {
+  font-size: clamp(1.55rem, 3vw, 2rem);
+  line-height: 1;
+  filter: saturate(.82);
+  transform-origin: center;
+}
+
+.option:hover .emoji,
+.option:focus-visible .emoji,
+.option[data-active="true"] .emoji {
+  filter: saturate(1.08);
+  transform: scale(1.08);
+}
+
+.status {
+  min-height: 1.45rem;
+  margin: 1rem 0 0;
+  color: var(--muted);
+  font-size: .76rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 700px) {
+  .heading {
+    display: grid;
+    align-items: start;
+  }
+
+  .privacy {
+    max-width: none;
+    text-align: left;
+  }
+
+  .options {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .option {
+    transition: none;
+  }
+}

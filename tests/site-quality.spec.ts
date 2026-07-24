@@ -107,6 +107,25 @@ test("Atlas upgrades to WebGL on interaction and survives context loss", async (
   await expect(atlas).toHaveAttribute("data-atlas-state", "fallback");
 });
 
+test("story reactions persist locally and stay out of Lab pages", async ({
+  page,
+}) => {
+  await page.goto("/th/stories/okmd-ai-playground-review");
+  const love = page.getByRole("button", { name: "รักเลย" });
+  await expect(love).toHaveAttribute("aria-pressed", "false");
+  await love.click();
+  await expect(love).toHaveAttribute("aria-pressed", "true");
+
+  await page.reload();
+  await expect(page.getByRole("button", { name: "รักเลย" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+
+  await page.goto("/th/projects/lumixia-brief");
+  await expect(page.getByText("REACTION / STORY")).toHaveCount(0);
+});
+
 test("security endpoints reject invalid input and preserve nonce integrity", async ({
   page,
   request,
