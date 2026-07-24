@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-function createCsp(nonce: string) {
+function createCsp(nonce: string, allowsVimeo: boolean) {
   const development = process.env.NODE_ENV === "development";
   return [
     "default-src 'none'",
@@ -16,7 +16,7 @@ function createCsp(nonce: string) {
     "media-src 'self'",
     "form-action 'none'",
     "frame-ancestors 'none'",
-    "frame-src https://player.vimeo.com",
+    allowsVimeo ? "frame-src https://player.vimeo.com" : "frame-src 'none'",
     "base-uri 'none'",
     "object-src 'none'",
     "upgrade-insecure-requests",
@@ -26,7 +26,10 @@ function createCsp(nonce: string) {
 
 export function middleware(request: NextRequest) {
   const nonce = btoa(crypto.randomUUID());
-  const csp = createCsp(nonce);
+  const allowsVimeo = /^\/(?:th|en)\/stories\/chatgpt-gpt-live-voice-update\/?$/.test(
+    request.nextUrl.pathname,
+  );
+  const csp = createCsp(nonce, allowsVimeo);
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
   const localeSegment = request.nextUrl.pathname.split("/")[1];
@@ -45,7 +48,9 @@ export function middleware(request: NextRequest) {
   );
   response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
   response.headers.set("Cross-Origin-Resource-Policy", "same-origin");
-  response.headers.set("Cross-Origin-Embedder-Policy", "credentialless");
+  if (!allowsVimeo) {
+    response.headers.set("Cross-Origin-Embedder-Policy", "credentialless");
+  }
   response.headers.set("X-DNS-Prefetch-Control", "off");
   response.headers.set("X-Permitted-Cross-Domain-Policies", "none");
   response.headers.set("Origin-Agent-Cluster", "?1");

@@ -16,12 +16,12 @@ const covers = {
     },
   },
   gptLive: {
-    src: "/images/articles/gpt-live-facebook.jpg",
-    width: 1076,
-    height: 1920,
+    src: "/images/articles/gpt-live-official.jpg",
+    width: 1920,
+    height: 1080,
     alt: {
-      th: "ภาพหน้าปกวิดีโอ Facebook ของผู้เขียนเกี่ยวกับโหมดเสียง GPT-Live",
-      en: "The author's Facebook reel cover for the GPT-Live voice update",
+      th: "ภาพจากวิดีโอแนะนำ GPT-Live ของ OpenAI",
+      en: "A frame from OpenAI's Introducing GPT-Live video",
     },
   },
   kimiK3: {
