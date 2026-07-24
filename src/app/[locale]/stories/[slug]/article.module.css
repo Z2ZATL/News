@@ -86,10 +86,12 @@
 
 .videoCover {
   display: block;
+  width: min(1440px, calc(100% - 4vw));
 }
 
 .videoFrame {
   overflow: hidden;
+  width: 100%;
   aspect-ratio: 16 / 9;
   border: 1px solid var(--line-strong);
   border-radius: 2px;

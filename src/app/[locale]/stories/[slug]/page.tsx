@@ -94,6 +94,8 @@ export default async function ArticlePage({
             <iframe
               src={article.video.embedUrl}
               title={article.video.title[locale]}
+              width={1280}
+              height={720}
               allow="autoplay; fullscreen; picture-in-picture"
               allowFullScreen
               loading="eager"
