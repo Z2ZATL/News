@@ -95,6 +95,21 @@ test("Atlas upgrades to WebGL on interaction and survives context loss", async (
     timeout: 20_000,
   });
   await expect(atlas.locator("canvas")).toBeVisible();
+  const bangkok = atlas.locator('a[title*="Bangkok, Thailand"]').first();
+  await expect(bangkok).toBeVisible();
+  await expect(atlas.locator('a[title*="Beijing, China"]')).toHaveCount(1);
+  await expect(
+    atlas.locator('a[title*="San Francisco, California, USA"]'),
+  ).toHaveCount(2);
+  await expect(
+    atlas.locator('a[title*="Mountain View, California, USA"]'),
+  ).toHaveCount(1);
+
+  const initialBangkokPosition = await bangkok.boundingBox();
+  expect(initialBangkokPosition).not.toBeNull();
+  await expect
+    .poll(async () => (await bangkok.boundingBox())?.x)
+    .not.toBe(initialBangkokPosition?.x);
 
   await atlas.locator("canvas").evaluate((canvas) => {
     canvas.dispatchEvent(

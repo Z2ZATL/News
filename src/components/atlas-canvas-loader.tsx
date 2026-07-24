@@ -1,7 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { Component, type ErrorInfo, type ReactNode, useEffect, useState } from "react";
+
+import type { AtlasMapNode } from "@/lib/atlas-types";
 
 import styles from "./atlas.module.css";
 
@@ -31,15 +34,22 @@ class AtlasErrorBoundary extends Component<
   }
 }
 
-export function AtlasCanvasLoader() {
+export function AtlasCanvasLoader({
+  navigationLabel,
+  nodes,
+}: Readonly<{
+  navigationLabel: string;
+  nodes: AtlasMapNode[];
+}>) {
   const [enabled, setEnabled] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const [state, setState] = useState<"waiting" | "loading" | "ready" | "fallback">(
     "waiting",
   );
 
   useEffect(() => {
     if (enabled) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     const timer = window.setTimeout(() => {
       setEnabled(true);
       setState("loading");
@@ -51,7 +61,7 @@ export function AtlasCanvasLoader() {
 
   const enableCanvas = () => {
     if (enabled) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     setEnabled(true);
     setState("loading");
   };
@@ -65,9 +75,29 @@ export function AtlasCanvasLoader() {
       onTouchStart={enableCanvas}
     >
       <div className={styles.planetFallback} aria-hidden="true" />
+      <nav className={styles.nodes} aria-label={navigationLabel}>
+        {nodes.map((node) => (
+          <Link
+            href={node.href}
+            className={styles.node}
+            data-featured={node.kind === "product" ? "true" : undefined}
+            data-kind={node.kind}
+            aria-label={`${node.indexLabel}. ${node.label}. ${node.location}`}
+            key={`${node.kind}-${node.href}`}
+          >
+            <span className={styles.nodeCore} />
+            <span className={styles.nodeLabel}>
+              <b>{node.indexLabel}</b>
+              {node.label}
+            </span>
+          </Link>
+        ))}
+      </nav>
       {enabled ? (
         <AtlasErrorBoundary onError={() => { setState("fallback"); }}>
           <AtlasCanvas
+            animate={!reducedMotion}
+            nodes={nodes}
             onReady={() => {
               setState("ready");
             }}

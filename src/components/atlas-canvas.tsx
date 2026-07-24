@@ -1,20 +1,43 @@
 "use client";
 
-import { Stars, useTexture } from "@react-three/drei";
+import { Html, Stars, useTexture } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 import {
   AdditiveBlending,
   BackSide,
+  MathUtils,
   SRGBColorSpace,
   type Group,
 } from "three";
 
+import type { AtlasMapNode } from "@/lib/atlas-types";
+
 import styles from "./atlas.module.css";
 
+function coordinatesToPosition(
+  latitude: number,
+  longitude: number,
+  radius = 2.18,
+): [number, number, number] {
+  const latitudeRadians = MathUtils.degToRad(latitude);
+  const longitudeRadians = MathUtils.degToRad(longitude);
+  const latitudeRadius = radius * Math.cos(latitudeRadians);
+  return [
+    latitudeRadius * Math.sin(longitudeRadians),
+    radius * Math.sin(latitudeRadians),
+    latitudeRadius * Math.cos(longitudeRadians),
+  ];
+}
+
 function Earth({
+  animate,
+  nodes,
   onReady,
 }: Readonly<{
+  animate: boolean;
+  nodes: AtlasMapNode[];
   onReady: () => void;
 }>) {
   const group = useRef<Group>(null);
@@ -36,7 +59,7 @@ function Earth({
     lightsMap.colorSpace = SRGBColorSpace;
   }, [earthMap, lightsMap]);
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     if (!group.current) return;
 
     if (!announcedReady.current) {
@@ -44,8 +67,17 @@ function Earth({
       onReady();
     }
 
-    group.current.rotation.x = 0.12 + state.pointer.y * 0.05;
-    group.current.rotation.z = -0.11 - state.pointer.x * 0.035;
+    if (animate) group.current.rotation.y += delta * 0.055;
+    group.current.rotation.x = MathUtils.lerp(
+      group.current.rotation.x,
+      0.12 + state.pointer.y * 0.05,
+      0.025,
+    );
+    group.current.rotation.z = MathUtils.lerp(
+      group.current.rotation.z,
+      -0.11 - state.pointer.x * 0.035,
+      0.025,
+    );
   });
 
   return (
@@ -121,19 +153,51 @@ function Earth({
           depthWrite={false}
         />
       </mesh>
+
+      {nodes.map((node) => (
+        <Html
+          center
+          distanceFactor={7}
+          occlude
+          position={coordinatesToPosition(node.latitude, node.longitude)}
+          zIndexRange={[20, 0]}
+          key={`${node.kind}-${node.href}`}
+        >
+          <Link
+            href={node.href}
+            className={styles.geoNode}
+            data-kind={node.kind}
+            title={`${node.label} · ${node.location}`}
+            style={{
+              translate: `${String(node.offset[0])}px ${String(node.offset[1])}px`,
+            }}
+          >
+            <span className={styles.geoNodeCore} />
+            <span className={styles.geoNodeLabel}>
+              <b>{node.indexLabel}</b>
+              {node.label}
+              <small>{node.location}</small>
+            </span>
+          </Link>
+        </Html>
+      ))}
     </group>
   );
 }
 
 export function AtlasCanvas({
+  animate,
+  nodes,
   onReady,
   onUnavailable,
 }: Readonly<{
+  animate: boolean;
+  nodes: AtlasMapNode[];
   onReady: () => void;
   onUnavailable: () => void;
 }>) {
   return (
-    <div className={styles.canvas} aria-hidden="true">
+    <div className={styles.canvas}>
       <Canvas
         dpr={[1, 1.25]}
         frameloop="always"
@@ -152,7 +216,7 @@ export function AtlasCanvas({
         <pointLight position={[4, 1, 3]} intensity={52} color="#00c8ff" distance={12} />
         <pointLight position={[-4, -1.5, 2]} intensity={42} color="#ff2bc2" distance={12} />
         <pointLight position={[0, -4, 1]} intensity={30} color="#ffb347" distance={10} />
-        <Earth onReady={onReady} />
+        <Earth animate={animate} nodes={nodes} onReady={onReady} />
         <Stars radius={52} depth={30} count={560} factor={1.8} saturation={0.42} fade speed={0} />
       </Canvas>
     </div>
