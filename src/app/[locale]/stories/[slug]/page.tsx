@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
+import { draftMode, headers } from "next/headers";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
@@ -8,6 +8,8 @@ import { ReadingProgress } from "@/components/reading-progress";
 import { getArticle } from "@/lib/content";
 import { formatArticleDate } from "@/lib/format-date";
 import { isLocale, ui } from "@/lib/i18n";
+import { localizedAlternates } from "@/lib/metadata";
+import { SITE_NAME, SITE_URL } from "@/lib/site-config";
 
 import styles from "./article.module.css";
 
@@ -18,19 +20,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale, slug } = await params;
   if (!isLocale(locale)) return {};
-  const article = await getArticle(slug);
+  const article = await getArticle(slug, { draft: (await draftMode()).isEnabled });
   if (!article) return {};
   return {
     title: article.title[locale],
     description: article.excerpt[locale],
-    alternates: {
-      canonical: `/${locale}/stories/${slug}`,
-      languages: {
-        th: `/th/stories/${slug}`,
-        en: `/en/stories/${slug}`,
-        "x-default": `/th/stories/${slug}`,
-      },
-    },
+    alternates: localizedAlternates(locale, `/stories/${slug}`),
     openGraph: {
       type: "article",
       title: article.title[locale],
@@ -49,13 +44,16 @@ export default async function ArticlePage({
 }) {
   const { locale, slug } = await params;
   if (!isLocale(locale)) notFound();
-  const article = await getArticle(slug);
+  const article = await getArticle(slug, { draft: (await draftMode()).isEnabled });
   if (!article) notFound();
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const date = formatArticleDate(article.publishedAt, locale);
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://news.z2zs.space";
   const sections = article.body[locale]
-    .map((section, index) => section.heading ? { heading: section.heading, id: `section-${index}` } : null)
+    .map((section, index) =>
+      section.heading
+        ? { heading: section.heading, id: `section-${String(index)}` }
+        : null,
+    )
     .filter((section): section is { heading: string; id: string } => section !== null);
 
   return (
@@ -71,9 +69,9 @@ export default async function ArticlePage({
           datePublished: article.publishedAt,
           dateModified: article.updatedAt,
           author: { "@type": "Person", name: article.author.name },
-          image: new URL(article.cover.src, siteUrl).toString(),
-          mainEntityOfPage: `${siteUrl}/${locale}/stories/${article.slug}`,
-          publisher: { "@type": "Organization", name: "Z2Zs Lab" },
+          image: new URL(article.cover.src, SITE_URL).toString(),
+          mainEntityOfPage: `${SITE_URL}/${locale}/stories/${article.slug}`,
+          publisher: { "@type": "Organization", name: SITE_NAME },
         }}
       />
       <header className={styles.hero}>
@@ -89,7 +87,7 @@ export default async function ArticlePage({
         </div>
       </header>
       {article.video ? (
-        <figure className={`${styles.cover} ${styles.videoCover}`}>
+        <figure className={[styles.cover, styles.videoCover].join(" ")}>
           <div className={styles.videoFrame}>
             <iframe
               src={article.video.embedUrl}
@@ -97,7 +95,6 @@ export default async function ArticlePage({
               width={1280}
               height={720}
               allow="autoplay; fullscreen; picture-in-picture"
-              allowFullScreen
               loading="eager"
               referrerPolicy="strict-origin-when-cross-origin"
             />
@@ -140,8 +137,8 @@ export default async function ArticlePage({
           {article.body[locale].map((section, index) => (
             <section
               className={section.heading ? undefined : styles.intro}
-              id={section.heading ? `section-${index}` : undefined}
-              key={section.heading ?? `intro-${index}`}
+              id={section.heading ? `section-${String(index)}` : undefined}
+              key={section.heading ?? `intro-${String(index)}`}
             >
               {section.heading ? <h2>{section.heading}</h2> : null}
               {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}

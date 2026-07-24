@@ -34,7 +34,6 @@ export const BilingualPublishAction: DocumentActionComponent = (props) => {
       : "Complete title, excerpt, body, and cover alt text in Thai and English before publishing.",
     onHandle: () => {
       publish.execute();
-      props.onComplete();
     },
   };
 };

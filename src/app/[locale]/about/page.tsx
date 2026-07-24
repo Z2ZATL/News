@@ -1,8 +1,23 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { isLocale } from "@/lib/i18n";
+import { localizedAlternates } from "@/lib/metadata";
 
 import styles from "./about.module.css";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isLocale(locale)) return {};
+  return {
+    title: locale === "th" ? "รู้จักเรา" : "About",
+    alternates: localizedAlternates(locale, "/about"),
+  };
+}
 
 export default async function About({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -92,7 +107,7 @@ export default async function About({ params }: { params: Promise<{ locale: stri
         </div>
       </section>
 
-      <section className={`${styles.section} ${styles.people}`} aria-labelledby="author">
+      <section className={[styles.section, styles.people].join(" ")} aria-labelledby="author">
         <div className={styles.sectionHeading}>
           <p>03 / {th ? "ผู้เขียน" : "People"}</p>
           <h2 id="author">{th ? "คนที่อยู่เบื้องหลัง" : "Behind the work"}</h2>
@@ -110,7 +125,7 @@ export default async function About({ params }: { params: Promise<{ locale: stri
         </div>
       </section>
 
-      <section className={`${styles.section} ${styles.follow}`} aria-labelledby="follow">
+      <section className={[styles.section, styles.follow].join(" ")} aria-labelledby="follow">
         <div className={styles.sectionHeading}>
           <p>04 / {th ? "ช่องทางติดตาม" : "Follow"}</p>
           <h2 id="follow">{th ? "ติดตามงานต่อ" : "Keep in touch"}</h2>

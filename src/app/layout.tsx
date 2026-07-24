@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { Noto_Sans_Thai, Space_Grotesk } from "next/font/google";
 
 import "./globals.css";
+import { SITE_URL } from "@/lib/site-config";
 
 const thai = Noto_Sans_Thai({
   variable: "--font-thai",
@@ -17,7 +18,7 @@ const space = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://news.z2zs.space"),
+  metadataBase: new URL(SITE_URL),
   title: { default: "Z2Zs Lab", template: "%s — Z2Zs Lab" },
   description: "Independent technology reporting, experiments, and verifiable analysis from Bangkok.",
   applicationName: "Z2Zs Lab",

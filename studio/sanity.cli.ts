@@ -8,4 +8,10 @@ export default defineCliConfig({
     projectId,
     dataset: process.env.SANITY_STUDIO_DATASET ?? "production",
   },
+  typegen: {
+    path: "../src/**/*.{ts,tsx}",
+    schema: "schema.json",
+    generates: "../src/sanity.types.ts",
+    overloadClientMethods: true,
+  },
 });

@@ -1,8 +1,23 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { SearchIndex } from "@/components/search-index";
 import { getArticles } from "@/lib/content";
 import { isLocale, ui } from "@/lib/i18n";
+import { localizedAlternates } from "@/lib/metadata";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isLocale(locale)) return {};
+  return {
+    title: ui[locale].search,
+    alternates: localizedAlternates(locale, "/search"),
+  };
+}
 
 export default async function SearchPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

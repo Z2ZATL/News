@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -5,8 +6,22 @@ import { notFound } from "next/navigation";
 import { getArticles } from "@/lib/content";
 import { formatArticleDate } from "@/lib/format-date";
 import { isLocale, ui } from "@/lib/i18n";
+import { localizedAlternates } from "@/lib/metadata";
 
 import styles from "./stories.module.css";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isLocale(locale)) return {};
+  return {
+    title: ui[locale].stories,
+    alternates: localizedAlternates(locale, "/stories"),
+  };
+}
 
 export default async function Stories({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

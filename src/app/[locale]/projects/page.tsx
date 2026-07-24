@@ -1,10 +1,25 @@
+import type { Metadata } from "next";
 import type { Route } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { isLocale, ui } from "@/lib/i18n";
+import { localizedAlternates } from "@/lib/metadata";
 
 import styles from "./projects.module.css";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isLocale(locale)) return {};
+  return {
+    title: ui[locale].projects,
+    alternates: localizedAlternates(locale, "/projects"),
+  };
+}
 
 export default async function Projects({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -65,7 +80,7 @@ export default async function Projects({ params }: { params: Promise<{ locale: s
                   (dimension, index) => (
                     <div key={dimension}>
                       <span>{dimension}</span>
-                      <i style={{ "--score": `${58 + index * 5}%` } as React.CSSProperties} />
+                      <i style={{ "--score": `${String(58 + index * 5)}%` } as React.CSSProperties} />
                     </div>
                   ),
                 )}

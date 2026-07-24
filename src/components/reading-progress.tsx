@@ -24,7 +24,7 @@ export function ReadingProgress() {
 
   return (
     <div className={styles.track} aria-hidden="true">
-      <span style={{ transform: `scaleX(${progress})` }} />
+      <span style={{ transform: `scaleX(${String(progress)})` }} />
     </div>
   );
 }

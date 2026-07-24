@@ -17,8 +17,12 @@ export function AtlasCanvasLoader() {
     <div className={styles.visualStack} data-atlas-state={state}>
       <div className={styles.planetFallback} aria-hidden="true" />
       <AtlasCanvas
-        onReady={() => setState("ready")}
-        onUnavailable={() => setState("fallback")}
+        onReady={() => {
+          setState("ready");
+        }}
+        onUnavailable={() => {
+          setState("fallback");
+        }}
       />
     </div>
   );

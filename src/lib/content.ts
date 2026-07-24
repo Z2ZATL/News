@@ -1,19 +1,23 @@
 import "server-only";
 
 import { createClient } from "@sanity/client";
+import { defineQuery } from "groq";
 
 import { facebookArticles } from "@/content/facebook-articles";
 import { launchArticle } from "@/content/launch-article";
-import type { Article } from "@/lib/content-types";
-import type { ArticleSection, LocalizedText } from "@/lib/content-types";
-import type { Locale } from "@/lib/i18n";
+import type {
+  Article,
+  ArticleSection,
+  LocalizedText,
+} from "@/lib/content-types";
+import type { DraftArticleQueryResult } from "@/sanity.types";
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET ?? "production";
 const token = process.env.SANITY_API_READ_TOKEN;
 const localArticles = [launchArticle, ...facebookArticles];
 
-const sanity =
+const publishedSanity =
   projectId && token
     ? createClient({
         projectId,
@@ -25,7 +29,19 @@ const sanity =
       })
     : null;
 
-const articleQuery = `*[_type == "article" && status == "published"] | order(publishedAt desc) {
+const draftSanity =
+  projectId && token
+    ? createClient({
+        projectId,
+        dataset,
+        apiVersion: "2025-01-01",
+        token,
+        useCdn: false,
+        perspective: "drafts",
+      })
+    : null;
+
+const articleQuery = defineQuery(`*[_type == "article" && status == "published"] | order(publishedAt desc) {
   "slug": slug.current,
   title,
   excerpt,
@@ -42,7 +58,25 @@ const articleQuery = `*[_type == "article" && status == "published"] | order(pub
   publishedAt,
   updatedAt,
   "readingMinutes": 9
-}`;
+}`);
+const draftArticleQuery = defineQuery(`*[_type == "article" && slug.current == $slug][0] {
+  "slug": slug.current,
+  title,
+  excerpt,
+  "cover": {
+    "src": cover.asset->url,
+    "alt": cover.alt
+  },
+  "category": category->title,
+  author->{name, role},
+  body,
+  tags,
+  sources,
+  featured,
+  publishedAt,
+  updatedAt,
+  "readingMinutes": 9
+}`);
 
 interface PortableSpan {
   _type?: string;
@@ -56,9 +90,7 @@ interface PortableBlock {
   children?: PortableSpan[];
 }
 
-interface RemoteArticle extends Omit<Article, "body"> {
-  body?: Partial<Record<Locale, PortableBlock[]>>;
-}
+type RemoteArticle = NonNullable<DraftArticleQueryResult>;
 
 function blockText(block: PortableBlock): string {
   return block.children?.map((child) => child.text ?? "").join("") ?? "";
@@ -85,25 +117,77 @@ function toSections(blocks: PortableBlock[] | undefined): ArticleSection[] {
   return sections.filter((section) => section.heading || section.paragraphs.length || section.bullets?.length);
 }
 
-function normalizeArticle(article: RemoteArticle): Article {
+function normalizeLocalized(
+  value:
+    | {
+        th?: string;
+        en?: string;
+      }
+    | null
+    | undefined,
+): LocalizedText | null {
+  return value?.th && value.en ? { th: value.th, en: value.en } : null;
+}
+
+function normalizeArticle(article: RemoteArticle): Article | null {
+  const title = normalizeLocalized(article.title);
+  const excerpt = normalizeLocalized(article.excerpt);
+  const coverAlt = normalizeLocalized(article.cover.alt);
+  const category = normalizeLocalized(article.category);
+  const authorRole = normalizeLocalized(article.author?.role);
+  if (
+    !title ||
+    !excerpt ||
+    !coverAlt ||
+    !category ||
+    !authorRole ||
+    !article.cover.src ||
+    !article.author ||
+    !article.publishedAt ||
+    !article.updatedAt
+  ) {
+    return null;
+  }
+
+  const sources = (article.sources ?? []).flatMap((source) => {
+    const label = normalizeLocalized(source.label);
+    return label ? [{ label, url: source.url }] : [];
+  });
+
   return {
-    ...article,
-    category: article.category as LocalizedText,
+    slug: article.slug,
+    title,
+    excerpt,
+    category,
+    cover: {
+      src: article.cover.src,
+      alt: coverAlt,
+    },
+    author: {
+      name: article.author.name,
+      role: authorRole,
+    },
     body: {
       th: toSections(article.body?.th),
       en: toSections(article.body?.en),
     },
+    tags: article.tags ?? [],
+    sources,
+    featured: article.featured ?? false,
+    publishedAt: article.publishedAt,
+    updatedAt: article.updatedAt,
+    readingMinutes: article.readingMinutes,
   };
 }
 
 export async function getArticles(): Promise<Article[]> {
-  if (!sanity) {
+  if (!publishedSanity) {
     return [...localArticles].sort(
       (left, right) => Date.parse(right.publishedAt) - Date.parse(left.publishedAt),
     );
   }
 
-  const remote = await sanity.fetch<RemoteArticle[]>(articleQuery, {}, {
+  const remote = await publishedSanity.fetch(articleQuery, {}, {
     next: { tags: ["article"] },
   });
 
@@ -111,6 +195,7 @@ export async function getArticles(): Promise<Article[]> {
     localArticles.map((article) => [article.slug, article] as const),
   );
   for (const article of remote.map(normalizeArticle)) {
+    if (!article) continue;
     combined.set(article.slug, article);
   }
 
@@ -119,7 +204,15 @@ export async function getArticles(): Promise<Article[]> {
   );
 }
 
-export async function getArticle(slug: string): Promise<Article | null> {
+export async function getArticle(
+  slug: string,
+  options: Readonly<{ draft?: boolean }> = {},
+): Promise<Article | null> {
+  if (options.draft && draftSanity) {
+    const remote = await draftSanity.fetch(draftArticleQuery, { slug });
+    if (remote) return normalizeArticle(remote);
+  }
+
   const articles = await getArticles();
   return articles.find((article) => article.slug === slug) ?? null;
 }

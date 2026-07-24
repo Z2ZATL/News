@@ -160,7 +160,7 @@
 }
 
 .rail a span {
-  color: rgb(47 191 242 / 65%);
+  color: var(--cyan);
   font-family: var(--font-display);
   font-size: .65rem;
 }

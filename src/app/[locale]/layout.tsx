@@ -5,8 +5,6 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { isLocale, locales } from "@/lib/i18n";
 
-export const dynamic = "force-dynamic";
-
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }

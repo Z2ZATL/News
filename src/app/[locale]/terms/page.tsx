@@ -1,6 +1,21 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { isLocale } from "@/lib/i18n";
+import { localizedAlternates } from "@/lib/metadata";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isLocale(locale)) return {};
+  return {
+    title: locale === "th" ? "ข้อกำหนด" : "Terms",
+    alternates: localizedAlternates(locale, "/terms"),
+  };
+}
 
 export default async function Terms({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

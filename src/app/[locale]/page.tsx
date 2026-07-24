@@ -8,6 +8,7 @@ import { Reveal } from "@/components/reveal";
 import { getArticles } from "@/lib/content";
 import { formatArticleDate } from "@/lib/format-date";
 import { isLocale, ui } from "@/lib/i18n";
+import { localizedAlternates } from "@/lib/metadata";
 
 import styles from "./page.module.css";
 
@@ -19,10 +20,7 @@ export async function generateMetadata({
   const { locale } = await params;
   return {
     title: locale === "th" ? "ข่าว เทคโนโลยี และบทวิเคราะห์" : "Technology, reports, and experiments",
-    alternates: {
-      canonical: `/${locale}`,
-      languages: { th: "/th", en: "/en", "x-default": "/th" },
-    },
+    alternates: isLocale(locale) ? localizedAlternates(locale) : undefined,
   };
 }
 

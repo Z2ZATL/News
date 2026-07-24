@@ -26,7 +26,9 @@ export function SearchIndex({ articles, locale }: Readonly<{ articles: Article[]
         className={styles.input}
         type="search"
         value={query}
-        onChange={(event) => setQuery(event.currentTarget.value)}
+        onChange={(event) => {
+          setQuery(event.currentTarget.value);
+        }}
         autoComplete="off"
       />
       <p className={styles.count} aria-live="polite">{results.length} {locale === "th" ? "ผลลัพธ์" : "results"}</p>

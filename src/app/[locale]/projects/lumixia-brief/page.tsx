@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { isLocale } from "@/lib/i18n";
+import { localizedAlternates } from "@/lib/metadata";
 
 import styles from "./project.module.css";
 
@@ -36,6 +37,7 @@ export async function generateMetadata({
       locale === "th"
         ? "เมื่อ AI เข้าใจงานไม่ตรงกับเรา Lumixia Brief จะถามต่อ แยกข้อเท็จจริงจากสมมติฐาน และเปลี่ยนไอเดียคลุมเครือให้เป็น brief ที่พร้อมตัดสินใจ"
         : "When AI misunderstands the task, Lumixia Brief asks follow-up questions, separates facts from assumptions, and turns vague ideas into decision-ready briefs.",
+    alternates: localizedAlternates(locale, "/projects/lumixia-brief"),
   };
 }
 
@@ -186,28 +188,28 @@ export default async function LumixiaBrief({
                   owner-operated model
                 </text>
               </g>
-              <g className={`${styles.architectureNodeSvg} ${styles.architectureNodePrimary}`} transform="translate(340 220)">
+              <g className={[styles.architectureNodeSvg, styles.architectureNodePrimary].join(" ")} transform="translate(340 220)">
                 <rect width="240" height="100" rx="10" />
                 <text x="120" y="42" textAnchor="middle">Supabase Auth</text>
                 <text className={styles.architectureSubtext} x="120" y="69" textAnchor="middle">
                   Google OAuth + TOTP
                 </text>
               </g>
-              <g className={`${styles.architectureNodeSvg} ${styles.architectureNodePrimary}`} transform="translate(690 100)">
+              <g className={[styles.architectureNodeSvg, styles.architectureNodePrimary].join(" ")} transform="translate(690 100)">
                 <rect width="240" height="100" rx="10" />
                 <text x="120" y="42" textAnchor="middle">Vite React</text>
                 <text className={styles.architectureSubtext} x="120" y="69" textAnchor="middle">
                   on Vercel CDN
                 </text>
               </g>
-              <g className={`${styles.architectureNodeSvg} ${styles.architectureNodeLoop}`} transform="translate(690 360)">
+              <g className={[styles.architectureNodeSvg, styles.architectureNodeLoop].join(" ")} transform="translate(690 360)">
                 <rect width="240" height="100" rx="10" />
                 <text x="120" y="42" textAnchor="middle">Loopback demo bridge</text>
                 <text className={styles.architectureSubtext} x="120" y="69" textAnchor="middle">
                   Codex CLI + ChatGPT plan
                 </text>
               </g>
-              <g className={`${styles.architectureNodeSvg} ${styles.architectureNodePrimary}`} transform="translate(1050 220)">
+              <g className={[styles.architectureNodeSvg, styles.architectureNodePrimary].join(" ")} transform="translate(1050 220)">
                 <rect width="240" height="100" rx="10" />
                 <text x="120" y="42" textAnchor="middle">Express /api function</text>
                 <text className={styles.architectureSubtext} x="120" y="69" textAnchor="middle">

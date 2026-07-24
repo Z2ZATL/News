@@ -17,14 +17,14 @@ const nextConfig: NextConfig = {
     contentDispositionType: "attachment",
     formats: ["image/avif", "image/webp"],
   },
-  async redirects() {
-    return [
+  redirects() {
+    return Promise.resolve([
       {
         source: "/",
         destination: "/th",
         permanent: true,
       },
-    ];
+    ]);
   },
 };
 

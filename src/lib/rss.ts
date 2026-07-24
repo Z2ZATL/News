@@ -1,5 +1,6 @@
 import { getArticles } from "@/lib/content";
 import type { Locale } from "@/lib/i18n";
+import { SITE_URL } from "@/lib/site-config";
 
 function xml(value: string): string {
   return value
@@ -11,7 +12,7 @@ function xml(value: string): string {
 }
 
 export async function createRss(locale: Locale): Promise<Response> {
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://news.z2zs.space";
+  const site = SITE_URL;
   const articles = await getArticles();
   const items = articles
     .map(

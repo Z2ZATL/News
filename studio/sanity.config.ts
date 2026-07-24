@@ -21,16 +21,16 @@ export default defineConfig({
       context.schemaType === "article"
         ? previous.map((action) => (action.action === "publish" ? BilingualPublishAction : action))
         : previous,
-    productionUrl: async (previous, context) => {
+    productionUrl: (previous, context) => {
       const slug = context.document.slug as { current?: string } | undefined;
       const secret = process.env.SANITY_STUDIO_PREVIEW_SECRET;
       const origin = process.env.SANITY_STUDIO_PREVIEW_ORIGIN;
-      if (!slug?.current || !secret || !origin) return previous;
+      if (!slug?.current || !secret || !origin) return Promise.resolve(previous);
       const url = new URL("/api/draft", origin);
       url.searchParams.set("secret", secret);
       url.searchParams.set("slug", slug.current);
       url.searchParams.set("locale", "th");
-      return url.toString();
+      return Promise.resolve(url.toString());
     },
   },
 });

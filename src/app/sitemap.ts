@@ -1,9 +1,10 @@
 import type { MetadataRoute } from "next";
 
 import { getArticles } from "@/lib/content";
+import { SITE_URL } from "@/lib/site-config";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://news.z2zs.space";
+  const site = SITE_URL;
   const fixed = [
     "",
     "/stories",
@@ -19,7 +20,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const path of fixed) {
       entries.push({
         url: `${site}/${locale}${path}`,
-        alternates: { languages: { th: `${site}/th${path}`, en: `${site}/en${path}` } },
+        alternates: {
+          languages: {
+            th: `${site}/th${path}`,
+            en: `${site}/en${path}`,
+            "x-default": `${site}/th${path}`,
+          },
+        },
       });
     }
   }
@@ -32,6 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           languages: {
             th: `${site}/th/stories/${article.slug}`,
             en: `${site}/en/stories/${article.slug}`,
+            "x-default": `${site}/th/stories/${article.slug}`,
           },
         },
       });

@@ -9,7 +9,12 @@ export async function POST(request: Request) {
     return new Response("Invalid signature", { status: 401 });
   }
 
-  const payload: unknown = JSON.parse(body);
+  let payload: unknown;
+  try {
+    payload = JSON.parse(body);
+  } catch {
+    return new Response("Bad Request", { status: 400 });
+  }
   if (!payload || typeof payload !== "object") return new Response("Bad Request", { status: 400 });
   const record = payload as { _type?: unknown; slug?: { current?: unknown } };
   if (typeof record._type === "string") revalidateTag(record._type);
