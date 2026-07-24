@@ -13,6 +13,13 @@ function sitemapPaths(xml: string): string[] {
   });
 }
 
+function isChromiumGpuDiagnostic(text: string): boolean {
+  return (
+    text.includes("GL Driver Message") &&
+    text.includes("GPU stall due to ReadPixels")
+  );
+}
+
 test("every public route has a clean console and no accessibility violations", async ({
   page,
   request,
@@ -25,9 +32,9 @@ test("every public route has a clean console and no accessibility violations", a
   const failures: string[] = [];
   let route = "";
   page.on("console", (message) => {
-    if (message.type() === "warning" || message.type() === "error") {
-      failures.push(`${route} console.${message.type()}: ${message.text()}`);
-    }
+    if (message.type() !== "warning" && message.type() !== "error") return;
+    if (isChromiumGpuDiagnostic(message.text())) return;
+    failures.push(`${route} console.${message.type()}: ${message.text()}`);
   });
   page.on("pageerror", (error) => {
     failures.push(`${route} pageerror: ${error.message}`);
