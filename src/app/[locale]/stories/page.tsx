@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -30,6 +31,15 @@ export default async function Stories({ params }: { params: Promise<{ locale: st
               <h2>{article.title[locale]}</h2>
               <small>{article.excerpt[locale]}</small>
               <small className={styles.byline}>{ui[locale].by} {article.author.name}</small>
+            </div>
+            <div className={styles.cover}>
+              <Image
+                src={article.cover.src}
+                alt={article.cover.alt[locale]}
+                width={article.cover.width ?? 640}
+                height={article.cover.height ?? 400}
+                sizes="(max-width: 640px) calc(100vw - 86px), 280px"
+              />
             </div>
             <b aria-hidden="true">↗</b>
           </Link>

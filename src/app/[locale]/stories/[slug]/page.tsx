@@ -89,7 +89,13 @@ export default async function ArticlePage({
         </div>
       </header>
       <figure className={styles.cover}>
-        <Image src={article.cover.src} alt={article.cover.alt[locale]} width={1456} height={1456} priority />
+        <Image
+          src={article.cover.src}
+          alt={article.cover.alt[locale]}
+          width={article.cover.width ?? 1456}
+          height={article.cover.height ?? 1456}
+          priority
+        />
       </figure>
       <div className={styles.articleGrid}>
         <aside className={styles.rail}>

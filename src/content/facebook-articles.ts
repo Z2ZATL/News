@@ -5,13 +5,62 @@ const author = {
   role: { th: "ผู้เขียน Z2Zs Lab", en: "Writer, Z2Zs Lab" },
 };
 
-const cover = {
-  src: "/images/z2zs-logo.png",
-  alt: {
-    th: "ตราสัญลักษณ์ Z2Zs Lab บนพื้นสีดำ",
-    en: "Z2Zs Lab mark on a black background",
+const covers = {
+  gpt56: {
+    src: "/images/articles/gpt-5-6-facebook.jpg",
+    width: 600,
+    height: 900,
+    alt: {
+      th: "ภาพประกอบโพสต์ Facebook แนะนำ GPT-5.6 รุ่น Luna, Terra และ Sol",
+      en: "Facebook post artwork introducing GPT-5.6 Luna, Terra, and Sol",
+    },
   },
-};
+  gptLive: {
+    src: "/images/articles/gpt-live-facebook.jpg",
+    width: 1076,
+    height: 1920,
+    alt: {
+      th: "ภาพหน้าปกวิดีโอ Facebook ของผู้เขียนเกี่ยวกับโหมดเสียง GPT-Live",
+      en: "The author's Facebook reel cover for the GPT-Live voice update",
+    },
+  },
+  kimiK3: {
+    src: "/images/articles/kimi-k3-facebook.png",
+    width: 1454,
+    height: 797,
+    alt: {
+      th: "หน้ากิจกรรม Kimi ที่เชื่อมจากโพสต์ Facebook เรื่อง Kimi K3",
+      en: "Kimi activity page linked from the Facebook post about Kimi K3",
+    },
+  },
+  thAiPassport: {
+    src: "/images/articles/th-ai-passport-facebook.jpg",
+    width: 1005,
+    height: 600,
+    alt: {
+      th: "ภาพหน้าจอ TH AI Passport จากการทดลองใช้งานของผู้เขียน",
+      en: "TH AI Passport interface photographed during the author's hands-on test",
+    },
+  },
+  weatherLab: {
+    src: "/images/articles/weather-lab-facebook.jpg",
+    width: 900,
+    height: 600,
+    alt: {
+      th: "แผนที่พายุและฝนจาก Google Weather Lab ในโพสต์ Facebook",
+      en: "Storm tracks and rainfall on Google Weather Lab from the Facebook post",
+    },
+  },
+  thAiPassportRecap: {
+    src: "/images/articles/th-ai-passport-recap-facebook.jpg",
+    width: 600,
+    height: 1067,
+    alt: {
+      th: "ภาพการทดลองใช้ TH AI Passport บนคอมพิวเตอร์ของผู้เขียน",
+      en: "The author's TH AI Passport test running on a laptop",
+    },
+  },
+} as const;
 
 export const facebookArticles: Article[] = [
   {
@@ -103,7 +152,7 @@ export const facebookArticles: Article[] = [
         },
       ],
     },
-    cover,
+    cover: covers.gpt56,
     category: { th: "โมเดล AI", en: "AI Models" },
     author,
     tags: ["OpenAI", "GPT-5.6", "Luna", "Terra", "Sol"],
@@ -178,7 +227,7 @@ export const facebookArticles: Article[] = [
         },
       ],
     },
-    cover,
+    cover: covers.gptLive,
     category: { th: "Voice AI", en: "Voice AI" },
     author,
     tags: ["OpenAI", "ChatGPT", "GPT-Live", "Voice AI"],
@@ -254,7 +303,7 @@ export const facebookArticles: Article[] = [
         },
       ],
     },
-    cover,
+    cover: covers.kimiK3,
     category: { th: "AI เขียนโค้ด", en: "Coding AI" },
     author,
     tags: ["Kimi", "Kimi K3", "Frontend", "Arena AI", "Coding AI"],
@@ -360,7 +409,7 @@ export const facebookArticles: Article[] = [
         },
       ],
     },
-    cover,
+    cover: covers.thAiPassport,
     category: { th: "AI ภาครัฐ", en: "Public AI" },
     author,
     tags: ["TH AI Passport", "DE", "Claude", "Harness", "AI Thailand"],
@@ -445,7 +494,7 @@ export const facebookArticles: Article[] = [
         },
       ],
     },
-    cover,
+    cover: covers.weatherLab,
     category: { th: "AI และสภาพอากาศ", en: "Climate AI" },
     author,
     tags: ["Google DeepMind", "Weather Lab", "WeatherNext 2", "Climate AI"],
@@ -544,7 +593,7 @@ export const facebookArticles: Article[] = [
         },
       ],
     },
-    cover,
+    cover: covers.thAiPassportRecap,
     category: { th: "AI ภาครัฐ", en: "Public AI" },
     author,
     tags: ["TH AI Passport", "Developer Tools", "Harness", "Model Council", "Agentic AI"],

@@ -101,8 +101,89 @@ export default async function LumixiaBrief({
         </ol>
       </section>
 
+      <section className={styles.architecture}>
+        <div className={styles.sectionHeading}>
+          <p className={styles.sectionNo}>03 / {th ? "สถาปัตยกรรม" : "Architecture"}</p>
+          <h2>
+            {th
+              ? "เส้นทางข้อมูลตั้งแต่ผู้ใช้ไปจนถึงบริการเบื้องหลัง"
+              : "How data moves from people to the services behind the brief."}
+          </h2>
+        </div>
+        <figure className={styles.architectureFigure}>
+          <div className={styles.architectureFlow}>
+            <div className={styles.architectureColumn}>
+              <p className={styles.architectureLabel}>{th ? "จุดเริ่มต้น" : "Entry points"}</p>
+              <div className={styles.architectureNode}>Founder / PM / Agency</div>
+              <div className={styles.architectureNode}>Codex desktop / CLI</div>
+            </div>
+            <span className={styles.architectureArrow} aria-hidden="true">→</span>
+            <div className={styles.architectureColumn}>
+              <p className={styles.architectureLabel}>{th ? "ยืนยันตัวตน" : "Identity"}</p>
+              <div className={`${styles.architectureNode} ${styles.architectureNodeAccent}`}>
+                Supabase Auth
+                <small>Google OAuth + TOTP</small>
+              </div>
+            </div>
+            <span className={styles.architectureArrow} aria-hidden="true">→</span>
+            <div className={styles.architectureColumn}>
+              <p className={styles.architectureLabel}>{th ? "ส่วนติดต่อ" : "Interface"}</p>
+              <div className={`${styles.architectureNode} ${styles.architectureNodeAccent}`}>
+                Vite React
+                <small>Vercel CDN</small>
+              </div>
+              <div className={styles.architectureLoop}>
+                Loopback demo bridge
+                <small>Codex CLI + ChatGPT plan</small>
+              </div>
+            </div>
+            <span className={styles.architectureArrow} aria-hidden="true">→</span>
+            <div className={styles.architectureColumn}>
+              <p className={styles.architectureLabel}>{th ? "ชั้นบริการ" : "Service layer"}</p>
+              <div className={`${styles.architectureNode} ${styles.architectureNodeAccent}`}>
+                Express /api
+                <small>Vercel function</small>
+              </div>
+            </div>
+            <span className={styles.architectureArrow} aria-hidden="true">→</span>
+            <div className={`${styles.architectureColumn} ${styles.architectureOutputs}`}>
+              <p className={styles.architectureLabel}>{th ? "บริการปลายทาง" : "Connected services"}</p>
+              <div className={styles.architectureNode}>
+                OpenAI Responses API
+                <small>GPT-5.6 · store:false</small>
+              </div>
+              <div className={styles.architectureNode}>
+                Supabase Postgres
+                <small>JWT + owner/AAL2 RLS</small>
+              </div>
+              <div className={styles.architectureNode}>
+                Notion OAuth
+                <small>AES-256-GCM tokens</small>
+              </div>
+              <div className={styles.architectureNode}>
+                Sanitized logs + Sentry
+                <small>No content or PII</small>
+              </div>
+            </div>
+          </div>
+          <figcaption>
+            {th
+              ? "แผนผังอ้างอิงจากสถาปัตยกรรมที่เผยแพร่ใน repository ของ Lumixia Brief"
+              : "Flow adapted from the architecture published in the Lumixia Brief repository."}{" "}
+            <a
+              href="https://github.com/Z2ZATL/lumixia-brief#architecture"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {th ? "ดูต้นฉบับบน GitHub" : "View the source on GitHub"}{" "}
+              <span aria-hidden="true">↗</span>
+            </a>
+          </figcaption>
+        </figure>
+      </section>
+
       <section className={styles.difference}>
-        <p className={styles.sectionNo}>03 / {th ? "แนวคิดหลัก" : "Core idea"}</p>
+        <p className={styles.sectionNo}>04 / {th ? "แนวคิดหลัก" : "Core idea"}</p>
         <div className={styles.differenceGrid}>
           <div>
             <span>01</span>
@@ -136,7 +217,7 @@ export default async function LumixiaBrief({
 
       <section className={styles.technology}>
         <div>
-          <p className={styles.sectionNo}>04 / {th ? "เทคโนโลยี" : "Technology"}</p>
+          <p className={styles.sectionNo}>05 / {th ? "เทคโนโลยี" : "Technology"}</p>
           <h2>React · Express · OpenAI Responses API · Supabase · Notion · Codex</h2>
         </div>
         <div className={styles.status}>

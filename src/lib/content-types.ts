@@ -19,6 +19,8 @@ export interface Article {
   cover: {
     src: string;
     alt: LocalizedText;
+    width?: number;
+    height?: number;
   };
   category: LocalizedText;
   author: {

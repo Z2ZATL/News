@@ -6,6 +6,7 @@
 .hero,
 .statement,
 .flow,
+.architecture,
 .difference,
 .technology,
 .next {
@@ -135,6 +136,7 @@
 }
 
 .flow,
+.architecture,
 .difference {
   padding: clamp(6rem, 11vw, 11rem) 0;
   border-top: 1px solid var(--line);
@@ -186,6 +188,105 @@
   color: #aeb9c2;
   font-size: 1rem;
   line-height: 1.8;
+}
+
+.architectureFigure {
+  margin: 0;
+}
+
+.architectureFlow {
+  display: grid;
+  grid-template-columns:
+    minmax(150px, 1fr) auto minmax(150px, .9fr) auto minmax(170px, 1fr)
+    auto minmax(150px, .9fr) auto minmax(210px, 1.25fr);
+  gap: clamp(.65rem, 1.2vw, 1.25rem);
+  align-items: center;
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+  border: 1px solid var(--line-strong);
+  background:
+    linear-gradient(rgb(47 191 242 / 4%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(47 191 242 / 4%) 1px, transparent 1px),
+    radial-gradient(circle at 50% 50%, rgb(47 191 242 / 7%), transparent 52%);
+  background-size: 38px 38px, 38px 38px, auto;
+}
+
+.architectureColumn {
+  display: grid;
+  gap: .75rem;
+  min-width: 0;
+}
+
+.architectureLabel {
+  margin: 0 0 .25rem;
+  color: #82909a;
+  font-family: var(--font-display);
+  font-size: .6rem;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.architectureNode,
+.architectureLoop {
+  display: grid;
+  gap: .35rem;
+  min-height: 76px;
+  align-content: center;
+  padding: .9rem;
+  border: 1px solid var(--line-strong);
+  background: rgb(4 11 15 / 92%);
+  font-family: var(--font-display);
+  font-size: clamp(.78rem, 1vw, .95rem);
+  line-height: 1.35;
+}
+
+.architectureNode small,
+.architectureLoop small {
+  color: #8c9aa4;
+  font-family: var(--font-body);
+  font-size: .68rem;
+  line-height: 1.45;
+}
+
+.architectureNodeAccent {
+  border-color: rgb(47 191 242 / 52%);
+  box-shadow: inset 0 0 28px rgb(47 191 242 / 7%);
+}
+
+.architectureLoop {
+  min-height: 64px;
+  border-color: rgb(213 56 199 / 38%);
+  background: linear-gradient(135deg, rgb(213 56 199 / 8%), rgb(4 11 15 / 92%));
+}
+
+.architectureArrow {
+  color: var(--cyan);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  opacity: .75;
+}
+
+.architectureOutputs {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.architectureOutputs .architectureLabel {
+  grid-column: 1 / -1;
+}
+
+.architectureOutputs .architectureNode {
+  min-height: 92px;
+}
+
+.architectureFigure figcaption {
+  margin-top: 1.25rem;
+  color: #8f9ca5;
+  font-size: .78rem;
+  line-height: 1.7;
+}
+
+.architectureFigure figcaption a {
+  color: var(--cyan);
+  border-bottom: 1px solid rgb(47 191 242 / 38%);
 }
 
 .differenceGrid {
@@ -294,6 +395,7 @@
   .hero,
   .statement,
   .flow,
+  .architecture,
   .difference,
   .technology,
   .next {
@@ -317,6 +419,20 @@
   .differenceGrid h3 {
     margin-top: 4rem;
   }
+
+  .architectureFlow {
+    grid-template-columns: 1fr;
+    gap: .8rem;
+  }
+
+  .architectureArrow {
+    justify-self: center;
+    transform: rotate(90deg);
+  }
+
+  .architectureOutputs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 640px) {
@@ -335,5 +451,13 @@
 
   .flow li p {
     grid-column: 2;
+  }
+
+  .architectureOutputs {
+    grid-template-columns: 1fr;
+  }
+
+  .architectureOutputs .architectureLabel {
+    grid-column: auto;
   }
 }

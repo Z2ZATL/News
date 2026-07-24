@@ -67,13 +67,17 @@
 }
 
 .cover {
+  display: grid;
+  place-items: center;
   width: min(1240px, calc(100% - 8vw));
   margin: clamp(2rem, 5vw, 5rem) auto 0;
 }
 
 .cover img {
   display: block;
-  width: 100%;
+  width: auto;
+  max-width: 100%;
+  max-height: min(88svh, 1000px);
   height: auto;
   border: 1px solid var(--line-strong);
   border-radius: 2px;
