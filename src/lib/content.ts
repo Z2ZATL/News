@@ -51,6 +51,7 @@ const articleQuery = defineQuery(`*[_type == "article" && status == "published"]
   },
   "category": category->title,
   author->{name, role},
+  atlasLocation,
   body,
   tags,
   sources,
@@ -69,6 +70,7 @@ const draftArticleQuery = defineQuery(`*[_type == "article" && slug.current == $
   },
   "category": category->title,
   author->{name, role},
+  atlasLocation,
   body,
   tags,
   sources,
@@ -135,12 +137,26 @@ function normalizeArticle(article: RemoteArticle): Article | null {
   const coverAlt = normalizeLocalized(article.cover.alt);
   const category = normalizeLocalized(article.category);
   const authorRole = normalizeLocalized(article.author?.role);
+  const atlasLocation = article.atlasLocation as
+    | { latitude?: number; longitude?: number; label?: { th?: string; en?: string } | null }
+    | null
+    | undefined;
+  const atlasLabel = normalizeLocalized(atlasLocation?.label);
   if (
     !title ||
     !excerpt ||
     !coverAlt ||
     !category ||
     !authorRole ||
+    !atlasLabel ||
+    typeof atlasLocation?.latitude !== "number" ||
+    !Number.isFinite(atlasLocation.latitude) ||
+    atlasLocation.latitude < -90 ||
+    atlasLocation.latitude > 90 ||
+    typeof atlasLocation.longitude !== "number" ||
+    !Number.isFinite(atlasLocation.longitude) ||
+    atlasLocation.longitude < -180 ||
+    atlasLocation.longitude > 180 ||
     !article.cover.src ||
     !article.author ||
     !article.publishedAt ||
@@ -156,6 +172,11 @@ function normalizeArticle(article: RemoteArticle): Article | null {
 
   return {
     slug: article.slug,
+    atlasLocation: {
+      latitude: atlasLocation.latitude,
+      longitude: atlasLocation.longitude,
+      label: atlasLabel,
+    },
     title,
     excerpt,
     category,

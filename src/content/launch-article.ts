@@ -2,6 +2,11 @@ import type { Article } from "@/lib/content-types";
 
 export const launchArticle: Article = {
   slug: "okmd-ai-playground-review",
+  atlasLocation: {
+    latitude: 13.7463,
+    longitude: 100.5394,
+    label: { th: "ปทุมวัน กรุงเทพฯ ประเทศไทย", en: "Pathum Wan, Bangkok, Thailand" },
+  },
   title: {
     th: "เจาะ OKMD AI Playground แพลตฟอร์ม AI ภาครัฐใช้งานจริงได้แค่ไหน?",
     en: "More than another chatbot? Inside Thailand’s OKMD AI Playground",

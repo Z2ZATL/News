@@ -65,6 +65,11 @@ const covers = {
 export const facebookArticles: Article[] = [
   {
     slug: "gpt-5-6-luna-terra-sol",
+    atlasLocation: {
+      latitude: 37.7749,
+      longitude: -122.4194,
+      label: { th: "ซานฟรานซิสโก แคลิฟอร์เนีย สหรัฐฯ", en: "San Francisco, California, USA" },
+    },
     title: {
       th: "รู้จัก GPT-5.6 รุ่น Luna, Terra และ Sol ต่างกันอย่างไร",
       en: "GPT-5.6 Luna, Terra, and Sol explained",
@@ -169,6 +174,11 @@ export const facebookArticles: Article[] = [
   },
   {
     slug: "chatgpt-gpt-live-voice-update",
+    atlasLocation: {
+      latitude: 37.7749,
+      longitude: -122.4194,
+      label: { th: "ซานฟรานซิสโก แคลิฟอร์เนีย สหรัฐฯ", en: "San Francisco, California, USA" },
+    },
     title: {
       th: "ChatGPT อัปเดต GPT-Live ให้สนทนาด้วยเสียงเป็นธรรมชาติมากขึ้น",
       en: "ChatGPT updates GPT-Live for more natural voice conversations",
@@ -256,6 +266,11 @@ export const facebookArticles: Article[] = [
   },
   {
     slug: "kimi-k3-frontend-arena",
+    atlasLocation: {
+      latitude: 39.9042,
+      longitude: 116.4074,
+      label: { th: "ปักกิ่ง ประเทศจีน", en: "Beijing, China" },
+    },
     title: {
       th: "Kimi K3 ขึ้นอันดับหนึ่งด้านการสร้างหน้าเว็บในการจัดอันดับ Arena AI",
       en: "Kimi K3 reaches the top of Arena AI’s frontend ranking",
@@ -429,6 +444,11 @@ export const facebookArticles: Article[] = [
   },
   {
     slug: "th-ai-passport-hands-on-review",
+    atlasLocation: {
+      latitude: 13.8847,
+      longitude: 100.5656,
+      label: { th: "หลักสี่ กรุงเทพฯ ประเทศไทย", en: "Lak Si, Bangkok, Thailand" },
+    },
     title: {
       th: "ทดลอง TH AI Passport เมื่อชื่อโมเดลอย่างเดียวไม่บอกคุณภาพการใช้งาน",
       en: "Testing TH AI Passport: model names do not tell the whole story",
@@ -531,6 +551,11 @@ export const facebookArticles: Article[] = [
   },
   {
     slug: "google-weather-lab-weathernext-2",
+    atlasLocation: {
+      latitude: 37.422,
+      longitude: -122.0841,
+      label: { th: "เมาน์เทนวิว แคลิฟอร์เนีย สหรัฐฯ", en: "Mountain View, California, USA" },
+    },
     title: {
       th: "Google Weather Lab เปิดภาพอนาคตของพายุผ่านแบบจำลอง AI",
       en: "Google Weather Lab visualises possible storm futures with AI",
@@ -616,6 +641,11 @@ export const facebookArticles: Article[] = [
   },
   {
     slug: "th-ai-passport-recap-developer-tools",
+    atlasLocation: {
+      latitude: 13.8847,
+      longitude: 100.5656,
+      label: { th: "หลักสี่ กรุงเทพฯ ประเทศไทย", en: "Lak Si, Bangkok, Thailand" },
+    },
     title: {
       th: "Recap TH AI Passport เมื่อ Developer ต้องการมากกว่าหน้าแชต",
       en: "TH AI Passport recap: developers need more than a chat page",

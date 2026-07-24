@@ -9,72 +9,24 @@ import { ui } from "@/lib/i18n";
 
 import styles from "./atlas.module.css";
 
-const labels: Record<string, string> = {
-  "okmd-ai-playground-review": "OKMD / AI",
-  "gpt-5-6-luna-terra-sol": "GPT-5.6",
-  "chatgpt-gpt-live-voice-update": "GPT-LIVE",
-  "kimi-k3-frontend-arena": "KIMI K3",
-  "th-ai-passport-hands-on-review": "TH AI / REVIEW",
-  "google-weather-lab-weathernext-2": "WEATHER LAB",
-  "th-ai-passport-recap-developer-tools": "TH AI / RECAP",
-};
-
 const products = [{ slug: "lumixia-brief", label: "LUMIXIA BRIEF" }] as const;
 
-const storyLocations: Record<
-  string,
-  Pick<AtlasMapNode, "latitude" | "longitude" | "location" | "offset">
-> = {
-  "okmd-ai-playground-review": {
-    latitude: 13.7463,
-    longitude: 100.5394,
-    location: "Pathum Wan, Bangkok, Thailand",
-    offset: [-22, -12],
-  },
-  "gpt-5-6-luna-terra-sol": {
-    latitude: 37.7749,
-    longitude: -122.4194,
-    location: "San Francisco, California, USA",
-    offset: [-20, -15],
-  },
-  "chatgpt-gpt-live-voice-update": {
-    latitude: 37.7749,
-    longitude: -122.4194,
-    location: "San Francisco, California, USA",
-    offset: [22, 15],
-  },
-  "kimi-k3-frontend-arena": {
-    latitude: 39.9042,
-    longitude: 116.4074,
-    location: "Beijing, China",
-    offset: [4, -18],
-  },
-  "th-ai-passport-hands-on-review": {
-    latitude: 13.8847,
-    longitude: 100.5656,
-    location: "Lak Si, Bangkok, Thailand",
-    offset: [22, 12],
-  },
-  "google-weather-lab-weathernext-2": {
-    latitude: 37.422,
-    longitude: -122.0841,
-    location: "Mountain View, California, USA",
-    offset: [18, -26],
-  },
-  "th-ai-passport-recap-developer-tools": {
-    latitude: 13.8847,
-    longitude: 100.5656,
-    location: "Lak Si, Bangkok, Thailand",
-    offset: [-18, 24],
-  },
-};
+const collisionOffsets = [
+  [-18, -18],
+  [18, 18],
+  [22, -22],
+  [-22, 22],
+] as const;
 
-const fallbackLocation = {
-  latitude: 0,
-  longitude: 0,
-  location: "Global",
-  offset: [0, 0] as const,
-};
+function locationOffset(article: Article, articles: Article[]): readonly [number, number] {
+  const matching = articles.filter(
+    (candidate) =>
+      candidate.atlasLocation.latitude === article.atlasLocation.latitude &&
+      candidate.atlasLocation.longitude === article.atlasLocation.longitude,
+  );
+  const position = matching.findIndex((candidate) => candidate.slug === article.slug);
+  return collisionOffsets[position % collisionOffsets.length] ?? [0, 0];
+}
 
 export function Atlas({
   articles,
@@ -87,13 +39,15 @@ export function Atlas({
   if (!article) return null;
   const mapNodes: AtlasMapNode[] = [
     ...articles.map((item, index) => {
-      const coordinates = storyLocations[item.slug] ?? fallbackLocation;
       return {
-        ...coordinates,
         href: `/${locale}/stories/${item.slug}` as AtlasMapNode["href"],
         indexLabel: String(index + 1).padStart(2, "0"),
         kind: "story" as const,
-        label: labels[item.slug] ?? item.category[locale],
+        label: item.category[locale],
+        latitude: item.atlasLocation.latitude,
+        longitude: item.atlasLocation.longitude,
+        location: item.atlasLocation.label[locale],
+        offset: locationOffset(item, articles),
       };
     }),
     ...products.map((product, index) => ({

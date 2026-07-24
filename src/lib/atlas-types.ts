@@ -10,3 +10,10 @@ export interface AtlasMapNode {
   longitude: number;
   offset: readonly [number, number];
 }
+
+export interface AtlasScreenPosition {
+  href: Route;
+  visible: boolean;
+  x: number;
+  y: number;
+}

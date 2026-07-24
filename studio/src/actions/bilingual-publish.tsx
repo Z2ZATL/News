@@ -11,6 +11,9 @@ function isBilingual(document: SanityDocument | null): boolean {
   const excerpt = document.excerpt as { th?: unknown; en?: unknown } | undefined;
   const body = document.body as { th?: unknown[]; en?: unknown[] } | undefined;
   const cover = document.cover as { alt?: { th?: unknown; en?: unknown } } | undefined;
+  const atlasLocation = document.atlasLocation as
+    | { latitude?: unknown; longitude?: unknown; label?: { th?: unknown; en?: unknown } }
+    | undefined;
   return Boolean(
     hasText(title?.th) &&
       hasText(title?.en) &&
@@ -19,7 +22,11 @@ function isBilingual(document: SanityDocument | null): boolean {
       body?.th?.length &&
       body.en?.length &&
       hasText(cover?.alt?.th) &&
-      hasText(cover?.alt?.en),
+      hasText(cover?.alt?.en) &&
+      typeof atlasLocation?.latitude === "number" &&
+      typeof atlasLocation.longitude === "number" &&
+      hasText(atlasLocation.label?.th) &&
+      hasText(atlasLocation.label?.en),
   );
 }
 
@@ -31,7 +38,7 @@ export const BilingualPublishAction: DocumentActionComponent = (props) => {
     disabled: Boolean(publish.disabled) || !ready,
     title: ready
       ? undefined
-      : "Complete title, excerpt, body, and cover alt text in Thai and English before publishing.",
+      : "Complete bilingual copy, cover alt text, and a valid Atlas location before publishing.",
     onHandle: () => {
       publish.execute();
     },

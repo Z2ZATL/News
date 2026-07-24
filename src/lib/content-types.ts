@@ -20,6 +20,11 @@ export interface ArticleSection {
 
 export interface Article {
   slug: string;
+  atlasLocation: {
+    latitude: number;
+    longitude: number;
+    label: LocalizedText;
+  };
   title: LocalizedText;
   excerpt: LocalizedText;
   body: Record<Locale, ArticleSection[]>;

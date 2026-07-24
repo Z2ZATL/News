@@ -19,6 +19,12 @@
 .canvas {
   position: absolute;
   z-index: 1;
+  inset: 0;
+}
+
+.canvasFrame {
+  position: absolute;
+  z-index: 1;
   inset: 68px 0 0;
 }
 
@@ -49,12 +55,6 @@
 .visualStack[data-atlas-state="ready"] .planetFallback {
   visibility: hidden;
   opacity: 0;
-}
-
-.visualStack[data-atlas-state="ready"] .nodes {
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
 }
 
 .grid {
@@ -171,8 +171,16 @@
   flex-direction: column;
   align-items: center;
   gap: .55rem;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 6px;
   pointer-events: auto;
   transform: translate(-50%, -50%);
+  transition: opacity 180ms ease;
+}
+
+.node[data-hemisphere="back"] {
+  opacity: 0.42;
 }
 
 .node:nth-child(1) { top: 39%; left: 69%; }
@@ -245,93 +253,23 @@
   font-weight: 500;
 }
 
-.node[data-kind="product"] .nodeLabel {
-  border-color: rgb(255 57 200 / 40%);
-}
-
-.node[data-kind="product"] .nodeLabel b {
-  color: #ff72d8;
-}
-
-.geoNode {
-  display: flex;
-  align-items: center;
-  gap: .45rem;
-  color: var(--text);
-  font-family: var(--font-display);
-  text-decoration: none;
-  white-space: nowrap;
-  cursor: pointer;
-  pointer-events: auto;
-  transition: filter 160ms ease, transform 160ms ease;
-}
-
-.geoNodeCore {
-  flex: 0 0 auto;
-  width: 11px;
-  height: 11px;
-  border: 1px solid #dffaff;
-  border-radius: 50%;
-  background: var(--cyan);
-  box-shadow:
-    0 0 0 6px rgb(47 191 242 / 8%),
-    0 0 22px rgb(47 191 242 / 85%);
-}
-
-.geoNodeLabel {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: .15rem .38rem;
-  padding: .32rem .5rem;
-  border: 1px solid rgb(255 255 255 / 12%);
-  border-radius: 5px;
-  background: rgb(3 6 11 / 84%);
-  font-size: .58rem;
-  letter-spacing: .075em;
-  box-shadow: 0 7px 24px rgb(0 0 0 / 28%);
-  backdrop-filter: blur(8px);
-}
-
-.geoNodeLabel b {
-  color: var(--cyan);
-  font-size: .49rem;
-  font-weight: 600;
-}
-
-.geoNodeLabel small {
-  grid-column: 1 / -1;
+.nodeLabel small {
   display: none;
   color: #aebbc5;
   font-size: .46rem;
   letter-spacing: .03em;
 }
 
-.geoNode:hover,
-.geoNode:focus-visible {
-  filter: brightness(1.18);
-  transform: scale(1.04);
+.node:hover .nodeLabel small,
+.node:focus-visible .nodeLabel small {
+  display: inline;
 }
 
-.geoNode:hover .geoNodeLabel small,
-.geoNode:focus-visible .geoNodeLabel small {
-  display: block;
+.node[data-kind="product"] .nodeLabel {
+  border-color: rgb(255 57 200 / 40%);
 }
 
-.geoNode[data-kind="product"] .geoNodeCore {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #fff;
-  background: linear-gradient(135deg, #45efff, #ff39c8);
-  box-shadow:
-    0 0 0 10px rgb(255 57 200 / 9%),
-    0 0 38px rgb(255 57 200 / 82%);
-}
-
-.geoNode[data-kind="product"] .geoNodeLabel {
-  border-color: rgb(255 57 200 / 42%);
-}
-
-.geoNode[data-kind="product"] .geoNodeLabel b {
+.node[data-kind="product"] .nodeLabel b {
   color: #ff72d8;
 }
 
@@ -477,7 +415,7 @@
     min-height: 650px;
   }
 
-  .canvas {
+  .canvasFrame {
     inset: 82px -32% 0;
   }
 
@@ -532,15 +470,6 @@
     letter-spacing: .055em;
   }
 
-  .geoNodeLabel {
-    padding: .25rem .36rem;
-    font-size: .48rem;
-  }
-
-  .geoNodeLabel small {
-    font-size: .4rem;
-  }
-
   .orbitCaption {
     right: 20px;
     bottom: 2.1rem;
@@ -577,6 +506,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .nodeCore,
+  .node,
   .read,
   .planetFallback {
     transition: none;

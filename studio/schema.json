@@ -1065,6 +1065,37 @@
         },
         "optional": true
       },
+      "atlasLocation": {
+        "type": "objectAttribute",
+        "value": {
+          "type": "object",
+          "attributes": {
+            "latitude": {
+              "type": "objectAttribute",
+              "value": {
+                "type": "number"
+              },
+              "optional": false
+            },
+            "longitude": {
+              "type": "objectAttribute",
+              "value": {
+                "type": "number"
+              },
+              "optional": false
+            },
+            "label": {
+              "type": "objectAttribute",
+              "value": {
+                "type": "inline",
+                "name": "localizedString"
+              },
+              "optional": true
+            }
+          }
+        },
+        "optional": false
+      },
       "tags": {
         "type": "objectAttribute",
         "value": {

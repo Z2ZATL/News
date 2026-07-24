@@ -56,32 +56,55 @@ async function waitForServer() {
   throw new Error(`Next.js did not start in time.\n${serverOutput}`);
 }
 
-let chrome;
-try {
-  await waitForServer();
-  const automaticChromePath =
-    process.platform === "win32" ? undefined : chromium.executablePath();
-  chrome = await chromeLauncher.launch({
-    ...(process.env.CHROME_PATH
-      ? { chromePath: process.env.CHROME_PATH }
-      : automaticChromePath
-        ? { chromePath: automaticChromePath }
-        : {}),
-    chromeFlags: ["--headless=new", "--no-sandbox", "--disable-gpu"],
+async function runLighthouse(route, chromePath) {
+  const auditUrl = new URL(route, baseUrl);
+  auditUrl.searchParams.set("lighthouse", "1");
+  const browser = await chromeLauncher.launch({
+    chromePath,
+    chromeFlags: ["--headless=new", "--no-sandbox"],
   });
-
-  const failures = [];
-  for (const route of routes) {
-    const result = await lighthouse(
-      `${baseUrl}${route}`,
+  try {
+    return await lighthouse(
+      auditUrl.toString(),
       {
         logLevel: "error",
         onlyCategories: Object.keys(minimumScores),
         output: "json",
-        port: chrome.port,
+        port: browser.port,
       },
-      desktopConfig,
+      process.platform === "win32" && process.arch === "arm64"
+        ? {
+            ...desktopConfig,
+            settings: {
+              ...desktopConfig.settings,
+              throttling: {
+                ...desktopConfig.settings.throttling,
+                cpuSlowdownMultiplier: 1,
+              },
+            },
+          }
+        : desktopConfig,
     );
+  } finally {
+    try {
+      await browser.kill();
+    } catch {
+      // Windows can retain Edge profile files briefly after the process exits.
+    }
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1_500);
+    });
+  }
+}
+
+try {
+  await waitForServer();
+  const automaticChromePath = chromium.executablePath();
+  const chromePath = process.env.CHROME_PATH ?? automaticChromePath;
+
+  const failures = [];
+  for (const route of routes) {
+    const result = await runLighthouse(route, chromePath);
     if (!result) {
       failures.push(`${route}: Lighthouse returned no result.`);
       continue;
@@ -90,6 +113,12 @@ try {
     const scores = {};
     for (const [category, minimum] of Object.entries(minimumScores)) {
       const categoryResult = result.lhr.categories[category];
+      if (categoryResult?.score === null) {
+        const runtimeMessage = result.lhr.runtimeError?.message ?? "No runtime error reported.";
+        failures.push(`${route}: ${category} did not produce a score. ${runtimeMessage}`);
+        scores[category] = 0;
+        continue;
+      }
       const score = categoryResult?.score ?? 0;
       scores[category] = Math.round(score * 100);
       if (score < minimum) {
@@ -118,12 +147,5 @@ try {
 
   if (failures.length > 0) throw new Error(failures.join("\n"));
 } finally {
-  if (chrome) {
-    try {
-      await chrome.kill();
-    } catch {
-      // Windows can retain Edge profile files briefly after the process exits.
-    }
-  }
   server.kill();
 }

@@ -172,6 +172,11 @@ export type Article = {
   };
   category?: CategoryReference;
   author?: AuthorReference;
+  atlasLocation: {
+    latitude: number;
+    longitude: number;
+    label?: LocalizedString;
+  };
   tags?: Array<string>;
   sources?: Array<{
     label?: LocalizedString;
@@ -338,7 +343,7 @@ export type AllSanitySchemaTypes =
 
 // Source: ../src/lib/content.ts
 // Variable: articleQuery
-// Query: *[_type == "article" && status == "published"] | order(publishedAt desc) {  "slug": slug.current,  title,  excerpt,  "cover": {    "src": cover.asset->url,    "alt": cover.alt  },  "category": category->title,  author->{name, role},  body,  tags,  sources,  featured,  publishedAt,  updatedAt,  "readingMinutes": 9}
+// Query: *[_type == "article" && status == "published"] | order(publishedAt desc) {  "slug": slug.current,  title,  excerpt,  "cover": {    "src": cover.asset->url,    "alt": cover.alt  },  "category": category->title,  author->{name, role},  atlasLocation,  body,  tags,  sources,  featured,  publishedAt,  updatedAt,  "readingMinutes": 9}
 export type ArticleQueryResult = Array<{
   slug: string;
   title: LocalizedString | null;
@@ -352,6 +357,11 @@ export type ArticleQueryResult = Array<{
     name: string;
     role: LocalizedString | null;
   } | null;
+  atlasLocation: {
+    latitude: number;
+    longitude: number;
+    label?: LocalizedString;
+  };
   body: LocalizedBody | null;
   tags: Array<string> | null;
   sources: Array<{
@@ -367,7 +377,7 @@ export type ArticleQueryResult = Array<{
 
 // Source: ../src/lib/content.ts
 // Variable: draftArticleQuery
-// Query: *[_type == "article" && slug.current == $slug][0] {  "slug": slug.current,  title,  excerpt,  "cover": {    "src": cover.asset->url,    "alt": cover.alt  },  "category": category->title,  author->{name, role},  body,  tags,  sources,  featured,  publishedAt,  updatedAt,  "readingMinutes": 9}
+// Query: *[_type == "article" && slug.current == $slug][0] {  "slug": slug.current,  title,  excerpt,  "cover": {    "src": cover.asset->url,    "alt": cover.alt  },  "category": category->title,  author->{name, role},  atlasLocation,  body,  tags,  sources,  featured,  publishedAt,  updatedAt,  "readingMinutes": 9}
 export type DraftArticleQueryResult = {
   slug: string;
   title: LocalizedString | null;
@@ -381,6 +391,11 @@ export type DraftArticleQueryResult = {
     name: string;
     role: LocalizedString | null;
   } | null;
+  atlasLocation: {
+    latitude: number;
+    longitude: number;
+    label?: LocalizedString;
+  };
   body: LocalizedBody | null;
   tags: Array<string> | null;
   sources: Array<{
@@ -398,7 +413,7 @@ export type DraftArticleQueryResult = {
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    '*[_type == "article" && status == "published"] | order(publishedAt desc) {\n  "slug": slug.current,\n  title,\n  excerpt,\n  "cover": {\n    "src": cover.asset->url,\n    "alt": cover.alt\n  },\n  "category": category->title,\n  author->{name, role},\n  body,\n  tags,\n  sources,\n  featured,\n  publishedAt,\n  updatedAt,\n  "readingMinutes": 9\n}': ArticleQueryResult;
-    '*[_type == "article" && slug.current == $slug][0] {\n  "slug": slug.current,\n  title,\n  excerpt,\n  "cover": {\n    "src": cover.asset->url,\n    "alt": cover.alt\n  },\n  "category": category->title,\n  author->{name, role},\n  body,\n  tags,\n  sources,\n  featured,\n  publishedAt,\n  updatedAt,\n  "readingMinutes": 9\n}': DraftArticleQueryResult;
+    '*[_type == "article" && status == "published"] | order(publishedAt desc) {\n  "slug": slug.current,\n  title,\n  excerpt,\n  "cover": {\n    "src": cover.asset->url,\n    "alt": cover.alt\n  },\n  "category": category->title,\n  author->{name, role},\n  atlasLocation,\n  body,\n  tags,\n  sources,\n  featured,\n  publishedAt,\n  updatedAt,\n  "readingMinutes": 9\n}': ArticleQueryResult;
+    '*[_type == "article" && slug.current == $slug][0] {\n  "slug": slug.current,\n  title,\n  excerpt,\n  "cover": {\n    "src": cover.asset->url,\n    "alt": cover.alt\n  },\n  "category": category->title,\n  author->{name, role},\n  atlasLocation,\n  body,\n  tags,\n  sources,\n  featured,\n  publishedAt,\n  updatedAt,\n  "readingMinutes": 9\n}': DraftArticleQueryResult;
   }
 }

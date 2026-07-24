@@ -40,6 +40,25 @@ export const article = defineType({
     }),
     defineField({ name: "category", type: "reference", to: [{ type: "category" }] }),
     defineField({ name: "author", type: "reference", to: [{ type: "author" }] }),
+    defineField({
+      name: "atlasLocation",
+      title: "Atlas location",
+      type: "object",
+      validation: (rule) => rule.required(),
+      fields: [
+        defineField({
+          name: "latitude",
+          type: "number",
+          validation: (rule) => rule.required().min(-90).max(90),
+        }),
+        defineField({
+          name: "longitude",
+          type: "number",
+          validation: (rule) => rule.required().min(-180).max(180),
+        }),
+        defineField({ name: "label", type: "localizedString" }),
+      ],
+    }),
     defineField({ name: "tags", type: "array", of: [defineArrayMember({ type: "string" })] }),
     defineField({
       name: "sources",

@@ -1,0 +1,15 @@
+diff --git a/dist/commonjs/index.js b/dist/commonjs/index.js
+index 5e80b72..44e13f2 100644
+--- a/dist/commonjs/index.js
++++ b/dist/commonjs/index.js
+@@ -261,3 +261,10 @@ function expand_(str, max, maxLength, isTop) {
+     return acc;
+ }
++// minimatch 3 expects the historical CommonJS callable export. Keep the
++// hardened v5 implementation while retaining compatibility with that API.
++module.exports = Object.assign(expand, {
++    expand,
++    EXPANSION_MAX: exports.EXPANSION_MAX,
++    EXPANSION_MAX_LENGTH: exports.EXPANSION_MAX_LENGTH,
++});
+ //# sourceMappingURL=index.js.map

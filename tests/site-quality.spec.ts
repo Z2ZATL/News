@@ -82,6 +82,20 @@ test("reduced motion removes animated transitions", async ({ browser }) => {
   await page.goto("/th", { waitUntil: "networkidle" });
   const animated = page.locator("[style*='animation'], [style*='transition']");
   await expect(animated).toHaveCount(0);
+  const atlas = page.locator("[data-atlas-state]");
+  await atlas.hover();
+  await expect(atlas).toHaveAttribute("data-atlas-state", "ready", {
+    timeout: 20_000,
+  });
+  const marker = atlas.locator('a[href$="/okmd-ai-playground-review"]');
+  const initial = await marker.boundingBox();
+  expect(initial).not.toBeNull();
+  await page.mouse.move(1, 1);
+  await page.mouse.move(900, 500);
+  await page.waitForTimeout(350);
+  const afterPointerMove = await marker.boundingBox();
+  expect(afterPointerMove?.x).toBeCloseTo(initial?.x ?? 0, 1);
+  expect(afterPointerMove?.y).toBeCloseTo(initial?.y ?? 0, 1);
   await context.close();
 });
 
@@ -90,19 +104,27 @@ test("Atlas upgrades to WebGL on interaction and survives context loss", async (
 }) => {
   await page.goto("/th");
   const atlas = page.locator("[data-atlas-state]");
-  await atlas.hover();
+  const semanticNavigation = atlas.getByRole("navigation", {
+    name: "ข่าวและผลิตภัณฑ์บนแผนที่โลก",
+  });
+  const firstStory = semanticNavigation.locator("a").first();
+  await firstStory.focus();
   await expect(atlas).toHaveAttribute("data-atlas-state", "ready", {
     timeout: 20_000,
   });
-  await expect(atlas.locator("canvas")).toBeVisible();
-  const bangkok = atlas.locator('a[title*="Bangkok, Thailand"]').first();
+  await expect(firstStory).toBeFocused();
+  await expect(semanticNavigation).toBeVisible();
+  const canvas = atlas.locator("canvas");
+  await expect(canvas).toBeVisible();
+  await expect(canvas).toHaveAttribute("aria-hidden", "true");
+  const bangkok = atlas.locator('a[data-latitude="13.7463"][data-longitude="100.5394"]');
   await expect(bangkok).toBeVisible();
-  await expect(atlas.locator('a[title*="Beijing, China"]')).toHaveCount(1);
+  await expect(atlas.locator('a[data-latitude="39.9042"][data-longitude="116.4074"]')).toHaveCount(1);
   await expect(
-    atlas.locator('a[title*="San Francisco, California, USA"]'),
+    atlas.locator('a[data-latitude="37.7749"][data-longitude="-122.4194"]'),
   ).toHaveCount(2);
   await expect(
-    atlas.locator('a[title*="Mountain View, California, USA"]'),
+    atlas.locator('a[data-latitude="37.422"][data-longitude="-122.0841"]'),
   ).toHaveCount(1);
 
   const initialBangkokPosition = await bangkok.boundingBox();
@@ -111,8 +133,8 @@ test("Atlas upgrades to WebGL on interaction and survives context loss", async (
     .poll(async () => (await bangkok.boundingBox())?.x)
     .not.toBe(initialBangkokPosition?.x);
 
-  await atlas.locator("canvas").evaluate((canvas) => {
-    canvas.dispatchEvent(
+  await canvas.evaluate((element) => {
+    element.dispatchEvent(
       new Event("webglcontextlost", {
         bubbles: false,
         cancelable: true,
@@ -120,6 +142,7 @@ test("Atlas upgrades to WebGL on interaction and survives context loss", async (
     );
   });
   await expect(atlas).toHaveAttribute("data-atlas-state", "fallback");
+  await expect.poll(() => firstStory.evaluate((element) => element.style.left)).toBe("");
 });
 
 test("story reactions persist locally and stay out of Lab pages", async ({
