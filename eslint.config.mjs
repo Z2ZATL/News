@@ -69,8 +69,7 @@ const eslintConfig = [
     ignores: [
       "node_modules/**",
       ".next/**",
-      "studio/.sanity/**",
-      "studio/dist/**",
+      "studio/**",
       "out/**",
       "test-results/**",
       "build/**",

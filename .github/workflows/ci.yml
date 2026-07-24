@@ -13,16 +13,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
         with:
           version: 11.16.0
           run_install: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm peers check
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm scan:secrets
@@ -41,17 +42,19 @@ jobs:
       run:
         working-directory: studio
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
         with:
           version: 11.16.0
           run_install: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - run: pnpm install --frozen-lockfile
+      - run: pnpm peers check
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm typegen
+      - run: git diff --exit-code -- ../src/sanity.types.ts schema.json
       - run: pnpm build
       - run: pnpm audit --audit-level=moderate
