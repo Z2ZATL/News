@@ -145,6 +145,19 @@ export default async function ArticlePage({
             >
               {section.heading ? <h2>{section.heading}</h2> : null}
               {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+              {section.image ? (
+                <figure className={styles.sectionFigure}>
+                  <a href={section.image.src} target="_blank" rel="noopener noreferrer">
+                    <Image
+                      src={section.image.src}
+                      alt={section.image.alt}
+                      width={section.image.width}
+                      height={section.image.height}
+                    />
+                  </a>
+                  <figcaption>{section.image.caption}</figcaption>
+                </figure>
+              ) : null}
               {section.bullets ? <ul>{section.bullets.map((item) => <li key={item}>{item}</li>)}</ul> : null}
             </section>
           ))}

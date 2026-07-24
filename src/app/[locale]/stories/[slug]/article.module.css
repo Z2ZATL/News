@@ -210,6 +210,38 @@
 .body p { margin: 0; }
 .body p + p { margin-top: 1.55rem; }
 
+.sectionFigure {
+  margin: clamp(2rem, 5vw, 3.5rem) 0 0;
+}
+
+.sectionFigure a {
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  background: #f7f5f0;
+  transition: border-color .2s ease, transform .2s ease;
+}
+
+.sectionFigure a:hover,
+.sectionFigure a:focus-visible {
+  border-color: var(--cyan);
+  transform: translateY(-2px);
+}
+
+.sectionFigure img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.sectionFigure figcaption {
+  margin-top: .9rem;
+  color: var(--muted);
+  font-size: .78rem;
+  line-height: 1.7;
+}
+
 .intro {
   padding: clamp(1.4rem, 3vw, 2rem);
   border: 1px solid var(--line-strong);

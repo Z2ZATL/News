@@ -268,49 +268,134 @@ export const facebookArticles: Article[] = [
       th: [
         {
           paragraphs: [
-            "Kimi เปิดตัวโมเดล Kimi K3 และได้รับความสนใจหลังผลทดสอบจาก Arena AI ระบุว่าโมเดลขึ้นอันดับหนึ่งในหมวดการสร้างหน้าเว็บไซต์หรือ Frontend",
-            "ในทางใช้งาน ผู้ใช้สามารถอธิบายหน้าเว็บที่ต้องการ เช่น ร้านกาแฟที่มีเมนูสินค้า ปุ่มสั่งซื้อ และโทนสีน้ำตาล แล้วให้โมเดลช่วยออกแบบและเขียนโค้ดตั้งต้นได้",
+            "Kimi K3 กลายเป็นโมเดลที่ถูกพูดถึงอย่างรวดเร็ว หลังภาพผลทดสอบจาก Arena AI แสดงให้เห็นว่าโมเดลขึ้นนำในหมวด Frontend Code Arena ซึ่งวัดความสามารถในการสร้างหน้าตาและประสบการณ์ใช้งานของเว็บไซต์จากคำสั่งที่ได้รับ",
+            "จุดที่น่าสนใจไม่ใช่เพียงคำว่า “อันดับหนึ่ง” แต่คือระยะห่างจากโมเดลอื่นในภาพผลทดสอบ รวมถึงตำแหน่งของ Kimi K3 เมื่อเปลี่ยนจากงาน Frontend ไปเป็นการสนทนาและงานข้อความทั่วไป",
+            "บทความนี้จึงแยกดูผลทดสอบสามมุม เพื่อไม่ให้คะแนนเพียงตัวเดียวกลายเป็นข้อสรุปว่าโมเดลหนึ่งเก่งที่สุดในทุกเรื่อง",
           ],
         },
         {
-          heading: "ไม่ได้ทำได้เฉพาะหน้าเว็บ",
+          heading: "อัตราชนะ 76% สะท้อนความโดดเด่นด้าน Frontend",
           paragraphs: [
-            "Kimi K3 ยังถูกนำเสนอให้ช่วยเขียนโปรแกรม อ่านรูปภาพ วิเคราะห์ข้อมูล สรุปเอกสาร และทำงานหลายขั้นตอนต่อเนื่อง จึงมีโอกาสเป็นประโยชน์ต่อนักเรียน คนทำงาน เจ้าของธุรกิจ และผู้ที่ต้องการทดลองสร้างผลงานด้วย AI",
-            "ผลอันดับที่ถูกเผยแพร่ระบุคะแนน 1,679 ในหมวด Frontend สูงกว่า Claude Fable 5 และ GPT-5.6 Sol อย่างไรก็ตาม นี่เป็นผลทดสอบเฉพาะด้าน ไม่ได้หมายความว่า Kimi K3 เก่งที่สุดในทุกประเภทงาน",
+            "กราฟ Frontend Code Arena ที่แนบมาระบุ Kimi K3 มี Win Rate 76% สูงกว่าค่ากึ่งกลาง 50% อย่างชัดเจน ขณะที่ Claude Fable 5 อยู่ที่ 63% และ GPT-5.6 Sol อยู่ที่ 58% ในภาพชุดเดียวกัน",
+            "ตัวเลขนี้ควรอ่านว่า ในชุดการเปรียบเทียบของ Arena ผลงาน Frontend จาก Kimi K3 ได้รับการเลือกมากกว่าอีกฝั่งบ่อยเพียงใด ไม่ใช่ความน่าจะเป็น 76% ที่โค้ดจะถูกต้อง ไม่มีช่องโหว่ หรือพร้อมนำขึ้น production",
+            "ผลลัพธ์ด้านภาพอาจชนะใจผู้ประเมินได้จากองค์ประกอบ สี ลำดับสายตา และความใกล้เคียงกับคำสั่ง แต่คุณภาพเชิงวิศวกรรม เช่น accessibility, responsive layout, performance, test coverage และ security ยังต้องตรวจแยกต่างหาก",
+          ],
+          image: {
+            src: "/images/articles/kimi-k3-frontend-win-rate.png",
+            alt: "กราฟ Frontend Code Arena แสดง Kimi K3 มีอัตราชนะ 76 เปอร์เซ็นต์",
+            caption: "ภาพจาก Arena AI ระบุ Win Rate ของ Kimi K3 ที่ 76% ในหมวด Frontend Code Arena คลิกภาพเพื่อดูขนาดเต็ม",
+            width: 1722,
+            height: 1724,
+          },
+        },
+        {
+          heading: "คะแนนสูงแลกกับต้นทุนที่ต้องพิจารณา",
+          paragraphs: [
+            "กราฟ Pareto Frontier วางคะแนน Arena เทียบกับราคาผสมต่อหนึ่งล้านโทเค็น โดยแกนราคาเรียงจากแพงทางซ้ายไปถูกทางขวา Kimi K3 อยู่บนจุดสูงสุดด้วยคะแนน 1,679 และมีราคาที่แสดงไว้ประมาณ 12 ดอลลาร์ต่อหนึ่งล้านโทเค็นตามอัตราส่วน 3:1 ของกราฟ",
+            "คำว่า Pareto Frontier หมายถึงกลุ่มตัวเลือกที่มีจุดแลกเปลี่ยนระหว่างคุณภาพกับราคา ไม่มีตัวเลือกอื่นในภาพที่ทั้งได้คะแนนสูงกว่าและถูกกว่าในเวลาเดียวกัน Kimi K3 จึงเด่นด้านคะแนนสูงสุด แต่ไม่ได้เป็นตัวเลือกที่ประหยัดที่สุด",
+            "สำหรับผู้ใช้ทั่วไป ความแตกต่างของราคาอาจดูไม่มากในงานชิ้นเดียว แต่เมื่อใช้ในระบบที่สร้างหน้าเว็บจำนวนมากหรือวนแก้หลายรอบ ต้นทุนต่อโทเค็นและจำนวนโทเค็นที่โมเดลใช้จริงจะมีผลต่อค่าใช้จ่ายรวม",
+          ],
+          image: {
+            src: "/images/articles/kimi-k3-pareto-frontier.png",
+            alt: "กราฟ Pareto Frontier เปรียบเทียบคะแนน Frontend Arena กับราคาต่อหนึ่งล้านโทเค็น",
+            caption: "Kimi K3 อยู่บนจุดสูงสุดของ Pareto Frontier ด้วยคะแนน 1,679 ขณะที่แกนนอนแสดงต้นทุนผสมต่อหนึ่งล้านโทเค็น คลิกภาพเพื่อดูขนาดเต็ม",
+            width: 2498,
+            height: 2120,
+          },
+        },
+        {
+          heading: "อันดับ 9 ใน Text Arena เตือนให้แยกประเภทงาน",
+          paragraphs: [
+            "เมื่อเปลี่ยนไปดู Text Arena: Overall ภาพอีกชุดจัด Kimi K3 ไว้อันดับ 9 ด้วยคะแนน 1,486 เท่ากับ Gemini 3 Pro และ GPT-5.6 Sol ในตารางที่เปิด Style Control ผลจึงต่างจากอันดับหนึ่งใน Frontend อย่างชัดเจน",
+            "นี่ไม่ใช่ความขัดแย้ง แต่สะท้อนว่า benchmark แต่ละแบบกำลังถามคนละคำถาม Frontend Arena ให้ความสำคัญกับผลลัพธ์หน้าเว็บ ส่วน Text Arena ครอบคลุมคุณภาพการตอบข้อความโดยรวม โมเดลที่โดดเด่นด้านหนึ่งจึงไม่จำเป็นต้องนำในอีกด้าน",
+            "คะแนนของหลายโมเดลในช่วงอันดับนี้ห่างกันเพียงไม่กี่แต้ม และ leaderboard เปลี่ยนได้เมื่อมีคะแนนโหวตหรือโมเดลใหม่เพิ่มเข้ามา จึงควรบันทึกวันที่ของผลทดสอบและหลีกเลี่ยงการใช้ลำดับอันดับเพียงอย่างเดียวตัดสินการจัดซื้อหรือเลือกใช้ระยะยาว",
+          ],
+          image: {
+            src: "/images/articles/kimi-k3-text-arena-overall.png",
+            alt: "ตาราง Text Arena Overall แสดง Kimi K3 อยู่อันดับ 9 ด้วยคะแนน 1,486",
+            caption: "ใน Text Arena: Overall ภาพชุดเดียวกันจัด Kimi K3 ไว้อันดับ 9 แสดงให้เห็นว่าความโดดเด่นขึ้นอยู่กับประเภทงานที่นำมาวัด คลิกภาพเพื่อดูขนาดเต็ม",
+            width: 4088,
+            height: 4088,
+          },
+        },
+        {
+          heading: "เมื่อนำไปสร้างเว็บไซต์จริง",
+          paragraphs: [
+            "ผู้ใช้สามารถเริ่มจากอธิบายเป้าหมายของเว็บไซต์ กลุ่มผู้ใช้ เนื้อหาที่ต้องมี และบรรยากาศของงาน เช่น หน้าเว็บร้านกาแฟที่มีเมนูสินค้า ปุ่มสั่งซื้อ รองรับมือถือ และใช้โทนสีน้ำตาล จากนั้นให้โมเดลสร้างโครงหน้าและโค้ดตั้งต้น",
+            "เพื่อให้การทดลองมีความหมาย ควรกำหนดเกณฑ์ตรวจรับก่อนสั่งงาน ไม่ใช่ตัดสินจากความสวยของภาพแรกเพียงอย่างเดียว",
+          ],
+          bullets: [
+            "ตรวจว่าองค์ประกอบและข้อความสำคัญครบตามคำสั่ง",
+            "ทดลองบนมือถือ แท็บเล็ต และหน้าจอเดสก์ท็อปหลายขนาด",
+            "เดินใช้งานด้วยคีย์บอร์ดและตรวจ contrast, alt text และ focus state",
+            "รัน typecheck, lint, test และ production build จากโค้ดที่โมเดลสร้าง",
+            "ตรวจ dependency, secret, input validation และช่องโหว่ก่อนเชื่อมข้อมูลจริง",
           ],
         },
         {
-          heading: "ข้อจำกัดที่ต้องตรวจสอบก่อนใช้งานจริง",
+          heading: "สรุปว่า Kimi K3 เหมาะกับใคร",
           paragraphs: [
-            "Kimi K3 ยังเป็นโมเดลใหม่ โค้ดที่ซับซ้อนอาจมีข้อผิดพลาด และคำสั่งที่ไม่ชัดเจนอาจทำให้ผลงานไม่ตรงความต้องการ ผู้ใช้จึงอาจต้องอธิบายรายละเอียดหรือสั่งแก้หลายรอบ",
-            "ความสามารถบางส่วน เช่น การค้นข้อมูลจากอินเทอร์เน็ตหรือการทำงานผ่าน API อาจยังไม่เสถียรเท่าบริการที่เปิดมานาน นอกจากนี้ หน้าเว็บที่ดูสวยในครั้งแรกยังต้องตรวจการใช้งานบนมือถือ ความเร็ว ความปลอดภัย และความถูกต้องของข้อมูล",
-          ],
-        },
-        {
-          heading: "เหมาะกับใคร",
-          paragraphs: [
-            "โมเดลลักษณะนี้เหมาะกับผู้ที่ต้องการให้ AI ช่วยเริ่มต้นงานออกแบบเว็บไซต์หรือเขียนโปรแกรม แม้ยังไม่มีพื้นฐานโค้ด แต่ผลลัพธ์ควรถูกมองเป็นต้นแบบที่ต้องตรวจสอบและพัฒนาต่อ ไม่ใช่งาน production ที่พร้อมใช้ทันที",
+            "Kimi K3 น่าสนใจมากสำหรับคนที่ต้องการสร้างต้นแบบ Frontend สำรวจแนวทางการออกแบบ หรือเร่งงานช่วงเริ่มต้น โดยเฉพาะเมื่อมีผู้พัฒนาคอยตรวจโค้ดและแก้รายละเอียดต่อ",
+            "แต่ผลอันดับหนึ่งไม่ได้เปลี่ยนโมเดลให้เป็นทีมออกแบบ นักพัฒนา QA และผู้เชี่ยวชาญความปลอดภัยในตัวเดียว งานที่นำไปใช้จริงยังต้องผ่านการทดสอบ ตรวจข้อมูล และทบทวนโดยมนุษย์",
+            "ข้อสรุปที่เหมาะสมจากภาพทั้งสามจึงไม่ใช่ “Kimi K3 เก่งที่สุด” แต่คือ “Kimi K3 แสดงผลงาน Frontend ที่โดดเด่นมากในชุดทดสอบนี้ ขณะที่งานข้อความทั่วไปและต้นทุนยังต้องพิจารณาแยกกัน”",
           ],
         },
       ],
       en: [
         {
           paragraphs: [
-            "Kimi K3 drew attention after Arena AI results placed it first in a frontend web-generation category. Users can describe a page and ask the model to produce an initial design and codebase.",
+            "Kimi K3 drew attention after Arena AI results placed it at the top of Frontend Code Arena. The more useful question is not simply whether it ranked first, but what the accompanying win-rate, cost, and general text results actually measure.",
+            "The three charts tell a more complete story: Kimi K3 is unusually strong in this frontend comparison, sits on a quality-cost Pareto frontier, and ranks ninth rather than first in the overall text arena.",
           ],
         },
         {
-          heading: "Broader than frontend generation",
+          heading: "A 76% frontend win rate",
           paragraphs: [
-            "The model is also presented as capable of programming, image understanding, data analysis, summarisation, and multi-step work.",
-            "A reported score of 1,679 put it ahead of Claude Fable 5 and GPT-5.6 Sol in that frontend category. The result is still category-specific and should not be read as proof that Kimi K3 is the strongest model at every task.",
+            "The supplied Frontend Code Arena chart reports a 76% win rate for Kimi K3, compared with 63% for Claude Fable 5 and 58% for GPT-5.6 Sol.",
+            "This describes preference within the arena comparisons. It does not mean that 76% of generated code is correct, secure, accessible, or production-ready. Visual quality and instruction following still need to be separated from engineering validation.",
           ],
+          image: {
+            src: "/images/articles/kimi-k3-frontend-win-rate.png",
+            alt: "Frontend Code Arena chart reporting a 76 percent win rate for Kimi K3",
+            caption: "Arena AI’s chart reports a 76% Frontend Code Arena win rate for Kimi K3. Open the image to inspect it at full size.",
+            width: 1722,
+            height: 1724,
+          },
         },
         {
-          heading: "Limits before production use",
+          heading: "High score, with a cost trade-off",
           paragraphs: [
-            "Complex code can still contain errors, vague instructions can produce the wrong interface, and users may need several rounds of refinement.",
-            "A visually impressive first draft also needs mobile testing, performance work, security review, and factual verification before it is ready for real users.",
+            "The Pareto chart compares Arena score with a blended price per one million tokens. Its price axis runs from more expensive on the left to cheaper on the right. Kimi K3 appears at a score of 1,679 and approximately $12 per million tokens under the chart’s 3:1 ratio.",
+            "Being on the Pareto frontier means that no shown alternative is simultaneously cheaper and higher-scoring. Kimi K3 occupies the quality-leading end of that trade-off, not the lowest-cost end.",
+          ],
+          image: {
+            src: "/images/articles/kimi-k3-pareto-frontier.png",
+            alt: "Pareto frontier chart comparing frontend Arena score and blended token price",
+            caption: "Kimi K3 leads the shown Pareto frontier on score, while the horizontal axis highlights the associated price trade-off.",
+            width: 2498,
+            height: 2120,
+          },
+        },
+        {
+          heading: "Ninth in overall text",
+          paragraphs: [
+            "The overall Text Arena chart places Kimi K3 ninth at 1,486, level with Gemini 3 Pro and GPT-5.6 Sol in the displayed style-controlled snapshot.",
+            "That result does not contradict the frontend ranking. The benchmarks evaluate different work. A model can lead a visual web-generation comparison without leading general text conversations.",
+            "Small score gaps and changing vote counts also mean that leaderboard positions should be treated as dated snapshots, not permanent product guarantees.",
+          ],
+          image: {
+            src: "/images/articles/kimi-k3-text-arena-overall.png",
+            alt: "Text Arena Overall chart placing Kimi K3 ninth with a score of 1,486",
+            caption: "Kimi K3 ranks ninth in the supplied Text Arena: Overall snapshot, illustrating why results must be read by task category.",
+            width: 4088,
+            height: 4088,
+          },
+        },
+        {
+          heading: "What to test before production",
+          paragraphs: [
+            "Kimi K3 can be useful for rapidly exploring frontend directions and generating a starting codebase. A real acceptance process should still cover responsive behaviour, keyboard access, contrast, type checking, tests, production builds, dependency review, input validation, and secrets handling.",
+            "The balanced conclusion is that Kimi K3 performs exceptionally well in this frontend benchmark, while general text quality, cost, and production engineering remain separate decisions.",
           ],
         },
       ],
@@ -328,11 +413,19 @@ export const facebookArticles: Article[] = [
         label: { th: "หน้าทดลอง Kimi ที่แนบในโพสต์", en: "Kimi trial link shared in the post" },
         url: "https://kimi-bot.com/activities/viral-referral/share?scenario=invite&from=share_poster&invitation_code=LXNZX2",
       },
+      {
+        label: { th: "Frontend Code Arena", en: "Frontend Code Arena" },
+        url: "https://arena.ai/leaderboard/code",
+      },
+      {
+        label: { th: "Text Arena Leaderboard", en: "Text Arena Leaderboard" },
+        url: "https://arena.ai/leaderboard/text",
+      },
     ],
     featured: false,
     publishedAt: "2026-07-18T05:00:00.000Z",
-    updatedAt: "2026-07-18T05:00:00.000Z",
-    readingMinutes: 4,
+    updatedAt: "2026-07-24T05:00:00.000Z",
+    readingMinutes: 8,
   },
   {
     slug: "th-ai-passport-hands-on-review",
