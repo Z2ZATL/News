@@ -153,6 +153,7 @@ export default async function ArticlePage({
                       alt={section.image.alt}
                       width={section.image.width}
                       height={section.image.height}
+                      sizes="(max-width: 900px) calc(100vw - 40px), 780px"
                     />
                   </a>
                   <figcaption>{section.image.caption}</figcaption>
