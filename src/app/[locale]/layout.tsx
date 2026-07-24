@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 
-import { MotionProvider } from "@/components/motion-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { isLocale, locales } from "@/lib/i18n";
@@ -20,13 +19,13 @@ export default async function LocaleLayout({
   if (!isLocale(locale)) notFound();
 
   return (
-    <MotionProvider>
+    <>
       <a className="skip-link" href="#main">
         {locale === "th" ? "ข้ามไปยังเนื้อหา" : "Skip to content"}
       </a>
       <SiteHeader locale={locale} />
       <main id="main">{children}</main>
       <SiteFooter locale={locale} />
-    </MotionProvider>
+    </>
   );
 }

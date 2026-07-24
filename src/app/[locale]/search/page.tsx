@@ -15,6 +15,10 @@ export async function generateMetadata({
   if (!isLocale(locale)) return {};
   return {
     title: ui[locale].search,
+    description:
+      locale === "th"
+        ? "ค้นหาข่าว บทวิเคราะห์ และโครงการที่เผยแพร่บน Z2Zs Lab"
+        : "Search stories, analysis, and projects published by Z2Zs Lab.",
     alternates: localizedAlternates(locale, "/search"),
   };
 }

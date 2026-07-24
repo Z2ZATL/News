@@ -2,12 +2,10 @@
 
 import { Stars, useTexture } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useReducedMotion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import {
   AdditiveBlending,
   BackSide,
-  MathUtils,
   SRGBColorSpace,
   type Group,
 } from "three";
@@ -16,10 +14,8 @@ import styles from "./atlas.module.css";
 
 function Earth({
   onReady,
-  reduceMotion,
 }: Readonly<{
   onReady: () => void;
-  reduceMotion: boolean;
 }>) {
   const group = useRef<Group>(null);
   const announcedReady = useRef(false);
@@ -40,7 +36,7 @@ function Earth({
     lightsMap.colorSpace = SRGBColorSpace;
   }, [earthMap, lightsMap]);
 
-  useFrame((state, delta) => {
+  useFrame((state) => {
     if (!group.current) return;
 
     if (!announcedReady.current) {
@@ -48,24 +44,14 @@ function Earth({
       onReady();
     }
 
-    if (reduceMotion) return;
-    group.current.rotation.y += delta * 0.045;
-    group.current.rotation.x = MathUtils.lerp(
-      group.current.rotation.x,
-      0.12 + state.pointer.y * 0.05,
-      0.025,
-    );
-    group.current.rotation.z = MathUtils.lerp(
-      group.current.rotation.z,
-      -0.11 - state.pointer.x * 0.035,
-      0.025,
-    );
+    group.current.rotation.x = 0.12 + state.pointer.y * 0.05;
+    group.current.rotation.z = -0.11 - state.pointer.x * 0.035;
   });
 
   return (
     <group ref={group} rotation={[0.12, -1.35, -0.11]}>
       <mesh>
-        <sphereGeometry args={[2.12, 96, 96]} />
+        <sphereGeometry args={[2.12, 64, 64]} />
         <meshStandardMaterial
           map={earthMap}
           normalMap={normalMap}
@@ -80,7 +66,7 @@ function Earth({
       </mesh>
 
       <mesh scale={1.004}>
-        <sphereGeometry args={[2.12, 96, 96]} />
+        <sphereGeometry args={[2.12, 64, 64]} />
         <meshBasicMaterial
           map={lightsMap}
           transparent
@@ -102,13 +88,13 @@ function Earth({
         />
       </mesh>
 
-      <mesh scale={1.09}>
+      <mesh scale={1.045}>
         <sphereGeometry args={[2.12, 64, 64]} />
         <meshBasicMaterial
           color="#13cfff"
           side={BackSide}
           transparent
-          opacity={0.11}
+          opacity={0.055}
           blending={AdditiveBlending}
           depthWrite={false}
         />
@@ -146,12 +132,11 @@ export function AtlasCanvas({
   onReady: () => void;
   onUnavailable: () => void;
 }>) {
-  const reduceMotion = useReducedMotion() ?? false;
-
   return (
     <div className={styles.canvas} aria-hidden="true">
       <Canvas
-        dpr={[1, 1.75]}
+        dpr={[1, 1.25]}
+        frameloop="always"
         camera={{ position: [0, 0, 7], fov: 43 }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
         onCreated={({ gl }) => {
@@ -167,8 +152,8 @@ export function AtlasCanvas({
         <pointLight position={[4, 1, 3]} intensity={52} color="#00c8ff" distance={12} />
         <pointLight position={[-4, -1.5, 2]} intensity={42} color="#ff2bc2" distance={12} />
         <pointLight position={[0, -4, 1]} intensity={30} color="#ffb347" distance={10} />
-        <Earth onReady={onReady} reduceMotion={reduceMotion} />
-        <Stars radius={52} depth={30} count={760} factor={1.8} saturation={0.42} fade speed={0.18} />
+        <Earth onReady={onReady} />
+        <Stars radius={52} depth={30} count={560} factor={1.8} saturation={0.42} fade speed={0} />
       </Canvas>
     </div>
   );

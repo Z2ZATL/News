@@ -15,6 +15,10 @@ export async function generateMetadata({
   if (!isLocale(locale)) return {};
   return {
     title: locale === "th" ? "รู้จักเรา" : "About",
+    description:
+      locale === "th"
+        ? "รู้จัก Z2Zs Lab วิธีทำงานของเรา และหลักการที่ใช้แยกข้อเท็จจริง ผลการทดลอง และความคิดเห็น"
+        : "Meet Z2Zs Lab and the principles we use to separate facts, test results, and opinion.",
     alternates: localizedAlternates(locale, "/about"),
   };
 }

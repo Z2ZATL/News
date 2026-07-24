@@ -20,6 +20,10 @@ export async function generateMetadata({
   const { locale } = await params;
   return {
     title: locale === "th" ? "ข่าว เทคโนโลยี และบทวิเคราะห์" : "Technology, reports, and experiments",
+    description:
+      locale === "th"
+        ? "ข่าวเทคโนโลยี บทวิเคราะห์ และบันทึกจากการทดลองใช้จริง พร้อมแหล่งข้อมูลที่ย้อนกลับไปตรวจสอบได้"
+        : "Technology reporting, analysis, and notes from hands-on testing, with sources you can inspect.",
     alternates: isLocale(locale) ? localizedAlternates(locale) : undefined,
   };
 }
@@ -49,7 +53,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
             </p>
           </div>
         </Reveal>
-        <Reveal className={styles.story} delay={0.08}>
+        <Reveal className={styles.story}>
           <div className={styles.visual}>
             <span className={styles.storyNumber}>01</span>
             <Link href={`/${locale}/stories/${featured.slug}`} className={styles.imageLink}>

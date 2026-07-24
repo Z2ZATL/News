@@ -90,6 +90,7 @@
 }
 
 .videoFrame {
+  position: relative;
   overflow: hidden;
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -98,7 +99,36 @@
   background: #000;
 }
 
+.videoPoster {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #05070a;
+}
+
+.videoPoster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: .72;
+}
+
+.videoPoster span {
+  position: absolute;
+  padding: .7rem 1rem;
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 999px;
+  background: rgb(0 0 0 / 70%);
+  color: #fff;
+  font-size: .8rem;
+}
+
 .videoFrame iframe {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   height: 100%;

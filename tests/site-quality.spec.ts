@@ -46,6 +46,12 @@ test("every public route has a clean console and no accessibility violations", a
     if (!response?.ok()) {
       failures.push(`${path} returned ${String(response?.status() ?? "no response")}`);
     }
+    const description = await page
+      .locator('head meta[name="description"]')
+      .getAttribute("content");
+    if (!description?.trim()) {
+      failures.push(`${path} has no meta description in the document head`);
+    }
     const results = await new AxeBuilder({ page }).analyze();
     for (const violation of results.violations) {
       const targets = violation.nodes
@@ -77,6 +83,28 @@ test("reduced motion removes animated transitions", async ({ browser }) => {
   const animated = page.locator("[style*='animation'], [style*='transition']");
   await expect(animated).toHaveCount(0);
   await context.close();
+});
+
+test("Atlas upgrades to WebGL on interaction and survives context loss", async ({
+  page,
+}) => {
+  await page.goto("/th");
+  const atlas = page.locator("[data-atlas-state]");
+  await atlas.hover();
+  await expect(atlas).toHaveAttribute("data-atlas-state", "ready", {
+    timeout: 20_000,
+  });
+  await expect(atlas.locator("canvas")).toBeVisible();
+
+  await atlas.locator("canvas").evaluate((canvas) => {
+    canvas.dispatchEvent(
+      new Event("webglcontextlost", {
+        bubbles: false,
+        cancelable: true,
+      }),
+    );
+  });
+  await expect(atlas).toHaveAttribute("data-atlas-state", "fallback");
 });
 
 test("security endpoints reject invalid input and preserve nonce integrity", async ({

@@ -8,13 +8,13 @@ import { SITE_URL } from "@/lib/site-config";
 const thai = Noto_Sans_Thai({
   variable: "--font-thai",
   subsets: ["thai", "latin"],
-  display: "swap",
+  display: "optional",
 });
 
 const space = Space_Grotesk({
   variable: "--font-space",
   subsets: ["latin"],
-  display: "swap",
+  display: "optional",
 });
 
 export const metadata: Metadata = {

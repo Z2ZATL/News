@@ -196,7 +196,30 @@ export async function getArticles(): Promise<Article[]> {
   );
   for (const article of remote.map(normalizeArticle)) {
     if (!article) continue;
-    combined.set(article.slug, article);
+    const local = combined.get(article.slug);
+    if (!local) {
+      combined.set(article.slug, article);
+      continue;
+    }
+
+    // Sanity's schema currently does not carry local-only media (video embeds
+    // and section illustrations). Keep those fields when a remote document
+    // overrides the editorial copy for the same slug.
+    combined.set(article.slug, {
+      ...article,
+      ...(article.video ?? local.video ? { video: article.video ?? local.video } : {}),
+      cover: { ...local.cover, ...article.cover },
+      body: {
+        th: article.body.th.map((section, index) => {
+          const image = section.image ?? local.body.th[index]?.image;
+          return image ? { ...section, image } : section;
+        }),
+        en: article.body.en.map((section, index) => {
+          const image = section.image ?? local.body.en[index]?.image;
+          return image ? { ...section, image } : section;
+        }),
+      },
+    });
   }
 
   return [...combined.values()].sort(

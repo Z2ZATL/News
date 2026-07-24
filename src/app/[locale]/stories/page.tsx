@@ -19,6 +19,10 @@ export async function generateMetadata({
   if (!isLocale(locale)) return {};
   return {
     title: ui[locale].stories,
+    description:
+      locale === "th"
+        ? "รวมข่าว บทวิเคราะห์ และบันทึกจากการทดลองใช้เทคโนโลยีจริง พร้อมแหล่งข้อมูลสำหรับตรวจสอบ"
+        : "Reporting, analysis, and notes from hands-on technology testing, with sources you can inspect.",
     alternates: localizedAlternates(locale, "/stories"),
   };
 }
@@ -54,6 +58,7 @@ export default async function Stories({ params }: { params: Promise<{ locale: st
                 width={article.cover.width ?? 640}
                 height={article.cover.height ?? 400}
                 sizes="(max-width: 640px) calc(100vw - 86px), 280px"
+                priority={index === 0}
               />
             </div>
             <b aria-hidden="true">↗</b>

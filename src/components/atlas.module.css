@@ -33,17 +33,14 @@
   z-index: 0;
   top: 50%;
   left: 50%;
-  width: min(56vw, 660px);
+  width: min(48vw, 560px);
   aspect-ratio: 1;
   border: 1px solid rgb(84 229 255 / 20%);
   border-radius: 50%;
   background:
     radial-gradient(circle at 34% 28%, rgb(255 255 255 / 55%), transparent 3%),
     radial-gradient(circle at 38% 34%, #50e6ff 0%, #0874dc 28%, #171063 57%, #060713 74%);
-  box-shadow:
-    0 0 90px rgb(24 196 255 / 25%),
-    0 0 180px rgb(70 32 255 / 18%),
-    inset -55px -38px 90px rgb(2 4 15 / 74%);
+  box-shadow: inset -55px -38px 90px rgb(2 4 15 / 74%);
   opacity: 0.72;
   transform: translate(-50%, -45%);
   transition: opacity 280ms ease, visibility 280ms ease;
@@ -52,15 +49,6 @@
 .visualStack[data-atlas-state="ready"] .planetFallback {
   visibility: hidden;
   opacity: 0;
-}
-
-.planetFallback::after {
-  position: absolute;
-  inset: -8%;
-  border: 1px solid rgb(255 61 206 / 18%);
-  border-radius: 50%;
-  content: "";
-  transform: rotate(-16deg) scaleY(.32);
 }
 
 .grid {
@@ -141,6 +129,35 @@
   pointer-events: none;
 }
 
+.legend {
+  position: absolute;
+  z-index: 4;
+  top: 112px;
+  right: 4vw;
+  display: flex;
+  gap: 1rem;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: .62rem;
+  letter-spacing: .08em;
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: .38rem;
+}
+
+.legend i {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.legendStory { background: var(--cyan); box-shadow: 0 0 12px rgb(47 191 242 / 70%); }
+.legendProduct { background: linear-gradient(135deg, #45efff, #ff39c8); box-shadow: 0 0 14px rgb(255 57 200 / 65%); }
+
 .node {
   position: absolute;
   display: flex;
@@ -159,6 +176,11 @@
 .node:nth-child(6) { top: 68%; left: 61%; }
 .node:nth-child(7) { top: 53%; left: 72%; }
 .node:nth-child(8) { top: 19%; left: 45%; }
+
+.node[data-kind="product"] {
+  top: 31%;
+  left: 50%;
+}
 
 .node:not([data-featured="true"]) .nodeCore {
   width: 12px;
@@ -214,6 +236,14 @@
   color: var(--cyan);
   font-size: .5rem;
   font-weight: 500;
+}
+
+.node[data-kind="product"] .nodeLabel {
+  border-color: rgb(255 57 200 / 40%);
+}
+
+.node[data-kind="product"] .nodeLabel b {
+  color: #ff72d8;
 }
 
 .node:hover .nodeLabel,
@@ -293,6 +323,13 @@
   line-height: 1.04;
   letter-spacing: -.052em;
   text-wrap: balance;
+  padding-block: 0.12em 0.18em;
+}
+
+:lang(th) .copy h1 {
+  font-family: var(--font-thai), sans-serif;
+  line-height: 1.22;
+  letter-spacing: -0.035em;
 }
 
 .deck p {
@@ -365,6 +402,12 @@
     left: 20px;
   }
 
+  .legend {
+    top: 96px;
+    right: 20px;
+    font-size: .52rem;
+  }
+
   .node {
     gap: .35rem;
   }
@@ -377,6 +420,11 @@
   .node:nth-child(6) { top: 68%; left: 64%; }
   .node:nth-child(7) { top: 54%; left: 81%; }
   .node:nth-child(8) { top: 19%; left: 40%; }
+
+  .node[data-kind="product"] {
+    top: 30%;
+    left: 50%;
+  }
 
   .nodeCore {
     width: 16px;
@@ -421,6 +469,7 @@
     max-width: 13ch;
     font-size: clamp(2.5rem, 10.2vw, 3.65rem);
     letter-spacing: -.042em;
+    line-height: 1.2;
   }
 
   .deck {

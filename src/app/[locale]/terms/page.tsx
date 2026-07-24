@@ -13,6 +13,10 @@ export async function generateMetadata({
   if (!isLocale(locale)) return {};
   return {
     title: locale === "th" ? "ข้อกำหนด" : "Terms",
+    description:
+      locale === "th"
+        ? "ข้อกำหนดการใช้งานเนื้อหา แหล่งอ้างอิง และบริการบนเว็บไซต์ Z2Zs Lab"
+        : "Terms for using Z2Zs Lab content, sources, and website services.",
     alternates: localizedAlternates(locale, "/terms"),
   };
 }

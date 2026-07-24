@@ -89,6 +89,21 @@ export default async function ArticlePage({
       {article.video ? (
         <figure className={[styles.cover, styles.videoCover].join(" ")}>
           <div className={styles.videoFrame}>
+            <a
+              className={styles.videoPoster}
+              href={article.video.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Image
+                src={article.cover.src}
+                alt={article.cover.alt[locale]}
+                width={article.cover.width ?? 1920}
+                height={article.cover.height ?? 1080}
+                priority
+              />
+              <span>{locale === "th" ? "เปิดวิดีโอต้นฉบับ" : "Open original video"}</span>
+            </a>
             <iframe
               src={article.video.embedUrl}
               title={article.video.title[locale]}

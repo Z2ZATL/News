@@ -17,6 +17,10 @@ export async function generateMetadata({
   if (!isLocale(locale)) return {};
   return {
     title: ui[locale].projects,
+    description:
+      locale === "th"
+        ? "เครื่องมือ ต้นแบบ และงานทดลองของ Z2Zs Lab พร้อมแนวคิด วิธีทำ และสิ่งที่เรียนรู้จากการลงมือจริง"
+        : "Tools, prototypes, and experiments from Z2Zs Lab, including the thinking and lessons behind the work.",
     alternates: localizedAlternates(locale, "/projects"),
   };
 }

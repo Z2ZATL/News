@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   typedRoutes: true,
   transpilePackages: ["three"],
+  htmlLimitedBots: /.*/,
   images: {
     remotePatterns: [
       {

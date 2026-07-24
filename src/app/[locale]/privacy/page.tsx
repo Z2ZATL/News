@@ -13,6 +13,10 @@ export async function generateMetadata({
   if (!isLocale(locale)) return {};
   return {
     title: locale === "th" ? "ความเป็นส่วนตัว" : "Privacy",
+    description:
+      locale === "th"
+        ? "คำอธิบายการเก็บ ใช้ และคุ้มครองข้อมูลส่วนบุคคลของเว็บไซต์ Z2Zs Lab"
+        : "How the Z2Zs Lab website collects, uses, and protects personal data.",
     alternates: localizedAlternates(locale, "/privacy"),
   };
 }

@@ -18,6 +18,8 @@ const labels: Record<string, string> = {
   "th-ai-passport-recap-developer-tools": "TH AI / RECAP",
 };
 
+const products = [{ slug: "lumixia-brief", label: "LUMIXIA BRIEF" }] as const;
+
 export function Atlas({
   articles,
   locale,
@@ -45,6 +47,11 @@ export function Atlas({
           <b>13.7563° N · 100.5018° E</b>
         </div>
 
+        <div className={styles.legend} aria-hidden="true">
+          <span><i className={styles.legendStory} />{locale === "th" ? "ข่าว" : "Stories"}</span>
+          <span><i className={styles.legendProduct} />{locale === "th" ? "ผลิตภัณฑ์" : "Products"}</span>
+        </div>
+
         <nav
           className={styles.nodes}
           aria-label={locale === "th" ? "ข่าวบนแผนที่โลก" : "Stories on the globe"}
@@ -53,7 +60,7 @@ export function Atlas({
             <Link
               href={`/${locale}/stories/${item.slug}`}
               className={styles.node}
-              data-featured={index === 0 ? "true" : undefined}
+              data-kind="story"
               aria-label={`${String(index + 1).padStart(2, "0")}. ${item.title[locale]}`}
               key={item.slug}
             >
@@ -61,6 +68,22 @@ export function Atlas({
               <span className={styles.nodeLabel}>
                 <b>{String(index + 1).padStart(2, "0")}</b>
                 {labels[item.slug] ?? item.category[locale]}
+              </span>
+            </Link>
+          ))}
+          {products.map((product, index) => (
+            <Link
+              href={`/${locale}/projects/${product.slug}`}
+              className={styles.node}
+              data-kind="product"
+              data-featured="true"
+              aria-label={`${locale === "th" ? "ผลิตภัณฑ์" : "Product"}: ${product.label}`}
+              key={product.slug}
+            >
+              <span className={styles.nodeCore} />
+              <span className={styles.nodeLabel}>
+                <b>P{String(index + 1).padStart(2, "0")}</b>
+                {product.label}
               </span>
             </Link>
           ))}
