@@ -22,11 +22,13 @@ function Earth({
   nodes,
   onReady,
   onPositions,
+  paused,
 }: Readonly<{
   animate: boolean;
   nodes: AtlasMapNode[];
   onReady: () => void;
   onPositions: (positions: AtlasScreenPosition[]) => void;
+  paused: boolean;
 }>) {
   const group = useRef<Group>(null);
   const announcedReady = useRef(false);
@@ -56,7 +58,7 @@ function Earth({
       onReady();
     }
 
-    if (animate) {
+    if (animate && !paused) {
       earth.rotation.y += delta * 0.055;
       earth.rotation.x = MathUtils.lerp(
         earth.rotation.x,
@@ -171,12 +173,14 @@ export function AtlasCanvas({
   onReady,
   onPositions,
   onUnavailable,
+  paused,
 }: Readonly<{
   animate: boolean;
   nodes: AtlasMapNode[];
   onReady: () => void;
   onPositions: (positions: AtlasScreenPosition[]) => void;
   onUnavailable: () => void;
+  paused: boolean;
 }>) {
   return (
     <div className={styles.canvas} aria-hidden="true">
@@ -205,6 +209,7 @@ export function AtlasCanvas({
           nodes={nodes}
           onPositions={onPositions}
           onReady={onReady}
+          paused={paused}
         />
         <Stars radius={52} depth={30} count={560} factor={1.8} saturation={0.42} fade speed={0} />
       </Canvas>

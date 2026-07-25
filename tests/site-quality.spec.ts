@@ -189,6 +189,22 @@ test("Atlas groups signals by country and reveals ranked side panels on demand",
     "/th/stories/th-ai-passport-recap-developer-tools",
   );
   await expect(cards.nth(0)).toContainText("Aitthikorn Khammee");
+
+  const china = atlas.locator(
+    'button[data-kind="story-country"][data-country="CN"]',
+  );
+  const switchStartedAt = Date.now();
+  await china.click();
+  await expect
+    .poll(async () => {
+      const lineX = Number(await atlas.locator("svg line").first().getAttribute("x1"));
+      const dotX = Number.parseFloat(
+        await china.evaluate((element) => element.style.left),
+      );
+      return Math.abs(lineX - dotX);
+    })
+    .toBeLessThan(0.5);
+  expect(Date.now() - switchStartedAt).toBeLessThan(300);
 });
 
 test("story reactions persist locally and stay out of Lab pages", async ({

@@ -81,6 +81,7 @@ export function AtlasCanvasLoader({
     "waiting",
   );
   const connectorRefs = useRef(new Map<number, SVGLineElement>());
+  const latestPositionsRef = useRef(new Map<string, AtlasScreenPosition>());
   const nodeRefs = useRef(new Map<string, HTMLButtonElement>());
 
   const selectedNode = nodes.find((node) => node.id === selectedId) ?? null;
@@ -100,6 +101,7 @@ export function AtlasCanvasLoader({
   const updatePositions = useCallback(
     (positions: AtlasScreenPosition[]) => {
       for (const position of positions) {
+        latestPositionsRef.current.set(position.id, position);
         const node = nodeRefs.current.get(position.id);
         if (node) {
           node.style.left = `${String(position.x)}%`;
@@ -233,8 +235,20 @@ export function AtlasCanvasLoader({
                   y1={selectedFallbackPoint.y}
                   y2={connectorTargets[index]?.y}
                   ref={(element) => {
-                    if (element) connectorRefs.current.set(index, element);
-                    else connectorRefs.current.delete(index);
+                    if (!element) {
+                      connectorRefs.current.delete(index);
+                      return;
+                    }
+                    connectorRefs.current.set(index, element);
+                    const position = selectedId
+                      ? latestPositionsRef.current.get(selectedId)
+                      : undefined;
+                    const target = connectorTargets[index];
+                    if (!position || !target) return;
+                    element.setAttribute("x1", String(position.x));
+                    element.setAttribute("y1", String(position.y));
+                    element.setAttribute("x2", String(target.x));
+                    element.setAttribute("y2", String(target.y));
                   }}
                 />
               ))}
@@ -259,13 +273,14 @@ export function AtlasCanvasLoader({
         {enabled && state !== "fallback" ? (
           <AtlasErrorBoundary onError={useFallback}>
             <AtlasCanvas
-              animate={!reducedMotion && !interactionPaused}
+              animate={!reducedMotion}
               nodes={nodes}
               onPositions={updatePositions}
               onReady={() => {
                 setState("ready");
               }}
               onUnavailable={useFallback}
+              paused={interactionPaused}
             />
           </AtlasErrorBoundary>
         ) : null}
