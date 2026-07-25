@@ -3,7 +3,7 @@
   border-top: 1px solid var(--line);
   background:
     radial-gradient(circle at 82% 16%, rgb(47 191 242 / 7%), transparent 24%),
-    linear-gradient(180deg, #05080c, #070b10 62%, #05070a);
+    var(--section-bg);
 }
 
 .heading {
@@ -43,7 +43,7 @@
   display: block;
   max-width: 48ch;
   margin-top: 1.4rem;
-  color: #aeb9c3;
+  color: var(--copy-soft);
   font-size: clamp(1rem, 1.2vw, 1.18rem);
   line-height: 1.75;
 }
@@ -157,13 +157,13 @@
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: rgb(8 13 19 / 72%);
+  background: var(--card-bg);
   transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
 }
 
 .storyCard:hover {
   border-color: rgb(47 191 242 / 35%);
-  box-shadow: 0 24px 70px rgb(0 0 0 / 28%);
+  box-shadow: 0 24px 70px var(--shadow);
   transform: translateY(-3px);
 }
 
@@ -172,7 +172,7 @@
   display: block;
   overflow: hidden;
   aspect-ratio: 16 / 10;
-  background: #09111a;
+  background: var(--image-placeholder);
 }
 
 .coverLink::after {
@@ -230,7 +230,7 @@
   display: -webkit-box;
   overflow: hidden;
   margin-top: 0.85rem;
-  color: #aeb9c3;
+  color: var(--copy-soft);
   font-size: 0.92rem;
   line-height: 1.75;
   -webkit-box-orient: vertical;

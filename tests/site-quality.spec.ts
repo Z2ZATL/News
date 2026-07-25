@@ -109,6 +109,54 @@ test("home replaces featured news with a keyboard-accessible category browser", 
   await expect(codingAi).not.toBeFocused();
 });
 
+test("custom theme switches between light and dark and persists", async ({ page }) => {
+  await page.goto("/th");
+
+  const root = page.locator("html");
+  const trigger = page.getByRole("button", { name: "Custom Theme" });
+  await expect(root).toHaveAttribute("data-theme", "dark");
+  await trigger.click();
+
+  const light = page.getByRole("button", { name: "Light" });
+  await expect(light).toHaveAttribute("aria-pressed", "false");
+  await light.click();
+  await expect(root).toHaveAttribute("data-theme", "light");
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("z2zs:theme"))).toBe("light");
+
+  const lightBackground = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  expect(lightBackground).toBe("rgb(244, 243, 239)");
+
+  await page.reload();
+  await expect(root).toHaveAttribute("data-theme", "light");
+  await trigger.click();
+  await page.getByRole("button", { name: "Dark" }).click();
+  await expect(root).toHaveAttribute("data-theme", "dark");
+});
+
+test("light theme remains accessible across every public route", async ({ page, request }) => {
+  const sitemap = await request.get("/sitemap.xml");
+  expect(sitemap.ok()).toBeTruthy();
+  const paths = sitemapPaths(await sitemap.text());
+  const failures: string[] = [];
+
+  await page.goto("/th");
+  await page.evaluate(() => {
+    localStorage.setItem("z2zs:theme", "light");
+  });
+
+  for (const path of paths) {
+    await page.goto(path, { waitUntil: "networkidle" });
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    const results = await new AxeBuilder({ page }).analyze();
+    for (const violation of results.violations) {
+      const targets = violation.nodes.map((node) => node.target.join(" > ")).join(", ");
+      failures.push(`${path} axe ${violation.id}: ${targets}`);
+    }
+  }
+
+  expect(failures, failures.join("\n")).toEqual([]);
+});
+
 test("reduced motion removes animated transitions", async ({ browser }) => {
   const context = await browser.newContext({ reducedMotion: "reduce" });
   const page = await context.newPage();

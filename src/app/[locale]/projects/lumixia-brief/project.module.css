@@ -60,7 +60,7 @@
 .intro {
   max-width: 850px;
   margin: clamp(3rem, 5vw, 5rem) 0 0;
-  color: #bbc5cd;
+  color: var(--copy);
   font-size: clamp(1.1rem, 1.8vw, 1.45rem);
   line-height: 1.85;
 }
@@ -83,7 +83,7 @@
 }
 
 .actions a:first-child {
-  color: #021016;
+  color: var(--on-accent);
   border-color: var(--cyan);
   background: var(--cyan);
 }
@@ -130,7 +130,7 @@
 .statement p:last-child {
   max-width: 760px;
   margin: 2.5rem 0 0;
-  color: #b9c4cc;
+  color: var(--copy);
   font-size: clamp(1.05rem, 1.45vw, 1.25rem);
   line-height: 1.9;
 }
@@ -185,7 +185,7 @@
 .flow li p,
 .differenceGrid p {
   margin: 0;
-  color: #aeb9c2;
+  color: var(--copy-soft);
   font-size: 1rem;
   line-height: 1.8;
 }
@@ -203,7 +203,7 @@
 
 .architectureIntro p {
   margin: 0;
-  color: #aeb9c2;
+  color: var(--copy-soft);
   font-size: clamp(.95rem, 1.25vw, 1.08rem);
   line-height: 1.85;
 }
@@ -275,7 +275,7 @@
 
 .architectureFigure figcaption {
   margin-top: 1.25rem;
-  color: #8f9ca5;
+  color: var(--muted);
   font-size: .78rem;
   line-height: 1.7;
 }
@@ -334,7 +334,7 @@
 
 .status span {
   display: block;
-  color: #b7c1c9;
+  color: var(--copy);
   line-height: 1.8;
 }
 

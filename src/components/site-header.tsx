@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import type { Locale } from "@/lib/i18n";
 import { ui } from "@/lib/i18n";
+import { ThemeMenu } from "@/components/theme-menu";
 
 import styles from "./site-header.module.css";
 
@@ -23,6 +24,7 @@ export function SiteHeader({ locale }: Readonly<{ locale: Locale }>) {
         <Link href={`/${locale}/about`}>{labels.about}</Link>
       </nav>
       <div className={styles.actions}>
+        <ThemeMenu locale={locale} />
         <Link href={`/${locale}/search`} className={styles.search}>
           {labels.search}
         </Link>

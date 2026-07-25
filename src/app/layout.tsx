@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { Noto_Sans_Thai, Space_Grotesk } from "next/font/google";
+import Script from "next/script";
 
 import "./globals.css";
 import { SITE_URL } from "@/lib/site-config";
@@ -30,9 +31,14 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const locale = (await headers()).get("x-locale") === "en" ? "en" : "th";
+  const requestHeaders = await headers();
+  const locale = requestHeaders.get("x-locale") === "en" ? "en" : "th";
+  const nonce = requestHeaders.get("x-nonce") ?? undefined;
   return (
     <html lang={locale} className={`${thai.variable} ${space.variable}`} suppressHydrationWarning>
+      <head>
+        <Script nonce={nonce} src="/theme-init.js" strategy="beforeInteractive" />
+      </head>
       <body>{children}</body>
     </html>
   );

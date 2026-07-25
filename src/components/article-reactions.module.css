@@ -53,7 +53,7 @@
   padding: .9rem .35rem .75rem;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: rgb(3 6 11 / 72%);
+  background: var(--card-bg);
   color: var(--muted);
   font: inherit;
   font-size: .72rem;
@@ -75,7 +75,7 @@
 }
 
 .option[data-active="true"] {
-  color: #fff;
+  color: var(--text);
   border-color: #ff55ce;
   background: linear-gradient(145deg, rgb(47 191 242 / 16%), rgb(255 57 200 / 16%));
   box-shadow: 0 0 24px rgb(255 57 200 / 15%);

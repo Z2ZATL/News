@@ -1,4 +1,10 @@
 .atlas {
+  --text: #f6f8fa;
+  --muted: #9aa6b2;
+  --line: rgb(255 255 255 / 9%);
+  --line-strong: rgb(255 255 255 / 18%);
+  --cyan: #2fbff2;
+  --blue: #0090d0;
   position: relative;
   overflow: hidden;
   border-bottom: 1px solid var(--line);

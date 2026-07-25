@@ -31,7 +31,7 @@ The apex `z2zs.space` is reserved for the Z2Zs corporate site and email. Never r
 
 ## Product and design
 
-- Dark-first only in v1. Do not add a light theme without a new product decision.
+- Support user-selectable dark and light themes. Dark remains the default when no preference is stored.
 - Use the Z2Zs palette: `#2FBFF2`, `#0090D0`, near-black surfaces, and white.
 - Preserve an editorial rhythm: large Thai and English typography, deliberate whitespace, strong hierarchy, and natural human copy.
 - Avoid generic AI-dashboard visuals and generic AI-generated wording.
