@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getArticle, getArticles } from "@/lib/content";
+import { isProductionDeployment } from "@/lib/deployment";
 import {
   createReactionVisitor,
   reactionCookieName,
@@ -116,7 +117,7 @@ export async function POST(request: Request) {
         maxAge: 31_536_000,
         path: "/",
         sameSite: "lax",
-        secure: process.env.VERCEL_ENV === "production",
+        secure: isProductionDeployment(),
       });
     }
     return response;

@@ -2,13 +2,16 @@ import "server-only";
 
 import { createHmac } from "node:crypto";
 
+import { isProductionDeployment } from "@/lib/deployment";
 import { hasRedisConfiguration, redisCommand } from "@/lib/redis-rest";
 
 const memoryWindows = new Map<string, { count: number; expiresAt: number }>();
 
 function clientAddress(request: Request): string {
-  if (process.env.VERCEL_ENV === "production") {
-    return request.headers.get("x-vercel-forwarded-for") ?? "unknown";
+  if (isProductionDeployment()) {
+    const netlifyAddress = request.headers.get("x-nf-client-connection-ip");
+    const vercelAddress = request.headers.get("x-vercel-forwarded-for");
+    return netlifyAddress ?? vercelAddress ?? "unknown";
   }
   const forwarded = request.headers.get("x-forwarded-for")?.split(",", 1)[0]?.trim();
   return forwarded || request.headers.get("x-real-ip") || "unknown";

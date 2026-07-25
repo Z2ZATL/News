@@ -71,6 +71,7 @@ const eslintConfig = [
     ignores: [
       "node_modules/**",
       ".next/**",
+      ".netlify/**",
       "studio/**",
       "out/**",
       "test-results/**",

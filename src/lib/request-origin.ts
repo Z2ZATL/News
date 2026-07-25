@@ -1,5 +1,7 @@
 import "server-only";
 
+import { isProductionDeployment } from "@/lib/deployment";
+
 function configuredOrigin(): string | null {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
   if (!siteUrl) return null;
@@ -15,7 +17,7 @@ export function hasSameOrigin(request: Request): boolean {
   if (!supplied) return false;
 
   const canonical = configuredOrigin();
-  if (process.env.VERCEL_ENV === "production") return canonical !== null && supplied === canonical;
+  if (isProductionDeployment()) return canonical !== null && supplied === canonical;
 
   const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
   if (!host || /[\s/@\\]/.test(host)) return false;

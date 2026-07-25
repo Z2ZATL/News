@@ -13,6 +13,7 @@
     "test:e2e": "playwright test",
     "test:unit": "node --experimental-strip-types --test tests/*.test.ts",
     "test:lighthouse": "node scripts/lighthouse.mjs",
+    "audit:production": "node scripts/production-audit.mjs",
     "content:migrate": "tsx scripts/migrate-content-to-sanity.ts",
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "check": "tsc --noEmit && eslint --max-warnings=0 && node scripts/scan-secrets.mjs && next build"

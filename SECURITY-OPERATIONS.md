@@ -3,12 +3,15 @@
 ## Deployment boundary
 
 - `news.z2zs.space`: public Next.js application
-- `studio.z2zs.space`: separate Sanity Studio origin, password-protected and noindexed
+- `studio.z2zs.space`: separate Sanity Studio origin, Sanity-authenticated and noindexed
 - `z2zs.space`: existing corporate and mail domain; do not redirect or change mail records
 
 ## DNS change rule
 
-Inspect the live Cloudflare zone before every change. Add only the two DNS-only Vercel CNAME records. Never delete or replace existing `brief`, `preview.brief`, `bot`, MX, DKIM, or tracking records.
+Inspect the live Cloudflare zone before every change. During migration, keep the
+current Vercel record until the Netlify preview has passed every gate. Change
+only the exact `news` or `studio` CNAME approved for cutover. Never delete or
+replace existing `brief`, `preview.brief`, `bot`, MX, DKIM, or tracking records.
 
 DMARC begins at `p=none; sp=none`. Do not move to quarantine or reject until aggregate reports prove that Google Workspace and every newsletter sender pass aligned SPF or DKIM.
 
@@ -35,18 +38,41 @@ secret in a URL, or log preview query strings.
 
 Application-level Redis limits protect draft-ticket attempts (5/minute), CSP
 reports (10/minute), and reaction reads/writes even when a platform firewall
-rule is unavailable. Vercel Firewall remains an independent outer layer; do not
-remove the application limits after adding WAF rules.
+rule is unavailable. Do not remove these limits after adding host-level traffic
+controls.
 
 ## Launch controls
 
-- Vercel preview deployment protection
-- Vercel Firewall rate limits: `/api/*` 20/min/IP, `/api/draft` 5/min/IP, `/api/csp-report` 10/min/IP
+- Netlify Deploy Preview tested before domain cutover
+- Netlify Free hard credit limit; no auto recharge or paid add-ons
+- Application limits: `/api/draft` 5/min/IP, `/api/csp-report` 10/min/IP,
+  reaction writes 20/min/IP and reads 60/min/IP
 - Sanity CORS: production public and Studio origins only
-- Studio Vercel password protection plus `X-Robots-Tag: noindex, nofollow`
+- Studio requires Sanity authentication plus `X-Robots-Tag: noindex, nofollow`
 - DNSSEC at Cloudflare and DS record at the registrar
 - registrar lock, hardware-key 2FA, independent recovery email
 
 ## Decommissioning
 
-Delete a DNS record before deleting the corresponding Vercel project. This prevents a dangling CNAME and subdomain takeover.
+Delete a DNS record before deleting the corresponding hosted project. Keep the
+old Vercel project until the Netlify cutover has been verified and the rollback
+window has closed. This prevents both downtime and dangling CNAME takeover.
+
+## Netlify cutover and rollback
+
+1. Record the current `news.z2zs.space` CNAME target and TTL before any change.
+2. Verify the Netlify preview with the same production environment variables,
+   then claim `news.z2zs.space` in Netlify before changing DNS.
+3. Change only the `news` CNAME in Cloudflare. Leave the Vercel project and its
+   deployment untouched for at least 24 hours.
+4. Verify HTTPS, nonce CSP, headers, `/th`, both RSS feeds, sitemap, reactions,
+   Sanity reads, and webhook invalidation from two independent networks.
+5. If any critical check fails, restore the exact recorded Vercel CNAME target.
+   Do not delete or recreate either hosted project during rollback.
+6. After the rollback window closes, remove the old domain claim before deleting
+   any obsolete project, then confirm that no dangling CNAME remains.
+
+The scheduled `production-audit.yml` workflow checks live headers, public feeds,
+and CNAME resolution monthly. After cutover, set repository variable
+`AUDIT_CNAME_SUFFIX` to the approved Netlify target suffix and set
+`AUDIT_STUDIO_ENABLED=true` only after the Studio hostname exists.

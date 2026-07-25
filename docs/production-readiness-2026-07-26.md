@@ -13,9 +13,18 @@ This file records read-only checks made before any production mutation. Values t
 ## Studio and CMS
 
 - `studio.z2zs.space`: no DNS record at the time of inspection
-- Separate Studio Vercel project: not linked or created
-- Sanity account: authenticated in the browser, but no project existed at inspection time
-- Required before promotion: private `production` dataset, viewer token, migration-only editor token, strict CORS origins, webhook, and protected Studio deployment
+- Separate Studio Netlify site: not linked or created
+- Sanity project: `Z2Zs Lab News` (`kbore3rf`) under organization `Z2Zs`
+- Sanity created an automatic 30-day Growth Trial with no payment method and an
+  explicit automatic downgrade to Free; no paid upgrade was selected
+- Public `production` dataset created automatically and confirmed public
+- Production content migrated and verified: 7 articles, 10 assets, 1 author,
+  5 categories, 1 project, and site settings
+- CORS contains only `https://news.z2zs.space` (no credentials) and
+  `https://studio.z2zs.space` (credentials allowed); auto-added localhost was removed
+- The expiring migration token was revoked immediately after use
+- Required before promotion: read-only draft token, webhook, and a separate
+  Studio deployment whose editorial access requires Sanity authentication
 
 ## DNS and mail
 
@@ -28,31 +37,38 @@ This file records read-only checks made before any production mutation. Values t
 
 ## Promotion blockers
 
-1. Create/configure the Sanity project and migrate the seven articles, one project, site settings, and image assets.
-2. Provision server-side Redis for reaction aggregates, rate limits, and preview-ticket replay protection.
-3. Create and protect the Studio Vercel project, then add the DNS-only Studio CNAME.
-4. Configure public-site and Studio environment variables and secrets.
-5. Configure Vercel Firewall limits and preview deployment protection.
-6. Publish the DNSSEC DS record at the registrar; preserve existing MX/DKIM/tracking records.
-7. Run staging and production smoke/security checks before promotion.
+1. Provision server-side Redis for reaction aggregates, rate limits, and preview-ticket replay protection.
+2. Create separate public-site and Studio Netlify Free previews without changing DNS.
+3. Configure public-site and Studio environment variables, draft token, and webhook secret.
+4. Run preview functional, security, accessibility, and performance checks.
+5. Publish the DNSSEC DS record at the registrar; preserve existing MX/DKIM/tracking records.
+6. Request exact DNS cutover approval, retain Vercel as rollback, and run production smoke checks.
 
-## Plan and billing constraints verified on 2026-07-26
+## Accepted zero-cost baseline on 2026-07-26
 
-- Sanity Free permits public datasets only. The locked private-dataset decision
-  requires Growth (currently listed at USD 15 per seat per month) after the
-  automatic trial ends. Do not create a private dataset on a trial without an
-  accepted paid-plan decision, because Sanity documents that it becomes public
-  when the trial expires.
-- The current Vercel owner is a personal project owner. Hobby permits one WAF
-  rate-limit rule per project; the three-rule layout in Build Plan v3 requires
-  Pro or a documented replacement with application-level limits.
-- Vercel Password Protection is an Advanced Deployment Protection feature.
-  Vercel Authentication is the preferred shared-password-free alternative, but
-  protecting a production custom domain still requires a paid protection scope.
+- The founder requires zero recurring platform fees. No trial, paid add-on,
+  metered overage, or upgrade may be enabled without a new founder decision.
+- Sanity Free provides two public datasets. Draft documents do not appear to
+  unauthenticated API users, while published documents in a public dataset are
+  publicly queryable. The site still filters explicitly for published status,
+  and editorial documents must contain no secrets or confidential personal data.
+- Vercel Hobby is restricted to personal, non-commercial use. Because the stated
+  product direction includes promoting Z2Zs work, the current deployment cannot
+  be represented as a permanent zero-cost commercial host without clarification.
+- ADR 0004 selects Netlify Free for production. Netlify explicitly permits
+  commercial projects on Free, applies a hard 300-credit monthly limit with no
+  automatic recharge, and pauses the project rather than creating a surprise
+  bill. Its OpenNext adapter supports the Next.js features used by this repo.
+- Hosting migration is approved for preview testing only. DNS cutover still
+  requires an exact approval. Keep Vercel live until the replacement has passed
+  security, functional, and performance gates.
 - Upstash Redis Free currently includes one 256 MB database and 500,000 commands
   per month. It is sufficient for the initial anonymous reaction, replay, and
-  rate-limit workload, while application behavior remains fail-closed when the
+  rate-limit workload, while security-sensitive operations fail closed when the
   store is unavailable.
+- GitHub remains private on the Free plan. CI, signed commits, PR review practice,
+  and local guardrails are required, but unavailable paid branch-enforcement
+  controls are not represented as active.
 
 Official references:
 
@@ -60,4 +76,7 @@ Official references:
 - https://www.sanity.io/docs/platform-management/growth-plan-trial
 - https://vercel.com/docs/vercel-firewall/vercel-waf/rate-limiting
 - https://vercel.com/docs/deployment-protection
+- https://vercel.com/docs/limits/fair-use-guidelines
 - https://upstash.com/pricing/redis
+- https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-credit-based-plans/credit-based-pricing-plans/
+- https://docs.netlify.com/build/frameworks/framework-setup-guides/nextjs/overview/

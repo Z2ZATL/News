@@ -6,6 +6,15 @@ const nextConfig: NextConfig = {
   typedRoutes: true,
   transpilePackages: ["three"],
   htmlLimitedBots: /.*/,
+  redirects() {
+    return Promise.resolve([
+      {
+        destination: "/th",
+        permanent: true,
+        source: "/",
+      },
+    ]);
+  },
   images: {
     remotePatterns: [
       {

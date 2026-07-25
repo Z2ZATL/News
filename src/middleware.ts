@@ -48,9 +48,7 @@ export function middleware(request: NextRequest) {
   );
   response.headers.set("Cross-Origin-Opener-Policy", "same-origin");
   response.headers.set("Cross-Origin-Resource-Policy", "same-origin");
-  if (!allowsVimeo) {
-    response.headers.set("Cross-Origin-Embedder-Policy", "credentialless");
-  }
+  response.headers.set("Cross-Origin-Embedder-Policy", "credentialless");
   response.headers.set("X-DNS-Prefetch-Control", "off");
   response.headers.set("X-Permitted-Cross-Domain-Policies", "none");
   response.headers.set("Origin-Agent-Cluster", "?1");

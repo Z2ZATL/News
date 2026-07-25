@@ -5,6 +5,7 @@ import { defineQuery } from "groq";
 import { z } from "zod";
 
 import type { Article, Project, SiteSettings } from "@/lib/content-types";
+import { isProductionDeployment } from "@/lib/deployment";
 import { fixtureArticles, fixtureProjects, fixtureSettings } from "@/lib/fixture-content";
 
 const slugSchema = z.string().regex(/^[a-z0-9-]{1,120}$/);
@@ -160,17 +161,25 @@ const settingsSchema = z
 
 const articleProjection = `{
   "slug": slug.current,
-  title,
-  excerpt,
+  "title": {"th": title.th, "en": title.en},
+  "excerpt": {"th": excerpt.th, "en": excerpt.en},
   "cover": {
     "src": cover.asset->url,
     "width": cover.asset->metadata.dimensions.width,
     "height": cover.asset->metadata.dimensions.height,
-    "alt": cover.alt
+    "alt": {"th": cover.alt.th, "en": cover.alt.en}
   },
-  "category": category->title,
-  "author": {"name": author->name, "role": author->role},
-  atlasLocation,
+  "category": {"th": category->title.th, "en": category->title.en},
+  "author": {
+    "name": author->name,
+    "role": {"th": author->role.th, "en": author->role.en}
+  },
+  "atlasLocation": {
+    "countryCode": atlasLocation.countryCode,
+    "latitude": atlasLocation.latitude,
+    "longitude": atlasLocation.longitude,
+    "label": {"th": atlasLocation.label.th, "en": atlasLocation.label.en}
+  },
   "body": {
     "th": body.th[]{
       ...,
@@ -189,9 +198,18 @@ const articleProjection = `{
       }
     }
   },
-  video,
+  defined(video) => {
+    "video": {
+      "embedUrl": video.embedUrl,
+      "sourceUrl": video.sourceUrl,
+      "title": {"th": video.title.th, "en": video.title.en}
+    }
+  },
   tags,
-  sources,
+  "sources": sources[]{
+    "label": {"th": label.th, "en": label.en},
+    url
+  },
   featured,
   publishedAt,
   updatedAt
@@ -205,7 +223,10 @@ const draftArticleQuery = defineQuery(
 );
 const projectQuery = defineQuery(
   `*[_type == "project" && status == "published"] | order(promoted desc, title.en asc) {
-    "slug": slug.current, title, summary, promoted, links,
+    "slug": slug.current,
+    "title": {"th": title.th, "en": title.en},
+    "summary": {"th": summary.th, "en": summary.en},
+    promoted, links,
     "body": {
       "th": body.th[]{
         ...,
@@ -227,11 +248,18 @@ const projectQuery = defineQuery(
   }`,
 );
 const settingsQuery = defineQuery(
-  `*[_type == "settings" && _id == "settings"][0] {siteTitle, footer, socialLinks}`,
+  `*[_type == "settings" && _id == "settings"][0] {
+    "siteTitle": {"th": siteTitle.th, "en": siteTitle.en},
+    "footer": {"th": footer.th, "en": footer.en},
+    socialLinks
+  }`,
 );
 const draftProjectQuery = defineQuery(
   `*[_type == "project" && slug.current == $slug][0] {
-    "slug": slug.current, title, summary, promoted, links,
+    "slug": slug.current,
+    "title": {"th": title.th, "en": title.en},
+    "summary": {"th": summary.th, "en": summary.en},
+    promoted, links,
     "body": {
       "th": body.th[]{
         ...,
@@ -258,25 +286,36 @@ type ContentMode = "fixture" | "sanity";
 function contentMode(): ContentMode {
   const configured = process.env.CONTENT_SOURCE;
   if (configured === "fixture" || configured === "sanity") return configured;
-  return process.env.VERCEL_ENV === "production" ? "sanity" : "fixture";
+  return isProductionDeployment() ? "sanity" : "fixture";
 }
 
-function sanityClients() {
+function sanityProjectConfig() {
   const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
-  const token = process.env.SANITY_API_READ_TOKEN;
-  if (!projectId || !token) {
+  if (!projectId) {
     throw new Error("Sanity content source is not configured");
   }
-  const shared = {
+  return {
     apiVersion: "2025-01-01",
     dataset: process.env.NEXT_PUBLIC_SANITY_DATASET ?? "production",
     projectId,
-    token,
   } as const;
+}
+
+function publishedSanityClient() {
+  return createClient({
+    ...sanityProjectConfig(),
+    perspective: "published",
+    useCdn: true,
+  });
+}
+
+function draftSanityClient() {
+  const token = process.env.SANITY_API_READ_TOKEN;
+  if (!token) throw new Error("Sanity draft preview is not configured");
+  const shared = sanityProjectConfig();
   return {
-    draft: createClient({ ...shared, perspective: "drafts", useCdn: false }),
-    published: createClient({ ...shared, perspective: "published", useCdn: true }),
-  };
+    client: createClient({ ...shared, perspective: "drafts", token, useCdn: false }),
+  }.client;
 }
 
 function validateArticle(value: unknown): Article | null {
@@ -301,7 +340,7 @@ function sorted(articles: readonly Article[]): Article[] {
 
 export async function getArticles(): Promise<Article[]> {
   if (contentMode() === "fixture") return sorted(fixtureArticles);
-  const { published } = sanityClients();
+  const published = publishedSanityClient();
   const values = await published.fetch<unknown[]>(articleQuery, {}, {
     next: { tags: ["article", "author", "category"] },
   });
@@ -319,9 +358,8 @@ export async function getArticle(
   if (contentMode() === "fixture") {
     return fixtureArticles.find((article) => article.slug === slug) ?? null;
   }
-  const clients = sanityClients();
   if (options.draft) {
-    return validateArticle(await clients.draft.fetch<unknown>(draftArticleQuery, { slug }));
+    return validateArticle(await draftSanityClient().fetch<unknown>(draftArticleQuery, { slug }));
   }
   const articles = await getArticles();
   return articles.find((article) => article.slug === slug) ?? null;
@@ -329,7 +367,7 @@ export async function getArticle(
 
 export async function getProjects(): Promise<Project[]> {
   if (contentMode() === "fixture") return fixtureProjects;
-  const { published } = sanityClients();
+  const published = publishedSanityClient();
   const values = await published.fetch<unknown[]>(projectQuery, {}, {
     next: { tags: ["project"] },
   });
@@ -349,9 +387,8 @@ export async function getProject(
 ): Promise<Project | null> {
   if (!slugSchema.safeParse(slug).success) return null;
   if (contentMode() === "sanity" && options.draft) {
-    const { draft } = sanityClients();
     const parsed = projectSchema.safeParse(
-      await draft.fetch<unknown>(draftProjectQuery, { slug }),
+      await draftSanityClient().fetch<unknown>(draftProjectQuery, { slug }),
     );
     if (parsed.success) return parsed.data;
     return null;
@@ -361,7 +398,7 @@ export async function getProject(
 
 export async function getSiteSettings(): Promise<SiteSettings> {
   if (contentMode() === "fixture") return fixtureSettings;
-  const { published } = sanityClients();
+  const published = publishedSanityClient();
   const value = await published.fetch<unknown>(settingsQuery, {}, {
     next: { tags: ["settings"] },
   });
