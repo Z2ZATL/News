@@ -102,7 +102,7 @@ export function Atlas({
         </div>
 
         <div className={styles.orbitCaption} aria-hidden="true">
-          <span>{locale === "th" ? "เลือกประเทศเพื่อดูข่าวและผลงาน" : "Select a country to browse stories and work"}</span>
+          <span>{locale === "th" ? "ลากโลกเพื่อหมุน แล้วเลือกประเทศที่สนใจ" : "Drag the globe, then choose a country"}</span>
           <b>{locale === "th" ? "หนึ่งจุดต่อหนึ่งประเทศ" : "ONE POINT PER COUNTRY"}</b>
         </div>
 
@@ -113,7 +113,7 @@ export function Atlas({
 
         <div className={styles.scrollHint} aria-hidden="true">
           <span />
-          {locale === "th" ? "เลื่อนลงเพื่อเลือกหมวดข่าว" : "Scroll to browse by subject"}
+          {locale === "th" ? "คลิกค้างแล้วลากเพื่อหมุนโลก" : "Click and drag to spin the globe"}
         </div>
       </div>
 

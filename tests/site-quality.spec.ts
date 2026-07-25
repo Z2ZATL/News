@@ -71,7 +71,9 @@ test("Thai home remains readable without JavaScript", async ({ browser }) => {
   const page = await context.newPage();
   const response = await page.goto("/th");
   expect(response?.ok()).toBeTruthy();
-  await expect(page.locator("main")).toContainText("เลือกประเทศเพื่อดูข่าวและผลงาน");
+  await expect(page.locator("main")).toContainText(
+    "ลากโลกเพื่อหมุน แล้วเลือกประเทศที่สนใจ",
+  );
   await expect(page.locator("main a[href*='/th/stories/']").first()).toBeVisible();
   await context.close();
 });
@@ -169,6 +171,25 @@ test("Atlas upgrades to WebGL on interaction and survives context loss", async (
     .poll(async () => (await thailand.boundingBox())?.x)
     .not.toBe(initialThailandPosition?.x);
 
+  const canvasBox = await canvas.boundingBox();
+  expect(canvasBox).not.toBeNull();
+  const positionBeforeDrag = await thailand.boundingBox();
+  expect(positionBeforeDrag).not.toBeNull();
+  const dragStartX = (canvasBox?.x ?? 0) + (canvasBox?.width ?? 0) * 0.5;
+  const dragStartY = (canvasBox?.y ?? 0) + (canvasBox?.height ?? 0) * 0.5;
+  await page.mouse.move(dragStartX, dragStartY);
+  await page.mouse.down();
+  await page.mouse.move(dragStartX + 240, dragStartY, { steps: 4 });
+  await page.mouse.up();
+  await expect
+    .poll(async () => {
+      const positionAfterDrag = await thailand.boundingBox();
+      return Math.abs(
+        (positionAfterDrag?.x ?? 0) - (positionBeforeDrag?.x ?? 0),
+      );
+    })
+    .toBeGreaterThan(30);
+
   await canvas.evaluate((element) => {
     element.dispatchEvent(
       new Event("webglcontextlost", {
@@ -226,7 +247,7 @@ test("Atlas groups signals by country and reveals ranked side panels on demand",
   );
   const switchStartedAt = await china.evaluate((element) => {
     const startedAt = performance.now();
-    element.click();
+    (element as HTMLButtonElement).click();
     return startedAt;
   });
   await expect

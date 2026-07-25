@@ -1,8 +1,8 @@
 "use client";
 
-import { Stars, useTexture } from "@react-three/drei";
+import { OrbitControls, Stars, useTexture } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AdditiveBlending,
   BackSide,
@@ -182,6 +182,8 @@ export function AtlasCanvas({
   onUnavailable: () => void;
   paused: boolean;
 }>) {
+  const [dragging, setDragging] = useState(false);
+
   return (
     <div className={styles.canvas} aria-hidden="true">
       <Canvas
@@ -209,7 +211,22 @@ export function AtlasCanvas({
           nodes={nodes}
           onPositions={onPositions}
           onReady={onReady}
-          paused={paused}
+          paused={paused || dragging}
+        />
+        <OrbitControls
+          dampingFactor={0.08}
+          enableDamping
+          enablePan={false}
+          enableZoom={false}
+          maxPolarAngle={Math.PI - 0.35}
+          minPolarAngle={0.35}
+          onEnd={() => {
+            setDragging(false);
+          }}
+          onStart={() => {
+            setDragging(true);
+          }}
+          rotateSpeed={1.15}
         />
         <Stars radius={52} depth={30} count={560} factor={1.8} saturation={0.42} fade speed={0} />
       </Canvas>
