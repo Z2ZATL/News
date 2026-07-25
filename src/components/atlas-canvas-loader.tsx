@@ -13,6 +13,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { flushSync } from "react-dom";
 
 import type { AtlasMapNode, AtlasScreenPosition } from "@/lib/atlas-types";
 
@@ -180,7 +181,13 @@ export function AtlasCanvasLoader({
               data-longitude={node.longitude}
               key={node.id}
               onClick={() => {
-                setSelectedId((current) => (current === node.id ? null : node.id));
+                // Keep the DOM cards and connector origin in the same input
+                // event. Without a synchronous commit, a busy renderer can
+                // leave the previous country's connector visible for several
+                // frames even though the new point has already been chosen.
+                flushSync(() => {
+                  setSelectedId((current) => (current === node.id ? null : node.id));
+                });
               }}
               onBlur={() => {
                 setInteractionPaused(false);

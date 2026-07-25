@@ -34,6 +34,9 @@ This file records read-only checks made before any production mutation. Values t
 - Apex MX: Google Workspace
 - Cloudflare publishes DNSKEY records, but the parent had no DS record; DNSSEC therefore had no chain of trust
 - `studio.z2zs.space`: no null MX or `v=spf1 -all` because the hostname did not yet exist
+- A CNAME cannot coexist with MX or SPF TXT data at the same owner name. ADR
+  0005 replaces the impossible null-MX/SPF requirement with explicit DMARC
+  records below each application subdomain; neither record exists yet.
 
 ## Promotion blockers
 
@@ -43,6 +46,9 @@ This file records read-only checks made before any production mutation. Values t
 4. Run preview functional, security, accessibility, and performance checks.
 5. Publish the DNSSEC DS record at the registrar; preserve existing MX/DKIM/tracking records.
 6. Request exact DNS cutover approval, retain Vercel as rollback, and run production smoke checks.
+7. After approval, add `_dmarc.news.z2zs.space` and
+   `_dmarc.studio.z2zs.space` with `p=reject`; do not alter the apex monitoring
+   policy or the `brief` sender records.
 
 ## Accepted zero-cost baseline on 2026-07-26
 

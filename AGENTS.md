@@ -125,6 +125,11 @@ Protected records and services include:
 
 Never place null MX, `v=spf1 -all`, or wildcard DKIM revocation at the apex. Do not move DMARC directly to reject. Roll it out from monitoring only after SPF and DKIM alignment is verified for every legitimate sender.
 
+Application hostnames that use CNAME records cannot also carry MX or SPF TXT
+records at the same owner name. Follow ADR 0005: use explicit DMARC records
+under `_dmarc.news` and `_dmarc.studio` after exact approval, while keeping the
+apex policy in monitoring until every legitimate sender is verified.
+
 Never enable HSTS preload or `includeSubDomains` at the apex. Recovery email for domain-control accounts must use a different domain.
 
 When decommissioning a subdomain, remove its DNS record before deleting the corresponding hosted project to avoid a dangling CNAME.

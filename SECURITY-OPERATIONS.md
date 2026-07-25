@@ -15,6 +15,12 @@ replace existing `brief`, `preview.brief`, `bot`, MX, DKIM, or tracking records.
 
 DMARC begins at `p=none; sp=none`. Do not move to quarantine or reject until aggregate reports prove that Google Workspace and every newsletter sender pass aligned SPF or DKIM.
 
+The application hostnames are CNAMEs and therefore cannot carry null MX or SPF
+TXT records at the same owner names. After exact DNS approval, publish explicit
+`p=reject` policies at `_dmarc.news.z2zs.space` and
+`_dmarc.studio.z2zs.space`; keep the apex in monitoring during the sender audit.
+ADR 0005 records the standards constraint and the approved record shape.
+
 ## Required secrets
 
 - `SANITY_API_READ_TOKEN`: viewer only, public site server
@@ -50,6 +56,7 @@ controls.
 - Sanity CORS: production public and Studio origins only
 - Studio requires Sanity authentication plus `X-Robots-Tag: noindex, nofollow`
 - DNSSEC at Cloudflare and DS record at the registrar
+- explicit application-subdomain DMARC records after approved DNS cutover
 - registrar lock, hardware-key 2FA, independent recovery email
 
 ## Decommissioning
