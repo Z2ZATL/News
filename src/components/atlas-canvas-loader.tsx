@@ -8,6 +8,7 @@ import {
   type ReactNode,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -130,6 +131,22 @@ export function AtlasCanvasLoader({
     }
     setState("fallback");
   }, []);
+
+  useLayoutEffect(() => {
+    const position = selectedId
+      ? latestPositionsRef.current.get(selectedId)
+      : undefined;
+    if (!position) return;
+
+    for (const [index, connector] of connectorRefs.current) {
+      const target = connectorTargets[index];
+      if (!target) continue;
+      connector.setAttribute("x1", String(position.x));
+      connector.setAttribute("y1", String(position.y));
+      connector.setAttribute("x2", String(target.x));
+      connector.setAttribute("y2", String(target.y));
+    }
+  }, [selectedId]);
 
   useEffect(() => {
     setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);

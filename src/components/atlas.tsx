@@ -3,7 +3,6 @@ import Link from "next/link";
 import { AtlasCanvasLoader } from "@/components/atlas-canvas-loader";
 import type { Article } from "@/lib/content-types";
 import { getAtlasCountry } from "@/lib/atlas-countries";
-import { formatArticleDate } from "@/lib/format-date";
 import type { AtlasMapNode } from "@/lib/atlas-types";
 import type { Locale } from "@/lib/i18n";
 import { ui } from "@/lib/i18n";
@@ -28,8 +27,8 @@ export function Atlas({
   articles: Article[];
   locale: Locale;
 }>) {
-  const article = articles[0];
-  if (!article) return null;
+  const latestArticle = articles[0];
+  if (!latestArticle) return null;
   const articleGroups = new Map<string, Article[]>();
   for (const item of articles) {
     const current = articleGroups.get(item.atlasLocation.countryCode) ?? [];
@@ -77,7 +76,7 @@ export function Atlas({
       {
         author: product.author,
         href: `/${locale}/projects/${product.slug}` as AtlasMapNode["signals"][number]["href"],
-        publishedAt: article.publishedAt,
+        publishedAt: latestArticle.publishedAt,
         slug: product.slug,
         title: product.label,
       },
@@ -114,7 +113,7 @@ export function Atlas({
 
         <div className={styles.scrollHint} aria-hidden="true">
           <span />
-          {locale === "th" ? "เลื่อนลงเพื่ออ่านเรื่องเด่น" : "Scroll for the featured story"}
+          {locale === "th" ? "เลื่อนลงเพื่อเลือกหมวดข่าว" : "Scroll to browse by subject"}
         </div>
       </div>
 
@@ -128,21 +127,6 @@ export function Atlas({
         </nav>
       </noscript>
 
-      <div className={styles.copy}>
-        <div className={styles.storyIdentity}>
-          <span className={styles.category}>{article.category[locale]}</span>
-          <span>{formatArticleDate(article.publishedAt, locale)}</span>
-          <span>{ui[locale].by} {article.author.name}</span>
-        </div>
-        <h1>{article.title[locale]}</h1>
-        <div className={styles.deck}>
-          <p>{article.excerpt[locale]}</p>
-          <Link className={styles.read} href={`/${locale}/stories/${article.slug}`}>
-            <span>{ui[locale].read}</span>
-            <span aria-hidden="true">↗</span>
-          </Link>
-        </div>
-      </div>
     </section>
   );
 }

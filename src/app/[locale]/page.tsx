@@ -1,16 +1,14 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Atlas } from "@/components/atlas";
-import { Reveal } from "@/components/reveal";
+import {
+  CategoryNewsBrowser,
+  type NewsCategory,
+} from "@/components/category-news-browser";
 import { getArticles } from "@/lib/content";
-import { formatArticleDate } from "@/lib/format-date";
-import { isLocale, ui } from "@/lib/i18n";
+import { isLocale } from "@/lib/i18n";
 import { localizedAlternates } from "@/lib/metadata";
-
-import styles from "./page.module.css";
 
 export async function generateMetadata({
   params,
@@ -28,57 +26,50 @@ export async function generateMetadata({
   };
 }
 
+function categoryId(label: string): string {
+  const normalized = label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  if (normalized) return normalized;
+
+  return `category-${Array.from(label)
+    .map((character) => character.codePointAt(0)?.toString(16) ?? "0")
+    .join("-")}`;
+}
+
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const articles = await getArticles();
-  const featured = articles[0];
-  if (!featured) notFound();
+  if (!articles.length) notFound();
+
+  const categoryMap = new Map<string, NewsCategory>();
+  for (const article of articles) {
+    const id = categoryId(article.category.en);
+    const category = categoryMap.get(id) ?? {
+      id,
+      label: article.category[locale],
+      stories: [],
+    };
+    category.stories.push({
+      author: article.author.name,
+      cover: {
+        alt: article.cover.alt[locale],
+        src: article.cover.src,
+      },
+      excerpt: article.excerpt[locale],
+      publishedAt: article.publishedAt,
+      slug: article.slug,
+      title: article.title[locale],
+    });
+    categoryMap.set(id, category);
+  }
 
   return (
     <>
       <Atlas articles={articles} locale={locale} />
-      <section className={styles.editorial}>
-        <Reveal className={styles.heading}>
-          <div>
-            <p className="page-kicker">{ui[locale].latest}</p>
-            <span className={styles.issue}>ISSUE 001 / JUL 2026</span>
-          </div>
-          <div>
-            <h2>{locale === "th" ? "ลองให้จริง แล้วค่อยเล่า" : "Test it first. Then tell the story."}</h2>
-            <p className={styles.intro}>
-              {locale === "th"
-                ? "เราเริ่มจากการใช้งานจริง ไล่อ่านเอกสาร และแยกสิ่งที่ตรวจสอบได้ออกจากความเห็น เพื่อให้เรื่องเทคโนโลยีอ่านรู้เรื่องโดยไม่ข้ามรายละเอียดสำคัญ"
-                : "We test the product, read the documents, and separate evidence from opinion—so complex technology stays readable without losing what matters."}
-            </p>
-          </div>
-        </Reveal>
-        <Reveal className={styles.story}>
-          <div className={styles.visual}>
-            <span className={styles.storyNumber}>01</span>
-            <Link href={`/${locale}/stories/${featured.slug}`} className={styles.imageLink}>
-              <Image
-                src={featured.cover.src}
-                alt={featured.cover.alt[locale]}
-                width={1456}
-                height={1456}
-                sizes="(max-width: 760px) 100vw, 48vw"
-              />
-            </Link>
-          </div>
-          <div className={styles.storyCopy}>
-            <p className={styles.meta}>
-              {featured.category[locale]} / {formatArticleDate(featured.publishedAt, locale)}
-            </p>
-            <h3><Link href={`/${locale}/stories/${featured.slug}`}>{featured.title[locale]}</Link></h3>
-            <span>{featured.excerpt[locale]}</span>
-            <p className={styles.byline}>{ui[locale].by} {featured.author.name}</p>
-            <Link className={styles.textLink} href={`/${locale}/stories/${featured.slug}`}>
-              {ui[locale].read} <span aria-hidden="true">↗</span>
-            </Link>
-          </div>
-        </Reveal>
-      </section>
+      <CategoryNewsBrowser categories={[...categoryMap.values()]} locale={locale} />
     </>
   );
 }

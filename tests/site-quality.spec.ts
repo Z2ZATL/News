@@ -76,6 +76,37 @@ test("Thai home remains readable without JavaScript", async ({ browser }) => {
   await context.close();
 });
 
+test("home replaces featured news with a keyboard-accessible category browser", async ({
+  page,
+}) => {
+  await page.goto("/th");
+
+  const browser = page.locator("[data-category-browser]");
+  await expect(
+    browser.getByRole("heading", { name: "เลือกหมวดข่าวที่คุณสนใจ" }),
+  ).toBeVisible();
+  await expect(page.getByText("บทวิเคราะห์ล่าสุด")).toHaveCount(0);
+  await expect(page.getByText("ลองให้จริง แล้วค่อยเล่า")).toHaveCount(0);
+
+  const publicAi = browser.getByRole("tab", { name: /AI ภาครัฐ/ });
+  const codingAi = browser.getByRole("tab", { name: /AI เขียนโค้ด/ });
+  await expect(publicAi).toHaveAttribute("aria-selected", "true");
+  await expect(browser.locator("[data-category-story]")).toHaveCount(3);
+
+  await codingAi.focus();
+  await codingAi.press("Enter");
+  await expect(codingAi).toHaveAttribute("aria-selected", "true");
+  await expect(browser.locator("[data-category-story]")).toHaveCount(1);
+  await expect(
+    browser.locator("a[href='/th/stories/kimi-k3-frontend-arena']").first(),
+  ).toBeVisible();
+
+  await codingAi.press("ArrowRight");
+  const selectedTab = browser.locator('[role="tab"][aria-selected="true"]');
+  await expect(selectedTab).toBeFocused();
+  await expect(codingAi).not.toBeFocused();
+});
+
 test("reduced motion removes animated transitions", async ({ browser }) => {
   const context = await browser.newContext({ reducedMotion: "reduce" });
   const page = await context.newPage();
@@ -193,8 +224,11 @@ test("Atlas groups signals by country and reveals ranked side panels on demand",
   const china = atlas.locator(
     'button[data-kind="story-country"][data-country="CN"]',
   );
-  const switchStartedAt = Date.now();
-  await china.click();
+  const switchStartedAt = await china.evaluate((element) => {
+    const startedAt = performance.now();
+    element.click();
+    return startedAt;
+  });
   await expect
     .poll(async () => {
       const lineX = Number(await atlas.locator("svg line").first().getAttribute("x1"));
@@ -204,7 +238,11 @@ test("Atlas groups signals by country and reveals ranked side panels on demand",
       return Math.abs(lineX - dotX);
     })
     .toBeLessThan(0.5);
-  expect(Date.now() - switchStartedAt).toBeLessThan(300);
+  const switchDuration = await page.evaluate(
+    (startedAt) => performance.now() - startedAt,
+    switchStartedAt,
+  );
+  expect(switchDuration).toBeLessThan(300);
 });
 
 test("story reactions persist locally and stay out of Lab pages", async ({
