@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 
 import type { Locale } from "@/lib/i18n";
+import {
+  REACTION_UPDATED_EVENT,
+  reactionStorageKey,
+} from "@/lib/reaction-storage";
 
 import styles from "./article-reactions.module.css";
 
@@ -30,7 +34,7 @@ export function ArticleReactions({
   locale: Locale;
   slug: string;
 }>) {
-  const storageKey = `z2zs:story-reaction:${slug}`;
+  const storageKey = reactionStorageKey(slug);
   const [selected, setSelected] = useState<ReactionId | null>(null);
 
   useEffect(() => {
@@ -65,6 +69,7 @@ export function ArticleReactions({
     } catch {
       // The reaction still works for the current page when storage is unavailable.
     }
+    window.dispatchEvent(new CustomEvent(REACTION_UPDATED_EVENT, { detail: { slug } }));
   };
 
   const selectedReaction = reactions.find((reaction) => reaction.id === selected);

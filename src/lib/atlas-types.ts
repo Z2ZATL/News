@@ -1,18 +1,26 @@
 import type { Route } from "next";
 
-export interface AtlasMapNode {
+export interface AtlasSignal {
+  author: string;
   href: Route;
-  indexLabel: string;
-  kind: "story" | "product";
-  label: string;
+  publishedAt: string;
+  slug: string;
+  title: string;
+}
+
+export interface AtlasMapNode {
+  accessibleLabel: string;
+  countryCode: string;
+  id: string;
+  kind: "story-country" | "product-country";
   latitude: number;
-  location: string;
   longitude: number;
   offset: readonly [number, number];
+  signals: AtlasSignal[];
 }
 
 export interface AtlasScreenPosition {
-  href: Route;
+  id: string;
   visible: boolean;
   x: number;
   y: number;

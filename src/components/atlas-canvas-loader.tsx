@@ -8,11 +8,16 @@ import {
   type ReactNode,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
 
 import type { AtlasMapNode, AtlasScreenPosition } from "@/lib/atlas-types";
+import {
+  REACTION_UPDATED_EVENT,
+  storedReactionScore,
+} from "@/lib/reaction-storage";
 
 import styles from "./atlas.module.css";
 
@@ -20,6 +25,24 @@ const AtlasCanvas = dynamic(
   () => import("@/components/atlas-canvas").then((module) => module.AtlasCanvas),
   { ssr: false },
 );
+
+const connectorTargets = [
+  { x: 23, y: 29 },
+  { x: 77, y: 29 },
+  { x: 23, y: 50 },
+  { x: 77, y: 50 },
+  { x: 23, y: 71 },
+  { x: 77, y: 71 },
+] as const;
+
+function fallbackPoint(node: AtlasMapNode | null): Readonly<{ x: number; y: number }> {
+  if (!node) return { x: 50, y: 50 };
+  if (node.kind === "product-country") return { x: 68, y: 42 };
+  if (node.countryCode === "CN") return { x: 61, y: 31 };
+  if (node.countryCode === "TH") return { x: 66, y: 38 };
+  if (node.countryCode === "US") return { x: 35, y: 34 };
+  return { x: 50, y: 50 };
+}
 
 class AtlasErrorBoundary extends Component<
   Readonly<{ children: ReactNode; onError: () => void }>,
@@ -50,21 +73,52 @@ export function AtlasCanvasLoader({
   nodes: AtlasMapNode[];
 }>) {
   const [enabled, setEnabled] = useState(false);
+  const [interactionPaused, setInteractionPaused] = useState(false);
+  const [reactionVersion, setReactionVersion] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [state, setState] = useState<"waiting" | "loading" | "ready" | "fallback">(
     "waiting",
   );
-  const nodeRefs = useRef(new Map<string, HTMLAnchorElement>());
+  const connectorRefs = useRef(new Map<number, SVGLineElement>());
+  const nodeRefs = useRef(new Map<string, HTMLButtonElement>());
 
-  const updatePositions = useCallback((positions: AtlasScreenPosition[]) => {
-    for (const position of positions) {
-      const node = nodeRefs.current.get(position.href);
-      if (!node) continue;
-      node.style.left = `${String(position.x)}%`;
-      node.style.top = `${String(position.y)}%`;
-      node.dataset.hemisphere = position.visible ? "front" : "back";
-    }
-  }, []);
+  const selectedNode = nodes.find((node) => node.id === selectedId) ?? null;
+  const selectedFallbackPoint = fallbackPoint(selectedNode);
+  const selectedSignals = useMemo(() => {
+    void reactionVersion;
+    if (!selectedNode) return [];
+    return [...selectedNode.signals]
+      .sort((left, right) => {
+        const scoreDifference =
+          storedReactionScore(right.slug) - storedReactionScore(left.slug);
+        return scoreDifference || Date.parse(right.publishedAt) - Date.parse(left.publishedAt);
+      })
+      .slice(0, 6);
+  }, [reactionVersion, selectedNode]);
+
+  const updatePositions = useCallback(
+    (positions: AtlasScreenPosition[]) => {
+      for (const position of positions) {
+        const node = nodeRefs.current.get(position.id);
+        if (node) {
+          node.style.left = `${String(position.x)}%`;
+          node.style.top = `${String(position.y)}%`;
+          node.dataset.hemisphere = position.visible ? "front" : "back";
+        }
+        if (position.id !== selectedId) continue;
+        for (const [index, connector] of connectorRefs.current) {
+          connector.setAttribute("x1", String(position.x));
+          connector.setAttribute("y1", String(position.y));
+          const target = connectorTargets[index];
+          if (!target) continue;
+          connector.setAttribute("x2", String(target.x));
+          connector.setAttribute("y2", String(target.y));
+        }
+      }
+    },
+    [selectedId],
+  );
 
   const useFallback = useCallback(() => {
     for (const node of nodeRefs.current.values()) {
@@ -77,6 +131,18 @@ export function AtlasCanvasLoader({
 
   useEffect(() => {
     setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }, []);
+
+  useEffect(() => {
+    const refresh = () => {
+      setReactionVersion((current) => current + 1);
+    };
+    window.addEventListener("storage", refresh);
+    window.addEventListener(REACTION_UPDATED_EVENT, refresh);
+    return () => {
+      window.removeEventListener("storage", refresh);
+      window.removeEventListener(REACTION_UPDATED_EVENT, refresh);
+    };
   }, []);
 
   const enableCanvas = () => {
@@ -98,37 +164,102 @@ export function AtlasCanvasLoader({
       <div className={styles.canvasFrame}>
         <nav className={styles.nodes} aria-label={navigationLabel}>
           {nodes.map((node) => (
-            <Link
-              href={node.href}
+            <button
+              aria-expanded={selectedId === node.id}
+              aria-label={node.accessibleLabel}
               className={styles.node}
-              data-featured={node.kind === "product" ? "true" : undefined}
+              data-country={node.countryCode}
               data-kind={node.kind}
               data-latitude={node.latitude}
               data-longitude={node.longitude}
-              aria-label={`${node.indexLabel}. ${node.label}. ${node.location}`}
-              key={`${node.kind}-${node.href}`}
+              key={node.id}
+              onClick={() => {
+                setSelectedId((current) => (current === node.id ? null : node.id));
+              }}
+              onBlur={() => {
+                setInteractionPaused(false);
+              }}
+              onFocus={() => {
+                setInteractionPaused(true);
+              }}
+              onPointerEnter={() => {
+                setInteractionPaused(true);
+              }}
+              onPointerLeave={() => {
+                setInteractionPaused(false);
+              }}
               ref={(element) => {
-                if (element) nodeRefs.current.set(node.href, element);
-                else nodeRefs.current.delete(node.href);
+                if (element) nodeRefs.current.set(node.id, element);
+                else nodeRefs.current.delete(node.id);
               }}
               style={{
                 translate: `${String(node.offset[0])}px ${String(node.offset[1])}px`,
               }}
-              title={`${node.label} · ${node.location}`}
+              title={node.accessibleLabel}
+              type="button"
             >
               <span className={styles.nodeCore} />
-              <span className={styles.nodeLabel}>
-                <b>{node.indexLabel}</b>
-                {node.label}
-                <small>{node.location}</small>
-              </span>
-            </Link>
+            </button>
           ))}
         </nav>
+
+        {selectedSignals.length ? (
+          <>
+            <svg
+              aria-hidden="true"
+              className={styles.connectors}
+              preserveAspectRatio="none"
+              viewBox="0 0 100 100"
+            >
+              <defs>
+                <marker
+                  id="atlas-arrow"
+                  markerHeight="7"
+                  markerWidth="7"
+                  orient="auto"
+                  refX="6"
+                  refY="3.5"
+                >
+                  <path d="M0,0 L7,3.5 L0,7 Z" />
+                </marker>
+              </defs>
+              {selectedSignals.map((signal, index) => (
+                <line
+                  className={styles.connector}
+                  data-kind={selectedNode?.kind}
+                  key={signal.slug}
+                  x1={selectedFallbackPoint.x}
+                  x2={connectorTargets[index]?.x}
+                  y1={selectedFallbackPoint.y}
+                  y2={connectorTargets[index]?.y}
+                  ref={(element) => {
+                    if (element) connectorRefs.current.set(index, element);
+                    else connectorRefs.current.delete(index);
+                  }}
+                />
+              ))}
+            </svg>
+            <div className={styles.signalPanels}>
+              {selectedSignals.map((signal, index) => (
+                <article
+                  className={styles.signalCard}
+                  data-atlas-card=""
+                  data-side={index % 2 === 0 ? "left" : "right"}
+                  data-slot={Math.floor(index / 2)}
+                  key={signal.slug}
+                >
+                  <Link href={signal.href}>{signal.title}</Link>
+                  <p>{signal.author}</p>
+                </article>
+              ))}
+            </div>
+          </>
+        ) : null}
+
         {enabled && state !== "fallback" ? (
           <AtlasErrorBoundary onError={useFallback}>
             <AtlasCanvas
-              animate={!reducedMotion}
+              animate={!reducedMotion && !interactionPaused}
               nodes={nodes}
               onPositions={updatePositions}
               onReady={() => {

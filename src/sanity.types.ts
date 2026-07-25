@@ -173,6 +173,7 @@ export type Article = {
   category?: CategoryReference;
   author?: AuthorReference;
   atlasLocation: {
+    countryCode: string;
     latitude: number;
     longitude: number;
     label?: LocalizedString;
@@ -358,6 +359,7 @@ export type ArticleQueryResult = Array<{
     role: LocalizedString | null;
   } | null;
   atlasLocation: {
+    countryCode: string;
     latitude: number;
     longitude: number;
     label?: LocalizedString;
@@ -392,6 +394,7 @@ export type DraftArticleQueryResult = {
     role: LocalizedString | null;
   } | null;
   atlasLocation: {
+    countryCode: string;
     latitude: number;
     longitude: number;
     label?: LocalizedString;

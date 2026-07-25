@@ -12,7 +12,7 @@ function isBilingual(document: SanityDocument | null): boolean {
   const body = document.body as { th?: unknown[]; en?: unknown[] } | undefined;
   const cover = document.cover as { alt?: { th?: unknown; en?: unknown } } | undefined;
   const atlasLocation = document.atlasLocation as
-    | { latitude?: unknown; longitude?: unknown; label?: { th?: unknown; en?: unknown } }
+    | { countryCode?: unknown; latitude?: unknown; longitude?: unknown; label?: { th?: unknown; en?: unknown } }
     | undefined;
   return Boolean(
     hasText(title?.th) &&
@@ -23,7 +23,9 @@ function isBilingual(document: SanityDocument | null): boolean {
       body.en?.length &&
       hasText(cover?.alt?.th) &&
       hasText(cover?.alt?.en) &&
-      typeof atlasLocation?.latitude === "number" &&
+      typeof atlasLocation?.countryCode === "string" &&
+      /^[A-Z]{2}$/.test(atlasLocation.countryCode) &&
+      typeof atlasLocation.latitude === "number" &&
       typeof atlasLocation.longitude === "number" &&
       hasText(atlasLocation.label?.th) &&
       hasText(atlasLocation.label?.en),

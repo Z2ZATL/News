@@ -1070,6 +1070,13 @@
         "value": {
           "type": "object",
           "attributes": {
+            "countryCode": {
+              "type": "objectAttribute",
+              "value": {
+                "type": "string"
+              },
+              "optional": false
+            },
             "latitude": {
               "type": "objectAttribute",
               "value": {

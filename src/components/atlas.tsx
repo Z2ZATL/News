@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { AtlasCanvasLoader } from "@/components/atlas-canvas-loader";
 import type { Article } from "@/lib/content-types";
+import { getAtlasCountry } from "@/lib/atlas-countries";
 import { formatArticleDate } from "@/lib/format-date";
 import type { AtlasMapNode } from "@/lib/atlas-types";
 import type { Locale } from "@/lib/i18n";
@@ -9,24 +10,16 @@ import { ui } from "@/lib/i18n";
 
 import styles from "./atlas.module.css";
 
-const products = [{ slug: "lumixia-brief", label: "LUMIXIA BRIEF" }] as const;
-
-const collisionOffsets = [
-  [-18, -18],
-  [18, 18],
-  [22, -22],
-  [-22, 22],
+const products = [
+  {
+    author: "Z2Zs Lab",
+    countryCode: "TH",
+    label: "Lumixia Brief",
+    latitude: 13.7563,
+    longitude: 100.5018,
+    slug: "lumixia-brief",
+  },
 ] as const;
-
-function locationOffset(article: Article, articles: Article[]): readonly [number, number] {
-  const matching = articles.filter(
-    (candidate) =>
-      candidate.atlasLocation.latitude === article.atlasLocation.latitude &&
-      candidate.atlasLocation.longitude === article.atlasLocation.longitude,
-  );
-  const position = matching.findIndex((candidate) => candidate.slug === article.slug);
-  return collisionOffsets[position % collisionOffsets.length] ?? [0, 0];
-}
 
 export function Atlas({
   articles,
@@ -37,37 +30,67 @@ export function Atlas({
 }>) {
   const article = articles[0];
   if (!article) return null;
-  const mapNodes: AtlasMapNode[] = [
-    ...articles.map((item, index) => {
+  const articleGroups = new Map<string, Article[]>();
+  for (const item of articles) {
+    const current = articleGroups.get(item.atlasLocation.countryCode) ?? [];
+    articleGroups.set(item.atlasLocation.countryCode, [...current, item]);
+  }
+  const storyNodes: AtlasMapNode[] = [...articleGroups.entries()].map(
+    ([countryCode, countryArticles]) => {
+      const country = getAtlasCountry(countryCode);
+      const first = countryArticles[0];
+      if (!first) throw new Error(`Atlas country ${countryCode} has no articles.`);
+      const countryName = country?.name[locale] ?? first.atlasLocation.label[locale];
       return {
-        href: `/${locale}/stories/${item.slug}` as AtlasMapNode["href"],
-        indexLabel: String(index + 1).padStart(2, "0"),
-        kind: "story" as const,
-        label: item.category[locale],
-        latitude: item.atlasLocation.latitude,
-        longitude: item.atlasLocation.longitude,
-        location: item.atlasLocation.label[locale],
-        offset: locationOffset(item, articles),
+        accessibleLabel:
+          locale === "th"
+            ? `เปิดข่าวจาก${countryName} ${String(countryArticles.length)} เรื่อง`
+            : `Open ${String(countryArticles.length)} stories from ${countryName}`,
+        countryCode,
+        id: `stories-${countryCode}`,
+        kind: "story-country",
+        latitude: country?.latitude ?? first.atlasLocation.latitude,
+        longitude: country?.longitude ?? first.atlasLocation.longitude,
+        offset: [0, 0],
+        signals: countryArticles.map((item) => ({
+          author: item.author.name,
+          href: `/${locale}/stories/${item.slug}` as AtlasMapNode["signals"][number]["href"],
+          publishedAt: item.publishedAt,
+          slug: item.slug,
+          title: item.title[locale],
+        })),
       };
-    }),
-    ...products.map((product, index) => ({
-      href: `/${locale}/projects/${product.slug}` as AtlasMapNode["href"],
-      indexLabel: `P${String(index + 1).padStart(2, "0")}`,
-      kind: "product" as const,
-      label: product.label,
-      latitude: 13.7563,
-      longitude: 100.5018,
-      location: "Bangkok, Thailand",
-      offset: [0, -38] as const,
-    })),
-  ];
+    },
+  );
+  const productNodes: AtlasMapNode[] = products.map((product) => ({
+    accessibleLabel:
+      locale === "th"
+        ? `เปิดผลิตภัณฑ์ของ Z2Zs Lab ในประเทศไทย`
+        : `Open Z2Zs Lab products in Thailand`,
+    countryCode: product.countryCode,
+    id: `products-${product.countryCode}`,
+    kind: "product-country",
+    latitude: product.latitude,
+    longitude: product.longitude,
+    offset: [40, 32],
+    signals: [
+      {
+        author: product.author,
+        href: `/${locale}/projects/${product.slug}` as AtlasMapNode["signals"][number]["href"],
+        publishedAt: article.publishedAt,
+        slug: product.slug,
+        title: product.label,
+      },
+    ],
+  }));
+  const mapNodes = [...storyNodes, ...productNodes];
 
   return (
     <section className={styles.atlas} aria-label={ui[locale].atlasLabel}>
       <div className={styles.globeStage}>
         <AtlasCanvasLoader
           navigationLabel={
-            locale === "th" ? "ข่าวและผลิตภัณฑ์บนแผนที่โลก" : "Stories and products on the globe"
+            locale === "th" ? "ประเทศที่มีข่าวและผลงานบนแผนที่โลก" : "Countries with stories and products"
           }
           nodes={mapNodes}
         />
@@ -75,18 +98,18 @@ export function Atlas({
         <div className={styles.colorWash} aria-hidden="true" />
 
         <div className={styles.axis}>
-          <span>{String(articles.length).padStart(2, "0")}</span>
-          <span>Z2ZS / SIGNALS</span>
+          <span>{String(storyNodes.length).padStart(2, "0")}</span>
+          <span>Z2ZS / COUNTRIES</span>
         </div>
 
         <div className={styles.orbitCaption} aria-hidden="true">
-          <span>{locale === "th" ? "มองเทคโนโลยีจากโลกจริง" : "Technology, viewed from the real world"}</span>
-          <b>13.7563° N · 100.5018° E</b>
+          <span>{locale === "th" ? "เลือกประเทศเพื่อดูข่าวและผลงาน" : "Select a country to browse stories and work"}</span>
+          <b>{locale === "th" ? "หนึ่งจุดต่อหนึ่งประเทศ" : "ONE POINT PER COUNTRY"}</b>
         </div>
 
         <div className={styles.legend} aria-hidden="true">
-          <span><i className={styles.legendStory} />{locale === "th" ? "ข่าว" : "Stories"}</span>
-          <span><i className={styles.legendProduct} />{locale === "th" ? "ผลิตภัณฑ์" : "Products"}</span>
+          <span><i className={styles.legendStory} />{locale === "th" ? "ประเทศที่มีข่าว" : "News countries"}</span>
+          <span><i className={styles.legendProduct} />{locale === "th" ? "ประเทศที่มีผลงาน Lab" : "Lab countries"}</span>
         </div>
 
         <div className={styles.scrollHint} aria-hidden="true">
@@ -94,6 +117,16 @@ export function Atlas({
           {locale === "th" ? "เลื่อนลงเพื่ออ่านเรื่องเด่น" : "Scroll for the featured story"}
         </div>
       </div>
+
+      <noscript>
+        <nav className={styles.noScriptIndex} aria-label={locale === "th" ? "ข่าวทั้งหมดในแผนที่" : "All Atlas stories"}>
+          {articles.map((item) => (
+            <Link href={`/${locale}/stories/${item.slug}`} key={item.slug}>
+              {item.title[locale]} · {item.author.name}
+            </Link>
+          ))}
+        </nav>
+      </noscript>
 
       <div className={styles.copy}>
         <div className={styles.storyIdentity}>

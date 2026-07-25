@@ -78,7 +78,7 @@ function Earth({
         const visible = worldPosition.z > 0;
         const projected = worldPosition.clone().project(state.camera);
         return {
-          href: node.href,
+          id: node.id,
           visible,
           x: MathUtils.clamp((projected.x + 1) * 50, 4, 96),
           y: MathUtils.clamp((1 - projected.y) * 50, 7, 93),
@@ -88,7 +88,7 @@ function Earth({
   });
 
   return (
-    <group ref={group} rotation={[0.12, -1.35, -0.11]}>
+    <group ref={group} rotation={[0.12, 1.65, -0.11]}>
       <mesh>
         <sphereGeometry args={[2.12, 64, 64]} />
         <meshStandardMaterial

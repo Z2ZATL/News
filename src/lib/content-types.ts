@@ -21,6 +21,7 @@ export interface ArticleSection {
 export interface Article {
   slug: string;
   atlasLocation: {
+    countryCode: string;
     latitude: number;
     longitude: number;
     label: LocalizedText;

@@ -66,6 +66,7 @@ export const facebookArticles: Article[] = [
   {
     slug: "gpt-5-6-luna-terra-sol",
     atlasLocation: {
+      countryCode: "US",
       latitude: 37.7749,
       longitude: -122.4194,
       label: { th: "ซานฟรานซิสโก แคลิฟอร์เนีย สหรัฐฯ", en: "San Francisco, California, USA" },
@@ -175,6 +176,7 @@ export const facebookArticles: Article[] = [
   {
     slug: "chatgpt-gpt-live-voice-update",
     atlasLocation: {
+      countryCode: "US",
       latitude: 37.7749,
       longitude: -122.4194,
       label: { th: "ซานฟรานซิสโก แคลิฟอร์เนีย สหรัฐฯ", en: "San Francisco, California, USA" },
@@ -267,6 +269,7 @@ export const facebookArticles: Article[] = [
   {
     slug: "kimi-k3-frontend-arena",
     atlasLocation: {
+      countryCode: "CN",
       latitude: 39.9042,
       longitude: 116.4074,
       label: { th: "ปักกิ่ง ประเทศจีน", en: "Beijing, China" },
@@ -445,6 +448,7 @@ export const facebookArticles: Article[] = [
   {
     slug: "th-ai-passport-hands-on-review",
     atlasLocation: {
+      countryCode: "TH",
       latitude: 13.8847,
       longitude: 100.5656,
       label: { th: "หลักสี่ กรุงเทพฯ ประเทศไทย", en: "Lak Si, Bangkok, Thailand" },
@@ -552,6 +556,7 @@ export const facebookArticles: Article[] = [
   {
     slug: "google-weather-lab-weathernext-2",
     atlasLocation: {
+      countryCode: "US",
       latitude: 37.422,
       longitude: -122.0841,
       label: { th: "เมาน์เทนวิว แคลิฟอร์เนีย สหรัฐฯ", en: "Mountain View, California, USA" },
@@ -642,6 +647,7 @@ export const facebookArticles: Article[] = [
   {
     slug: "th-ai-passport-recap-developer-tools",
     atlasLocation: {
+      countryCode: "TH",
       latitude: 13.8847,
       longitude: 100.5656,
       label: { th: "หลักสี่ กรุงเทพฯ ประเทศไทย", en: "Lak Si, Bangkok, Thailand" },

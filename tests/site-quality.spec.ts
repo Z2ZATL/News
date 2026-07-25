@@ -71,7 +71,7 @@ test("Thai home remains readable without JavaScript", async ({ browser }) => {
   const page = await context.newPage();
   const response = await page.goto("/th");
   expect(response?.ok()).toBeTruthy();
-  await expect(page.locator("main")).toContainText("มองเทคโนโลยีจากโลกจริง");
+  await expect(page.locator("main")).toContainText("เลือกประเทศเพื่อดูข่าวและผลงาน");
   await expect(page.locator("main a[href*='/th/stories/']").first()).toBeVisible();
   await context.close();
 });
@@ -87,7 +87,7 @@ test("reduced motion removes animated transitions", async ({ browser }) => {
   await expect(atlas).toHaveAttribute("data-atlas-state", "ready", {
     timeout: 20_000,
   });
-  const marker = atlas.locator('a[href$="/okmd-ai-playground-review"]');
+  const marker = atlas.locator('button[data-kind="story-country"][data-country="TH"]');
   const initial = await marker.boundingBox();
   expect(initial).not.toBeNull();
   await page.mouse.move(1, 1);
@@ -105,33 +105,38 @@ test("Atlas upgrades to WebGL on interaction and survives context loss", async (
   await page.goto("/th");
   const atlas = page.locator("[data-atlas-state]");
   const semanticNavigation = atlas.getByRole("navigation", {
-    name: "ข่าวและผลิตภัณฑ์บนแผนที่โลก",
+    name: "ประเทศที่มีข่าวและผลงานบนแผนที่โลก",
   });
-  const firstStory = semanticNavigation.locator("a").first();
-  await firstStory.focus();
+  const firstSignal = semanticNavigation.locator("button").first();
+  await firstSignal.focus();
   await expect(atlas).toHaveAttribute("data-atlas-state", "ready", {
     timeout: 20_000,
   });
-  await expect(firstStory).toBeFocused();
+  await expect(firstSignal).toBeFocused();
   await expect(semanticNavigation).toBeVisible();
   const canvas = atlas.locator("canvas");
   await expect(canvas).toBeVisible();
   await expect(canvas).toHaveAttribute("aria-hidden", "true");
-  const bangkok = atlas.locator('a[data-latitude="13.7463"][data-longitude="100.5394"]');
-  await expect(bangkok).toBeVisible();
-  await expect(atlas.locator('a[data-latitude="39.9042"][data-longitude="116.4074"]')).toHaveCount(1);
+  const thailand = atlas.locator(
+    'button[data-kind="story-country"][data-latitude="15.87"][data-longitude="100.99"]',
+  );
+  await expect(thailand).toBeVisible();
+  await expect(atlas.locator('button[data-kind="story-country"][data-country="CN"]')).toHaveCount(1);
   await expect(
-    atlas.locator('a[data-latitude="37.7749"][data-longitude="-122.4194"]'),
-  ).toHaveCount(2);
+    atlas.locator('button[data-kind="story-country"][data-country="US"]'),
+  ).toHaveCount(1);
   await expect(
-    atlas.locator('a[data-latitude="37.422"][data-longitude="-122.0841"]'),
+    atlas.locator('button[data-kind="product-country"][data-country="TH"]'),
   ).toHaveCount(1);
 
-  const initialBangkokPosition = await bangkok.boundingBox();
-  expect(initialBangkokPosition).not.toBeNull();
+  const initialThailandPosition = await thailand.boundingBox();
+  expect(initialThailandPosition).not.toBeNull();
+  await firstSignal.evaluate((element) => {
+    (element as HTMLButtonElement).blur();
+  });
   await expect
-    .poll(async () => (await bangkok.boundingBox())?.x)
-    .not.toBe(initialBangkokPosition?.x);
+    .poll(async () => (await thailand.boundingBox())?.x)
+    .not.toBe(initialThailandPosition?.x);
 
   await canvas.evaluate((element) => {
     element.dispatchEvent(
@@ -142,7 +147,48 @@ test("Atlas upgrades to WebGL on interaction and survives context loss", async (
     );
   });
   await expect(atlas).toHaveAttribute("data-atlas-state", "fallback");
-  await expect.poll(() => firstStory.evaluate((element) => element.style.left)).toBe("");
+  await expect.poll(() => firstSignal.evaluate((element) => element.style.left)).toBe("");
+});
+
+test("Atlas groups signals by country and reveals ranked side panels on demand", async ({
+  page,
+}) => {
+  await page.goto("/th");
+  const atlas = page.locator("[data-atlas-state]");
+
+  await expect(atlas.locator('[data-kind="story-country"]')).toHaveCount(3);
+  await expect(atlas.locator('[data-kind="product-country"]')).toHaveCount(1);
+  await expect(atlas.locator("[data-atlas-card]")).toHaveCount(0);
+  await atlas.hover();
+  await expect(atlas).toHaveAttribute("data-atlas-state", "ready", {
+    timeout: 20_000,
+  });
+  await page.evaluate(() => {
+    window.localStorage.setItem(
+      "z2zs:story-reaction:th-ai-passport-recap-developer-tools",
+      "love",
+    );
+  });
+
+  const thailand = atlas.locator(
+    'button[data-kind="story-country"][data-country="TH"]',
+  );
+  await expect(thailand).toHaveAttribute("data-latitude", "15.87");
+  await expect(thailand).toHaveAttribute("data-longitude", "100.99");
+  await thailand.click();
+
+  const cards = atlas.locator("[data-atlas-card]");
+  await expect(cards).toHaveCount(3);
+  await expect(atlas.locator("svg line")).toHaveCount(3);
+  await expect(cards.nth(0)).toHaveAttribute("data-side", "left");
+  await expect(cards.nth(1)).toHaveAttribute("data-side", "right");
+  await expect(cards.nth(2)).toHaveAttribute("data-side", "left");
+  await expect(cards.nth(0).locator("a")).toBeVisible();
+  await expect(cards.nth(0).locator("a")).toHaveAttribute(
+    "href",
+    "/th/stories/th-ai-passport-recap-developer-tools",
+  );
+  await expect(cards.nth(0)).toContainText("Aitthikorn Khammee");
 });
 
 test("story reactions persist locally and stay out of Lab pages", async ({

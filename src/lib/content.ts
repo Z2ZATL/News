@@ -138,7 +138,7 @@ function normalizeArticle(article: RemoteArticle): Article | null {
   const category = normalizeLocalized(article.category);
   const authorRole = normalizeLocalized(article.author?.role);
   const atlasLocation = article.atlasLocation as
-    | { latitude?: number; longitude?: number; label?: { th?: string; en?: string } | null }
+    | { countryCode?: string; latitude?: number; longitude?: number; label?: { th?: string; en?: string } | null }
     | null
     | undefined;
   const atlasLabel = normalizeLocalized(atlasLocation?.label);
@@ -149,7 +149,9 @@ function normalizeArticle(article: RemoteArticle): Article | null {
     !category ||
     !authorRole ||
     !atlasLabel ||
-    typeof atlasLocation?.latitude !== "number" ||
+    typeof atlasLocation?.countryCode !== "string" ||
+    !/^[A-Z]{2}$/.test(atlasLocation.countryCode) ||
+    typeof atlasLocation.latitude !== "number" ||
     !Number.isFinite(atlasLocation.latitude) ||
     atlasLocation.latitude < -90 ||
     atlasLocation.latitude > 90 ||
@@ -173,6 +175,7 @@ function normalizeArticle(article: RemoteArticle): Article | null {
   return {
     slug: article.slug,
     atlasLocation: {
+      countryCode: atlasLocation.countryCode,
       latitude: atlasLocation.latitude,
       longitude: atlasLocation.longitude,
       label: atlasLabel,

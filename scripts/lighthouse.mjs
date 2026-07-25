@@ -97,6 +97,23 @@ async function runLighthouse(route, chromePath) {
   }
 }
 
+async function runLighthouseWithTraceRetry(route, chromePath) {
+  const maximumAttempts = 3;
+  for (let attempt = 1; attempt <= maximumAttempts; attempt += 1) {
+    const result = await runLighthouse(route, chromePath);
+    const hasMissingCategory = Object.keys(minimumScores).some(
+      (category) => result?.lhr.categories[category]?.score === null,
+    );
+    const retryable =
+      hasMissingCategory && result?.lhr.runtimeError?.code === "NO_NAVSTART";
+    if (!retryable || attempt === maximumAttempts) return result;
+    console.log(
+      `${route} trace capture returned NO_NAVSTART; retrying (${String(attempt + 1)}/${String(maximumAttempts)}).`,
+    );
+  }
+  return undefined;
+}
+
 try {
   await waitForServer();
   const automaticChromePath = chromium.executablePath();
@@ -104,7 +121,7 @@ try {
 
   const failures = [];
   for (const route of routes) {
-    const result = await runLighthouse(route, chromePath);
+    const result = await runLighthouseWithTraceRetry(route, chromePath);
     if (!result) {
       failures.push(`${route}: Lighthouse returned no result.`);
       continue;

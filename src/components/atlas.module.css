@@ -136,6 +136,95 @@
   transition: opacity 180ms ease, visibility 180ms ease;
 }
 
+.connectors {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.connector {
+  fill: none;
+  stroke: rgb(77 215 255 / 82%);
+  stroke-width: 1.15;
+  vector-effect: non-scaling-stroke;
+  marker-end: url("#atlas-arrow");
+  stroke-dasharray: 5 5;
+  animation: revealConnector 420ms ease-out both;
+}
+
+.connector[data-kind="product-country"] {
+  stroke: rgb(255 57 200 / 76%);
+}
+
+.connectors marker path {
+  fill: var(--cyan);
+}
+
+.signalPanels {
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  pointer-events: none;
+}
+
+.signalCard {
+  position: absolute;
+  display: grid;
+  width: clamp(180px, 19vw, 290px);
+  min-height: 82px;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgb(47 191 242 / 28%);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgb(5 12 20 / 94%), rgb(4 7 13 / 86%));
+  box-shadow: 0 18px 48px rgb(0 0 0 / 34%);
+  pointer-events: auto;
+  align-content: center;
+  animation: revealSignal 360ms ease-out both;
+  backdrop-filter: blur(12px);
+}
+
+.signalCard[data-side="left"] { left: 4vw; }
+.signalCard[data-side="right"] { right: 4vw; }
+.signalCard[data-slot="0"] { top: 20%; }
+.signalCard[data-slot="1"] { top: 41%; }
+.signalCard[data-slot="2"] { top: 62%; }
+
+.signalCard a {
+  color: var(--text);
+  font-family: var(--font-thai), var(--font-display), sans-serif;
+  font-size: clamp(0.8rem, 1vw, 0.96rem);
+  font-weight: 550;
+  line-height: 1.48;
+  text-wrap: balance;
+}
+
+.signalCard a:hover,
+.signalCard a:focus-visible {
+  color: var(--cyan);
+}
+
+.signalCard p {
+  margin: 0.42rem 0 0;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+}
+
+@keyframes revealConnector {
+  from { opacity: 0; stroke-dashoffset: 18; }
+  to { opacity: 1; stroke-dashoffset: 0; }
+}
+
+@keyframes revealSignal {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .legend {
   position: absolute;
   z-index: 4;
@@ -167,37 +256,36 @@
 
 .node {
   position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: .55rem;
+  display: grid;
   min-width: 24px;
   min-height: 24px;
   padding: 6px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
   pointer-events: auto;
   transform: translate(-50%, -50%);
   transition: opacity 180ms ease;
+  place-items: center;
 }
 
 .node[data-hemisphere="back"] {
-  opacity: 0.42;
+  opacity: 0;
+  pointer-events: none;
 }
 
-.node:nth-child(1) { top: 39%; left: 69%; }
-.node:nth-child(2) { top: 26%; left: 57%; }
-.node:nth-child(3) { top: 33%; left: 37%; }
-.node:nth-child(4) { top: 53%; left: 31%; }
-.node:nth-child(5) { top: 66%; left: 43%; }
-.node:nth-child(6) { top: 68%; left: 61%; }
-.node:nth-child(7) { top: 53%; left: 72%; }
-.node:nth-child(8) { top: 19%; left: 45%; }
-
-.node[data-kind="product"] {
-  top: 31%;
-  left: 50%;
+.node[data-hemisphere="back"]:focus-visible,
+.node[data-hemisphere="back"][aria-expanded="true"] {
+  opacity: 1;
+  pointer-events: auto;
 }
 
-.node:not([data-featured="true"]) .nodeCore {
+.node[data-country="TH"] { top: 38%; left: 66%; }
+.node[data-country="CN"] { top: 31%; left: 61%; }
+.node[data-country="US"] { top: 34%; left: 35%; }
+
+.node[data-kind="story-country"] .nodeCore {
   width: 12px;
   height: 12px;
   border-width: 1px;
@@ -219,6 +307,13 @@
   transition: transform 240ms ease, box-shadow 240ms ease;
 }
 
+.node[aria-expanded="true"] .nodeCore {
+  box-shadow:
+    0 0 0 16px rgb(47 191 242 / 10%),
+    0 0 52px var(--cyan);
+  transform: scale(1.2);
+}
+
 .node:hover .nodeCore,
 .node:focus-visible .nodeCore {
   box-shadow:
@@ -227,63 +322,15 @@
   transform: scale(1.24);
 }
 
-.nodeLabel {
-  display: flex;
-  gap: .42rem;
-  align-items: center;
-  padding: 0.3rem 0.5rem;
-  border: 1px solid rgb(255 255 255 / 9%);
-  border-radius: 4px;
-  background: rgb(3 6 11 / 78%);
-  color: var(--text);
-  font-family: var(--font-display);
-  font-size: 0.6rem;
-  letter-spacing: 0.09em;
-  white-space: nowrap;
-  transition:
-    color 180ms ease,
-    border-color 180ms ease,
-    background 180ms ease,
-    transform 180ms ease;
+.node[data-kind="product-country"] .nodeCore {
+  background: conic-gradient(from 30deg, #45efff, #825cff, #ff39c8, #ffb347, #45efff);
 }
 
-.nodeLabel b {
-  color: var(--cyan);
-  font-size: .5rem;
-  font-weight: 500;
-}
-
-.nodeLabel small {
-  display: none;
-  color: #aebbc5;
-  font-size: .46rem;
-  letter-spacing: .03em;
-}
-
-.node:hover .nodeLabel small,
-.node:focus-visible .nodeLabel small {
-  display: inline;
-}
-
-.node[data-kind="product"] .nodeLabel {
-  border-color: rgb(255 57 200 / 40%);
-}
-
-.node[data-kind="product"] .nodeLabel b {
-  color: #ff72d8;
-}
-
-.node:hover .nodeLabel,
-.node:focus-visible .nodeLabel {
-  color: #021016;
-  border-color: var(--cyan);
-  background: var(--cyan);
-  transform: translateY(-2px);
-}
-
-.node:hover .nodeLabel b,
-.node:focus-visible .nodeLabel b {
-  color: #06303e;
+.noScriptIndex {
+  display: grid;
+  gap: 0.8rem;
+  padding: 2rem 4vw;
+  border-top: 1px solid var(--line);
 }
 
 .scrollHint {
@@ -439,36 +486,34 @@
     gap: .35rem;
   }
 
-  .node:nth-child(1) { top: 38%; left: 78%; }
-  .node:nth-child(2) { top: 25%; left: 58%; }
-  .node:nth-child(3) { top: 32%; left: 27%; }
-  .node:nth-child(4) { top: 50%; left: 20%; }
-  .node:nth-child(5) { top: 65%; left: 34%; }
-  .node:nth-child(6) { top: 68%; left: 64%; }
-  .node:nth-child(7) { top: 54%; left: 81%; }
-  .node:nth-child(8) { top: 19%; left: 40%; }
-
-  .node[data-kind="product"] {
-    top: 30%;
-    left: 50%;
-  }
-
   .nodeCore {
     width: 16px;
     height: 16px;
   }
 
-  .node:not([data-featured="true"]) .nodeCore {
+  .node[data-kind="story-country"] .nodeCore {
     width: 9px;
     height: 9px;
   }
 
-  .nodeLabel {
-    gap: .28rem;
-    padding: .22rem .34rem;
-    font-size: .46rem;
-    letter-spacing: .055em;
+  .signalCard {
+    width: 25%;
+    min-height: 72px;
+    padding: 0.65rem 0.7rem;
   }
+
+  .signalCard[data-side="left"] { left: 20%; }
+  .signalCard[data-side="right"] { right: 20%; }
+
+  .signalCard a {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 0.66rem;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .signalCard p { font-size: 0.45rem; }
 
   .orbitCaption {
     right: 20px;
@@ -505,10 +550,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .connector,
+  .signalCard,
   .nodeCore,
   .node,
   .read,
   .planetFallback {
+    animation: none;
     transition: none;
   }
 }
