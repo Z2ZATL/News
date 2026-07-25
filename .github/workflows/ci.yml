@@ -30,6 +30,7 @@ jobs:
       - run: pnpm content:migrate
       - run: pnpm scan:secrets
       - run: pnpm build
+      - run: pnpm --package=netlify-cli@27.0.0 dlx netlify build --offline --context deploy-preview
       - run: pnpm audit --audit-level=moderate
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
@@ -59,4 +60,5 @@ jobs:
       - run: pnpm typegen
       - run: git diff --exit-code -- ../src/sanity.types.ts schema.json
       - run: pnpm build
+      - run: pnpm --package=netlify-cli@27.0.0 dlx netlify build --offline --context deploy-preview
       - run: pnpm audit --audit-level=moderate
