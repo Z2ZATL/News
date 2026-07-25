@@ -157,7 +157,13 @@ export function AtlasCanvasLoader({
       className={styles.visualStack}
       data-atlas-state={state}
       onFocusCapture={enableCanvas}
-      onPointerEnter={enableCanvas}
+      onPointerEnter={() => {
+        enableCanvas();
+        setInteractionPaused(true);
+      }}
+      onPointerLeave={() => {
+        setInteractionPaused(false);
+      }}
       onTouchStart={enableCanvas}
     >
       <div className={styles.planetFallback} aria-hidden="true" />
@@ -181,12 +187,6 @@ export function AtlasCanvasLoader({
               }}
               onFocus={() => {
                 setInteractionPaused(true);
-              }}
-              onPointerEnter={() => {
-                setInteractionPaused(true);
-              }}
-              onPointerLeave={() => {
-                setInteractionPaused(false);
               }}
               ref={(element) => {
                 if (element) nodeRefs.current.set(node.id, element);
