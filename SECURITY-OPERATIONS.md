@@ -51,6 +51,8 @@ controls.
 
 - Netlify Deploy Preview tested before domain cutover
 - Netlify Free hard credit limit; no auto recharge or paid add-ons
+- Netlify sites are not connected to the private organization repository;
+  deploy a reviewed commit manually through the authenticated CLI
 - Application limits: `/api/draft` 5/min/IP, `/api/csp-report` 10/min/IP,
   reaction writes 20/min/IP and reads 60/min/IP
 - Sanity CORS: production public and Studio origins only
@@ -67,16 +69,18 @@ window has closed. This prevents both downtime and dangling CNAME takeover.
 
 ## Netlify cutover and rollback
 
-1. Record the current `news.z2zs.space` CNAME target and TTL before any change.
-2. Verify the Netlify preview with the same production environment variables,
+1. Confirm the worktree is clean, the deployed commit is the reviewed PR head,
+   and every required CI check passed.
+2. Record the current `news.z2zs.space` CNAME target and TTL before any change.
+3. Verify the Netlify preview with the same production environment variables,
    then claim `news.z2zs.space` in Netlify before changing DNS.
-3. Change only the `news` CNAME in Cloudflare. Leave the Vercel project and its
+4. Change only the `news` CNAME in Cloudflare. Leave the Vercel project and its
    deployment untouched for at least 24 hours.
-4. Verify HTTPS, nonce CSP, headers, `/th`, both RSS feeds, sitemap, reactions,
+5. Verify HTTPS, nonce CSP, headers, `/th`, both RSS feeds, sitemap, reactions,
    Sanity reads, and webhook invalidation from two independent networks.
-5. If any critical check fails, restore the exact recorded Vercel CNAME target.
+6. If any critical check fails, restore the exact recorded Vercel CNAME target.
    Do not delete or recreate either hosted project during rollback.
-6. After the rollback window closes, remove the old domain claim before deleting
+7. After the rollback window closes, remove the old domain claim before deleting
    any obsolete project, then confirm that no dangling CNAME remains.
 
 The scheduled `production-audit.yml` workflow checks live headers, public feeds,

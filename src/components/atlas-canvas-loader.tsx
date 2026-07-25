@@ -8,7 +8,6 @@ import {
   type ReactNode,
   useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -73,6 +72,9 @@ export function AtlasCanvasLoader({
   const [enabled, setEnabled] = useState(false);
   const [interactionPaused, setInteractionPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [selectedAnchor, setSelectedAnchor] = useState<
+    Readonly<{ x: number; y: number }> | null
+  >(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [state, setState] = useState<"waiting" | "loading" | "ready" | "fallback">(
     "waiting",
@@ -83,6 +85,7 @@ export function AtlasCanvasLoader({
 
   const selectedNode = nodes.find((node) => node.id === selectedId) ?? null;
   const selectedFallbackPoint = fallbackPoint(selectedNode);
+  const selectedAnchorPoint = selectedAnchor ?? selectedFallbackPoint;
   const selectedSignals = useMemo(() => {
     if (!selectedNode) return [];
     return [...selectedNode.signals]
@@ -126,22 +129,6 @@ export function AtlasCanvasLoader({
     setState("fallback");
   }, []);
 
-  useLayoutEffect(() => {
-    const position = selectedId
-      ? latestPositionsRef.current.get(selectedId)
-      : undefined;
-    if (!position) return;
-
-    for (const [index, connector] of connectorRefs.current) {
-      const target = connectorTargets[index];
-      if (!target) continue;
-      connector.setAttribute("x1", String(position.x));
-      connector.setAttribute("y1", String(position.y));
-      connector.setAttribute("x2", String(target.x));
-      connector.setAttribute("y2", String(target.y));
-    }
-  }, [selectedId]);
-
   useEffect(() => {
     setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   }, []);
@@ -181,12 +168,17 @@ export function AtlasCanvasLoader({
               data-longitude={node.longitude}
               key={node.id}
               onClick={() => {
+                const nextId = selectedId === node.id ? null : node.id;
+                const nextAnchor = nextId
+                  ? latestPositionsRef.current.get(nextId) ?? fallbackPoint(node)
+                  : null;
                 // Keep the DOM cards and connector origin in the same input
                 // event. Without a synchronous commit, a busy renderer can
                 // leave the previous country's connector visible for several
                 // frames even though the new point has already been chosen.
                 flushSync(() => {
-                  setSelectedId((current) => (current === node.id ? null : node.id));
+                  setSelectedAnchor(nextAnchor);
+                  setSelectedId(nextId);
                 });
               }}
               onBlur={() => {
@@ -235,9 +227,9 @@ export function AtlasCanvasLoader({
                   className={styles.connector}
                   data-kind={selectedNode?.kind}
                   key={signal.slug}
-                  x1={selectedFallbackPoint.x}
+                  x1={selectedAnchorPoint.x}
                   x2={connectorTargets[index]?.x}
-                  y1={selectedFallbackPoint.y}
+                  y1={selectedAnchorPoint.y}
                   y2={connectorTargets[index]?.y}
                   ref={(element) => {
                     if (!element) {

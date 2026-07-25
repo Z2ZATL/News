@@ -29,6 +29,11 @@ repository.
   the allowance is exhausted. Netlify's maintained OpenNext adapter supports the
   App Router, SSR, route handlers, Draft Mode, image optimization, and tag-based
   revalidation used by this application.
+- Do not connect the private `Z2ZATL/News` organization repository to Netlify.
+  Netlify reserves private organization-repository Git integration for paid
+  plans. Keep CI on GitHub Actions and use authenticated Netlify CLI manual
+  deploys of a reviewed, green commit. A draft deploy is created without
+  `--prod`; production requires the explicit `--prod` command after approval.
 - The founder has accepted the zero-cost constraint. Build and test a Netlify
   preview, but keep the current Vercel deployment as rollback until the Netlify
   preview passes every gate and DNS cutover is explicitly approved.
@@ -55,3 +60,6 @@ repository.
 - A future need for confidential CMS records, more granular Sanity roles,
   production-domain access protection, enforced private-repository branch
   rules, or usage beyond free quotas requires a new cost decision.
+- Netlify will not create deploys automatically from Git pushes. This avoids a
+  paid repository integration and prevents unreviewed code from reaching
+  production, at the cost of a deliberate manual release step.

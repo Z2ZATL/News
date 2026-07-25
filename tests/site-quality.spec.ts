@@ -285,27 +285,30 @@ test("Atlas groups signals by country and reveals ranked side panels on demand",
   );
   await expect(cards.nth(0)).toContainText("Aitthikorn Khammee");
 
-  const china = atlas.locator(
-    'button[data-kind="story-country"][data-country="CN"]',
-  );
-  const switchStartedAt = await china.evaluate((element) => {
+  const switchDuration = await page.evaluate(async () => {
+    const root = document.querySelector<HTMLElement>("[data-atlas-state]");
+    const china = root?.querySelector<HTMLButtonElement>(
+      'button[data-kind="story-country"][data-country="CN"]',
+    );
+    if (!root || !china) return Number.POSITIVE_INFINITY;
+
     const startedAt = performance.now();
-    (element as HTMLButtonElement).click();
-    return startedAt;
+    china.click();
+    return new Promise<number>((resolve) => {
+      const measure = () => {
+        const line = root.querySelector<SVGLineElement>("svg line");
+        const lineX = Number(line?.getAttribute("x1"));
+        const dotX = Number.parseFloat(china.style.left);
+        const elapsed = performance.now() - startedAt;
+        if (Math.abs(lineX - dotX) < 0.5 || elapsed >= 300) {
+          resolve(elapsed);
+          return;
+        }
+        requestAnimationFrame(measure);
+      };
+      measure();
+    });
   });
-  await expect
-    .poll(async () => {
-      const lineX = Number(await atlas.locator("svg line").first().getAttribute("x1"));
-      const dotX = Number.parseFloat(
-        await china.evaluate((element) => element.style.left),
-      );
-      return Math.abs(lineX - dotX);
-    })
-    .toBeLessThan(0.5);
-  const switchDuration = await page.evaluate(
-    (startedAt) => performance.now() - startedAt,
-    switchStartedAt,
-  );
   expect(switchDuration).toBeLessThan(300);
 });
 

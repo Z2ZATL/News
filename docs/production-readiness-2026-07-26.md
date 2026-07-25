@@ -23,8 +23,11 @@ This file records read-only checks made before any production mutation. Values t
 - CORS contains only `https://news.z2zs.space` (no credentials) and
   `https://studio.z2zs.space` (credentials allowed); auto-added localhost was removed
 - The expiring migration token was revoked immediately after use
-- Required before promotion: read-only draft token, webhook, and a separate
-  Studio deployment whose editorial access requires Sanity authentication
+- A dedicated `Viewer` token named `Z2Zs Lab draft preview` was created and
+  verified against the Sanity API without exposing or committing its value
+- Required before promotion: install the viewer token as a server-only hosting
+  variable, create the signed webhook, and deploy a separate Studio whose
+  editorial access requires Sanity authentication
 
 ## DNS and mail
 
@@ -42,7 +45,8 @@ This file records read-only checks made before any production mutation. Values t
 
 1. Provision server-side Redis for reaction aggregates, rate limits, and preview-ticket replay protection.
 2. Create separate public-site and Studio Netlify Free previews without changing DNS.
-3. Configure public-site and Studio environment variables, draft token, and webhook secret.
+3. Configure public-site and Studio environment variables, install the existing
+   viewer token as server-only, and create the webhook secret.
 4. Run preview functional, security, accessibility, and performance checks.
 5. Publish the DNSSEC DS record at the registrar; preserve existing MX/DKIM/tracking records.
 6. Request exact DNS cutover approval, retain Vercel as rollback, and run production smoke checks.
@@ -65,6 +69,9 @@ This file records read-only checks made before any production mutation. Values t
   commercial projects on Free, applies a hard 300-credit monthly limit with no
   automatic recharge, and pauses the project rather than creating a surprise
   bill. Its OpenNext adapter supports the Next.js features used by this repo.
+- Private organization-repository Git integration is a paid Netlify feature.
+  The accepted Free design leaves both Netlify sites unlinked and uses manual
+  CLI deploys from reviewed, CI-green commits instead.
 - Hosting migration is approved for preview testing only. DNS cutover still
   requires an exact approval. Keep Vercel live until the replacement has passed
   security, functional, and performance gates.
@@ -90,3 +97,5 @@ Official references:
 - https://upstash.com/pricing/redis
 - https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-credit-based-plans/credit-based-pricing-plans/
 - https://docs.netlify.com/build/frameworks/framework-setup-guides/nextjs/overview/
+- https://docs.netlify.com/build/git-workflows/overview/
+- https://docs.netlify.com/api-and-cli-guides/cli-guides/get-started-with-cli/
