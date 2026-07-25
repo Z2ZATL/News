@@ -35,3 +35,29 @@ This file records read-only checks made before any production mutation. Values t
 5. Configure Vercel Firewall limits and preview deployment protection.
 6. Publish the DNSSEC DS record at the registrar; preserve existing MX/DKIM/tracking records.
 7. Run staging and production smoke/security checks before promotion.
+
+## Plan and billing constraints verified on 2026-07-26
+
+- Sanity Free permits public datasets only. The locked private-dataset decision
+  requires Growth (currently listed at USD 15 per seat per month) after the
+  automatic trial ends. Do not create a private dataset on a trial without an
+  accepted paid-plan decision, because Sanity documents that it becomes public
+  when the trial expires.
+- The current Vercel owner is a personal project owner. Hobby permits one WAF
+  rate-limit rule per project; the three-rule layout in Build Plan v3 requires
+  Pro or a documented replacement with application-level limits.
+- Vercel Password Protection is an Advanced Deployment Protection feature.
+  Vercel Authentication is the preferred shared-password-free alternative, but
+  protecting a production custom domain still requires a paid protection scope.
+- Upstash Redis Free currently includes one 256 MB database and 500,000 commands
+  per month. It is sufficient for the initial anonymous reaction, replay, and
+  rate-limit workload, while application behavior remains fail-closed when the
+  store is unavailable.
+
+Official references:
+
+- https://www.sanity.io/pricing
+- https://www.sanity.io/docs/platform-management/growth-plan-trial
+- https://vercel.com/docs/vercel-firewall/vercel-waf/rate-limiting
+- https://vercel.com/docs/deployment-protection
+- https://upstash.com/pricing/redis
