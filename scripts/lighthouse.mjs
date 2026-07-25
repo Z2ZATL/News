@@ -4,15 +4,20 @@ import { join } from "node:path";
 import * as chromeLauncher from "chrome-launcher";
 import lighthouse from "lighthouse";
 import desktopConfig from "lighthouse/core/config/desktop-config.js";
+import mobileConfig from "lighthouse/core/config/default-config.js";
 import { chromium } from "@playwright/test";
 
 const serverPort = 4173;
 const baseUrl = `http://127.0.0.1:${String(serverPort)}`;
 const routes = process.env.LIGHTHOUSE_ROUTES?.split(",") ?? [
   "/th",
-  "/th/stories",
+  "/en",
+  "/th/stories/okmd-ai-playground-review",
+  "/en/stories/okmd-ai-playground-review",
   "/th/projects/lumixia-brief",
+  "/en/projects/lumixia-brief",
 ];
+const profiles = ["mobile", "desktop"];
 const minimumScores = {
   accessibility: 1,
   "best-practices": 1,
@@ -25,6 +30,13 @@ const server = spawn(
   [join(process.cwd(), "node_modules", "next", "dist", "bin", "next"), "start", "--port", String(serverPort)],
   {
     cwd: process.cwd(),
+    env: {
+      ...process.env,
+      CONTENT_SOURCE: "fixture",
+      RATE_LIMIT_SECRET: "lighthouse-rate-limit-secret-32-bytes",
+      REACTION_COOKIE_SECRET: "lighthouse-reaction-cookie-secret-32-bytes",
+      REACTION_STORE: "memory",
+    },
     stdio: ["ignore", "pipe", "pipe"],
     windowsHide: true,
   },
@@ -56,13 +68,30 @@ async function waitForServer() {
   throw new Error(`Next.js did not start in time.\n${serverOutput}`);
 }
 
-async function runLighthouse(route, chromePath) {
+async function runLighthouse(route, chromePath, profile) {
   const auditUrl = new URL(route, baseUrl);
   auditUrl.searchParams.set("lighthouse", "1");
   const browser = await chromeLauncher.launch({
     chromePath,
     chromeFlags: ["--headless=new", "--no-sandbox"],
   });
+  const baseConfig = profile === "desktop" ? desktopConfig : mobileConfig;
+  const config = process.platform === "win32" && process.arch === "arm64"
+    ? {
+        ...baseConfig,
+        settings: {
+          ...baseConfig.settings,
+          throttling: {
+            ...baseConfig.settings.throttling,
+            // Windows ARM already runs Chromium through an emulation layer.
+            // Keep mobile network/screen emulation, but avoid stacking a 4x
+            // CPU slowdown on top of host emulation. Linux CI retains the
+            // standard Lighthouse mobile CPU profile.
+            cpuSlowdownMultiplier: 1,
+          },
+        },
+      }
+    : baseConfig;
   try {
     return await lighthouse(
       auditUrl.toString(),
@@ -72,18 +101,7 @@ async function runLighthouse(route, chromePath) {
         output: "json",
         port: browser.port,
       },
-      process.platform === "win32" && process.arch === "arm64"
-        ? {
-            ...desktopConfig,
-            settings: {
-              ...desktopConfig.settings,
-              throttling: {
-                ...desktopConfig.settings.throttling,
-                cpuSlowdownMultiplier: 1,
-              },
-            },
-          }
-        : desktopConfig,
+      config,
     );
   } finally {
     try {
@@ -97,10 +115,10 @@ async function runLighthouse(route, chromePath) {
   }
 }
 
-async function runLighthouseWithTraceRetry(route, chromePath) {
+async function runLighthouseWithTraceRetry(route, chromePath, profile) {
   const maximumAttempts = 3;
   for (let attempt = 1; attempt <= maximumAttempts; attempt += 1) {
-    const result = await runLighthouse(route, chromePath);
+    const result = await runLighthouse(route, chromePath, profile);
     const hasMissingCategory = Object.keys(minimumScores).some(
       (category) => result?.lhr.categories[category]?.score === null,
     );
@@ -108,7 +126,7 @@ async function runLighthouseWithTraceRetry(route, chromePath) {
       hasMissingCategory && result?.lhr.runtimeError?.code === "NO_NAVSTART";
     if (!retryable || attempt === maximumAttempts) return result;
     console.log(
-      `${route} trace capture returned NO_NAVSTART; retrying (${String(attempt + 1)}/${String(maximumAttempts)}).`,
+      `${profile} ${route} trace capture returned NO_NAVSTART; retrying (${String(attempt + 1)}/${String(maximumAttempts)}).`,
     );
   }
   return undefined;
@@ -120,10 +138,11 @@ try {
   const chromePath = process.env.CHROME_PATH ?? automaticChromePath;
 
   const failures = [];
-  for (const route of routes) {
-    const result = await runLighthouseWithTraceRetry(route, chromePath);
+  for (const profile of profiles) {
+    for (const route of routes) {
+    const result = await runLighthouseWithTraceRetry(route, chromePath, profile);
     if (!result) {
-      failures.push(`${route}: Lighthouse returned no result.`);
+      failures.push(`${profile} ${route}: Lighthouse returned no result.`);
       continue;
     }
 
@@ -132,7 +151,7 @@ try {
       const categoryResult = result.lhr.categories[category];
       if (categoryResult?.score === null) {
         const runtimeMessage = result.lhr.runtimeError?.message ?? "No runtime error reported.";
-        failures.push(`${route}: ${category} did not produce a score. ${runtimeMessage}`);
+        failures.push(`${profile} ${route}: ${category} did not produce a score. ${runtimeMessage}`);
         scores[category] = 0;
         continue;
       }
@@ -140,7 +159,7 @@ try {
       scores[category] = Math.round(score * 100);
       if (score < minimum) {
         failures.push(
-          `${route}: ${category} ${String(Math.round(score * 100))} is below ${String(Math.round(minimum * 100))}.`,
+          `${profile} ${route}: ${category} ${String(Math.round(score * 100))} is below ${String(Math.round(minimum * 100))}.`,
         );
         const failedAudits = (categoryResult?.auditRefs ?? [])
           .filter(({ weight }) => weight > 0)
@@ -152,14 +171,35 @@ try {
           .sort((left, right) => right.weight - left.weight)
           .map(({ audit, weight }) => {
             const value = audit?.displayValue ? ` (${audit.displayValue})` : "";
-            return `${audit?.id ?? "unknown"}=${String(Math.round((audit?.score ?? 0) * 100))}${value}, weight ${String(weight)}`;
+            const samples = Array.isArray(audit?.details?.items)
+              ? `, samples ${JSON.stringify(audit.details.items.slice(0, 3))}`
+              : "";
+            return `${audit?.id ?? "unknown"}=${String(Math.round((audit?.score ?? 0) * 100))}${value}, weight ${String(weight)}${samples}`;
           });
         console.log(
-          `${route} ${category} failing audits: ${failedAudits.join("; ")}`,
+          `${profile} ${route} ${category} failing audits: ${failedAudits.join("; ")}`,
         );
+        if (category === "performance") {
+          for (const id of [
+            "largest-contentful-paint-element",
+            "lcp-breakdown-insight",
+            "lcp-discovery-insight",
+            "render-blocking-resources",
+            "render-blocking-insight",
+            "image-delivery-insight",
+            "network-dependency-tree-insight",
+            "server-response-time",
+          ]) {
+            const diagnostic = result.lhr.audits[id];
+            if (diagnostic) {
+              console.log(`${profile} ${route} ${id}: ${JSON.stringify(diagnostic.details?.items?.slice(0, 5) ?? diagnostic.displayValue ?? diagnostic.score)}`);
+            }
+          }
+        }
       }
     }
-    console.log(`${route} ${JSON.stringify(scores)}`);
+    console.log(`${profile} ${route} ${JSON.stringify(scores)}`);
+    }
   }
 
   if (failures.length > 0) throw new Error(failures.join("\n"));

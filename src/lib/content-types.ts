@@ -1,11 +1,12 @@
 import type { Locale } from "@/lib/i18n";
+import type { PortableTextBlock } from "@portabletext/react";
 
 export interface LocalizedText {
   th: string;
   en: string;
 }
 
-export interface ArticleSection {
+export interface LegacyArticleSection {
   heading?: string;
   paragraphs: string[];
   bullets?: string[];
@@ -18,6 +19,18 @@ export interface ArticleSection {
   };
 }
 
+export interface ArticleImageBlock {
+  _key: string;
+  _type: "articleImage";
+  alt: string;
+  caption: string;
+  height: number;
+  src: string;
+  width: number;
+}
+
+export type ArticleBody = Array<PortableTextBlock | ArticleImageBlock>;
+
 export interface Article {
   slug: string;
   atlasLocation: {
@@ -28,7 +41,7 @@ export interface Article {
   };
   title: LocalizedText;
   excerpt: LocalizedText;
-  body: Record<Locale, ArticleSection[]>;
+  body: Record<Locale, ArticleBody>;
   cover: {
     src: string;
     alt: LocalizedText;
@@ -54,4 +67,23 @@ export interface Article {
   publishedAt: string;
   updatedAt: string;
   readingMinutes: number;
+}
+
+export interface LegacyArticle extends Omit<Article, "body"> {
+  body: Record<Locale, LegacyArticleSection[]>;
+}
+
+export interface Project {
+  body: Record<Locale, ArticleBody>;
+  slug: string;
+  title: LocalizedText;
+  summary: LocalizedText;
+  promoted: boolean;
+  links: string[];
+}
+
+export interface SiteSettings {
+  siteTitle: LocalizedText;
+  footer: LocalizedText;
+  socialLinks: string[];
 }

@@ -253,6 +253,8 @@ test("Atlas upgrades to WebGL on interaction and survives context loss", async (
 test("Atlas groups signals by country and reveals ranked side panels on demand", async ({
   page,
 }) => {
+  await page.goto("/th/stories/th-ai-passport-recap-developer-tools");
+  await page.locator('button[aria-label^="รักเลย"]').click();
   await page.goto("/th");
   const atlas = page.locator("[data-atlas-state]");
 
@@ -263,13 +265,6 @@ test("Atlas groups signals by country and reveals ranked side panels on demand",
   await expect(atlas).toHaveAttribute("data-atlas-state", "ready", {
     timeout: 20_000,
   });
-  await page.evaluate(() => {
-    window.localStorage.setItem(
-      "z2zs:story-reaction:th-ai-passport-recap-developer-tools",
-      "love",
-    );
-  });
-
   const thailand = atlas.locator(
     'button[data-kind="story-country"][data-country="TH"]',
   );
@@ -314,7 +309,7 @@ test("Atlas groups signals by country and reveals ranked side panels on demand",
   expect(switchDuration).toBeLessThan(300);
 });
 
-test("story reactions persist locally and stay out of Lab pages", async ({
+test("story reactions aggregate anonymously, persist, and stay out of Lab pages", async ({
   page,
 }) => {
   await page.goto("/th/stories/okmd-ai-playground-review");
@@ -322,6 +317,7 @@ test("story reactions persist locally and stay out of Lab pages", async ({
   await expect(love).toHaveAttribute("aria-pressed", "false");
   await love.click();
   await expect(love).toHaveAttribute("aria-pressed", "true");
+  await expect(love).toHaveAccessibleName(/1/);
 
   await page.reload();
   await expect(page.getByRole("button", { name: "รักเลย" })).toHaveAttribute(
@@ -354,6 +350,12 @@ test("security endpoints reject invalid input and preserve nonce integrity", asy
   });
   expect(cspMalformed.status()).toBe(400);
 
+  const cspOversized = await request.post("/api/csp-report", {
+    data: "x".repeat(16_385),
+    headers: { "content-type": "application/csp-report" },
+  });
+  expect(cspOversized.status()).toBe(413);
+
   const draftUnauthorized = await request.get(
     "/api/draft?slug=../../etc&locale=th",
   );
@@ -361,6 +363,7 @@ test("security endpoints reject invalid input and preserve nonce integrity", asy
 
   const revalidateUnauthorized = await request.post("/api/revalidate", {
     data: "{}",
+    headers: { "content-type": "application/json" },
   });
   expect(revalidateUnauthorized.status()).toBe(401);
 
@@ -378,4 +381,38 @@ test("security endpoints reject invalid input and preserve nonce integrity", asy
     },
   });
   expect(revalidateMalformed.status()).toBe(400);
+
+  const reactionCrossOrigin = await request.post("/api/reactions", {
+    data: { reaction: "love", slug: "okmd-ai-playground-review" },
+    headers: { origin: "https://attacker.example" },
+  });
+  expect(reactionCrossOrigin.status()).toBe(403);
+
+  const reactionOversized = await request.post("/api/reactions", {
+    data: JSON.stringify({ reaction: "love", slug: "x".repeat(2_100) }),
+    headers: {
+      "content-type": "application/json",
+      origin: "http://127.0.0.1:3000",
+      "x-forwarded-for": "198.51.100.71",
+    },
+  });
+  expect(reactionOversized.status()).toBe(413);
+
+  const rateHeaders = {
+    "content-type": "application/json",
+    origin: "http://127.0.0.1:3000",
+    "x-forwarded-for": "198.51.100.72",
+  };
+  for (let requestNumber = 0; requestNumber < 20; requestNumber += 1) {
+    const allowed = await request.post("/api/reactions", {
+      data: { reaction: "love", slug: "okmd-ai-playground-review" },
+      headers: rateHeaders,
+    });
+    expect(allowed.status()).toBe(200);
+  }
+  const rateLimited = await request.post("/api/reactions", {
+    data: { reaction: "love", slug: "okmd-ai-playground-review" },
+    headers: rateHeaders,
+  });
+  expect(rateLimited.status()).toBe(429);
 });

@@ -14,22 +14,38 @@ export default defineConfig({
   projectId,
   dataset: process.env.SANITY_STUDIO_DATASET ?? "production",
   basePath: "/",
-  plugins: [structureTool(), visionTool({ defaultApiVersion: "2025-01-01" })],
+  plugins: [
+    structureTool({
+      structure: (structure) =>
+        structure
+          .list()
+          .title("Content")
+          .items([
+            structure
+              .listItem()
+              .title("Settings")
+              .child(structure.document().schemaType("settings").documentId("settings")),
+            structure.divider(),
+            ...structure.documentTypeListItems().filter((item) => item.getId() !== "settings"),
+          ]),
+    }),
+    visionTool({ defaultApiVersion: "2025-01-01" }),
+  ],
   schema: { types: schemaTypes },
   document: {
+    newDocumentOptions: (previous) => previous.filter((template) => template.templateId !== "settings"),
     actions: (previous, context) =>
-      context.schemaType === "article"
+      context.schemaType === "article" || context.schemaType === "project" || context.schemaType === "settings"
         ? previous.map((action) => (action.action === "publish" ? BilingualPublishAction : action))
         : previous,
     productionUrl: (previous, context) => {
       const slug = context.document.slug as { current?: string } | undefined;
-      const secret = process.env.SANITY_STUDIO_PREVIEW_SECRET;
-      const origin = process.env.SANITY_STUDIO_PREVIEW_ORIGIN;
-      if (!slug?.current || !secret || !origin) return Promise.resolve(previous);
-      const url = new URL("/api/draft", origin);
-      url.searchParams.set("secret", secret);
+      const origin = process.env.SANITY_STUDIO_PREVIEW_BROKER_ORIGIN;
+      if (!slug?.current || !origin) return Promise.resolve(previous);
+      const url = new URL("/api/preview", origin);
       url.searchParams.set("slug", slug.current);
       url.searchParams.set("locale", "th");
+      url.searchParams.set("type", context.document._type);
       return Promise.resolve(url.toString());
     },
   },

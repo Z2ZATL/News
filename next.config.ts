@@ -18,15 +18,6 @@ const nextConfig: NextConfig = {
     contentDispositionType: "attachment",
     formats: ["image/avif", "image/webp"],
   },
-  redirects() {
-    return Promise.resolve([
-      {
-        source: "/",
-        destination: "/th",
-        permanent: true,
-      },
-    ]);
-  },
 };
 
 export default nextConfig;

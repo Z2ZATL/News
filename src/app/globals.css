@@ -22,7 +22,7 @@
   --image-placeholder: #09111a;
   --section-bg: linear-gradient(180deg, #05080c, #070b10 62%, #05070a);
   --on-accent: #021016;
-  --font-body: var(--font-thai), system-ui, sans-serif;
+  --font-body: var(--font-space), var(--font-thai), system-ui, sans-serif;
   --font-display: var(--font-space), var(--font-thai), system-ui, sans-serif;
 }
 

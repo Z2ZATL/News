@@ -1,4 +1,4 @@
-import type { Article } from "@/lib/content-types";
+import type { LegacyArticle } from "@/lib/content-types";
 
 const author = {
   name: "Aitthikorn Khammee",
@@ -62,7 +62,7 @@ const covers = {
   },
 } as const;
 
-export const facebookArticles: Article[] = [
+export const facebookArticles: LegacyArticle[] = [
   {
     slug: "gpt-5-6-luna-terra-sol",
     atlasLocation: {
@@ -299,7 +299,7 @@ export const facebookArticles: Article[] = [
             "ผลลัพธ์ด้านภาพอาจชนะใจผู้ประเมินได้จากองค์ประกอบ สี ลำดับสายตา และความใกล้เคียงกับคำสั่ง แต่คุณภาพเชิงวิศวกรรม เช่น accessibility, responsive layout, performance, test coverage และ security ยังต้องตรวจแยกต่างหาก",
           ],
           image: {
-            src: "/images/articles/kimi-k3-frontend-win-rate.png",
+            src: "/images/articles/kimi-k3-frontend-win-rate.webp",
             alt: "กราฟ Frontend Code Arena แสดง Kimi K3 มีอัตราชนะ 76 เปอร์เซ็นต์",
             caption: "ภาพจาก Arena AI ระบุ Win Rate ของ Kimi K3 ที่ 76% ในหมวด Frontend Code Arena คลิกภาพเพื่อดูขนาดเต็ม",
             width: 1722,
@@ -314,7 +314,7 @@ export const facebookArticles: Article[] = [
             "สำหรับผู้ใช้ทั่วไป ความแตกต่างของราคาอาจดูไม่มากในงานชิ้นเดียว แต่เมื่อใช้ในระบบที่สร้างหน้าเว็บจำนวนมากหรือวนแก้หลายรอบ ต้นทุนต่อโทเค็นและจำนวนโทเค็นที่โมเดลใช้จริงจะมีผลต่อค่าใช้จ่ายรวม",
           ],
           image: {
-            src: "/images/articles/kimi-k3-pareto-frontier.png",
+            src: "/images/articles/kimi-k3-pareto-frontier.webp",
             alt: "กราฟ Pareto Frontier เปรียบเทียบคะแนน Frontend Arena กับราคาต่อหนึ่งล้านโทเค็น",
             caption: "Kimi K3 อยู่บนจุดสูงสุดของ Pareto Frontier ด้วยคะแนน 1,679 ขณะที่แกนนอนแสดงต้นทุนผสมต่อหนึ่งล้านโทเค็น คลิกภาพเพื่อดูขนาดเต็ม",
             width: 2498,
@@ -329,7 +329,7 @@ export const facebookArticles: Article[] = [
             "คะแนนของหลายโมเดลในช่วงอันดับนี้ห่างกันเพียงไม่กี่แต้ม และ leaderboard เปลี่ยนได้เมื่อมีคะแนนโหวตหรือโมเดลใหม่เพิ่มเข้ามา จึงควรบันทึกวันที่ของผลทดสอบและหลีกเลี่ยงการใช้ลำดับอันดับเพียงอย่างเดียวตัดสินการจัดซื้อหรือเลือกใช้ระยะยาว",
           ],
           image: {
-            src: "/images/articles/kimi-k3-text-arena-overall.png",
+            src: "/images/articles/kimi-k3-text-arena-overall.webp",
             alt: "ตาราง Text Arena Overall แสดง Kimi K3 อยู่อันดับ 9 ด้วยคะแนน 1,486",
             caption: "ใน Text Arena: Overall ภาพชุดเดียวกันจัด Kimi K3 ไว้อันดับ 9 แสดงให้เห็นว่าความโดดเด่นขึ้นอยู่กับประเภทงานที่นำมาวัด คลิกภาพเพื่อดูขนาดเต็ม",
             width: 4088,
@@ -373,7 +373,7 @@ export const facebookArticles: Article[] = [
             "This describes preference within the arena comparisons. It does not mean that 76% of generated code is correct, secure, accessible, or production-ready. Visual quality and instruction following still need to be separated from engineering validation.",
           ],
           image: {
-            src: "/images/articles/kimi-k3-frontend-win-rate.png",
+            src: "/images/articles/kimi-k3-frontend-win-rate.webp",
             alt: "Frontend Code Arena chart reporting a 76 percent win rate for Kimi K3",
             caption: "Arena AI’s chart reports a 76% Frontend Code Arena win rate for Kimi K3. Open the image to inspect it at full size.",
             width: 1722,
@@ -387,7 +387,7 @@ export const facebookArticles: Article[] = [
             "Being on the Pareto frontier means that no shown alternative is simultaneously cheaper and higher-scoring. Kimi K3 occupies the quality-leading end of that trade-off, not the lowest-cost end.",
           ],
           image: {
-            src: "/images/articles/kimi-k3-pareto-frontier.png",
+            src: "/images/articles/kimi-k3-pareto-frontier.webp",
             alt: "Pareto frontier chart comparing frontend Arena score and blended token price",
             caption: "Kimi K3 leads the shown Pareto frontier on score, while the horizontal axis highlights the associated price trade-off.",
             width: 2498,
@@ -402,7 +402,7 @@ export const facebookArticles: Article[] = [
             "Small score gaps and changing vote counts also mean that leaderboard positions should be treated as dated snapshots, not permanent product guarantees.",
           ],
           image: {
-            src: "/images/articles/kimi-k3-text-arena-overall.png",
+            src: "/images/articles/kimi-k3-text-arena-overall.webp",
             alt: "Text Arena Overall chart placing Kimi K3 ninth with a score of 1,486",
             caption: "Kimi K3 ranks ninth in the supplied Text Arena: Overall snapshot, illustrating why results must be read by task category.",
             width: 4088,

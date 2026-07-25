@@ -4,6 +4,7 @@ export interface AtlasSignal {
   author: string;
   href: Route;
   publishedAt: string;
+  reactionScore: number;
   slug: string;
   title: string;
 }

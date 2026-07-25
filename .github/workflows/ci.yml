@@ -26,6 +26,8 @@ jobs:
       - run: pnpm peers check
       - run: pnpm typecheck
       - run: pnpm lint
+      - run: pnpm test:unit
+      - run: pnpm content:migrate
       - run: pnpm scan:secrets
       - run: pnpm build
       - run: pnpm audit --audit-level=moderate

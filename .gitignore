@@ -13,6 +13,7 @@
 # testing
 /coverage
 /test-results
+/.migration-backups
 /.lighthouseci
 
 # next.js
@@ -41,5 +42,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-.vercel

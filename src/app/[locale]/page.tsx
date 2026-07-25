@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { Atlas } from "@/components/atlas";
@@ -9,6 +10,7 @@ import {
 import { getArticles } from "@/lib/content";
 import { isLocale } from "@/lib/i18n";
 import { localizedAlternates } from "@/lib/metadata";
+import { getReactionTotals } from "@/lib/reaction-store";
 
 export async function generateMetadata({
   params,
@@ -39,10 +41,14 @@ function categoryId(label: string): string {
 }
 
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+  // Reaction totals are request-scoped. Opt this route out of the build-time
+  // prerender cache while retaining tagged Sanity caching inside getArticles().
+  await connection();
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const articles = await getArticles();
   if (!articles.length) notFound();
+  const reactionTotals = await getReactionTotals(articles.map((article) => article.slug));
 
   const categoryMap = new Map<string, NewsCategory>();
   for (const article of articles) {
@@ -68,7 +74,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   return (
     <>
-      <Atlas articles={articles} locale={locale} />
+      <Atlas articles={articles} locale={locale} reactionTotals={reactionTotals} />
       <CategoryNewsBrowser categories={[...categoryMap.values()]} locale={locale} />
     </>
   );

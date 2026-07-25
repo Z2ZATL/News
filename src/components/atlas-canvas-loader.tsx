@@ -15,10 +15,6 @@ import {
 } from "react";
 
 import type { AtlasMapNode, AtlasScreenPosition } from "@/lib/atlas-types";
-import {
-  REACTION_UPDATED_EVENT,
-  storedReactionScore,
-} from "@/lib/reaction-storage";
 
 import styles from "./atlas.module.css";
 
@@ -75,7 +71,6 @@ export function AtlasCanvasLoader({
 }>) {
   const [enabled, setEnabled] = useState(false);
   const [interactionPaused, setInteractionPaused] = useState(false);
-  const [reactionVersion, setReactionVersion] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [state, setState] = useState<"waiting" | "loading" | "ready" | "fallback">(
@@ -88,16 +83,14 @@ export function AtlasCanvasLoader({
   const selectedNode = nodes.find((node) => node.id === selectedId) ?? null;
   const selectedFallbackPoint = fallbackPoint(selectedNode);
   const selectedSignals = useMemo(() => {
-    void reactionVersion;
     if (!selectedNode) return [];
     return [...selectedNode.signals]
       .sort((left, right) => {
-        const scoreDifference =
-          storedReactionScore(right.slug) - storedReactionScore(left.slug);
+        const scoreDifference = right.reactionScore - left.reactionScore;
         return scoreDifference || Date.parse(right.publishedAt) - Date.parse(left.publishedAt);
       })
       .slice(0, 6);
-  }, [reactionVersion, selectedNode]);
+  }, [selectedNode]);
 
   const updatePositions = useCallback(
     (positions: AtlasScreenPosition[]) => {
@@ -150,18 +143,6 @@ export function AtlasCanvasLoader({
 
   useEffect(() => {
     setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-  }, []);
-
-  useEffect(() => {
-    const refresh = () => {
-      setReactionVersion((current) => current + 1);
-    };
-    window.addEventListener("storage", refresh);
-    window.addEventListener(REACTION_UPDATED_EVENT, refresh);
-    return () => {
-      window.removeEventListener("storage", refresh);
-      window.removeEventListener(REACTION_UPDATED_EVENT, refresh);
-    };
   }, []);
 
   const enableCanvas = () => {

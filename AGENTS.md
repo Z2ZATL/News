@@ -9,8 +9,9 @@ Apply instructions in this order:
 1. The latest explicit user instruction.
 2. This `AGENTS.md`.
 3. Accepted ADRs and domain documentation.
-4. The Z2Zs Lab Build Plan v3.
-5. Existing implementation details.
+4. Accepted Build Plan v4 remediation decisions recorded under `docs/adr/`.
+5. The Z2Zs Lab Build Plan v3 where it does not conflict with an accepted ADR.
+6. Existing implementation details.
 
 The latest user decision overrides Build Plan v3 on CSP: the public site uses a **nonce-based CSP**. Do not revert it to a static `script-src 'self'` policy unless the user explicitly changes that decision.
 
@@ -66,7 +67,12 @@ Editorial workflow: `draft → review → published → archived`.
 
 ## Rendering and integration
 
-- Content pages use ISR with tag-based invalidation through the signed Sanity webhook.
+- The nonce-based CSP requires per-request HTML. Public HTML is dynamic and must
+  not be described or tested as ISR. Sanity data reads may still use Next cache
+  tags and the signed webhook for data invalidation.
+- Sanity is the only production source of truth for editorial articles, projects,
+  authors, categories, and settings. Repository content files are fixtures or
+  migration inputs only and must never silently republish archived CMS content.
 - Sanity GROQ queries must always be parameterized.
 - Published reads may use the CDN. Draft reads use the private dataset and a server-only viewer token.
 - Search remains a client-side filter over a prefetched index in v1. Do not add a public search API without a new decision.

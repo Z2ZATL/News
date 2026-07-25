@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { isLocale } from "@/lib/i18n";
 import { localizedAlternates } from "@/lib/metadata";
+import { getSiteSettings } from "@/lib/content";
 
 import styles from "./about.module.css";
 
@@ -28,6 +29,7 @@ export default async function About({ params }: { params: Promise<{ locale: stri
   if (!isLocale(locale)) notFound();
 
   const th = locale === "th";
+  const settings = await getSiteSettings();
   const focus = th
     ? [
         {
@@ -135,16 +137,16 @@ export default async function About({ params }: { params: Promise<{ locale: stri
           <h2 id="follow">{th ? "ติดตามงานต่อ" : "Keep in touch"}</h2>
         </div>
         <div className={styles.socials}>
-          <a href="https://www.facebook.com/atl.ztwoz" target="_blank" rel="noopener noreferrer">
-            <span>Facebook</span>
-            <strong>Aitthikorn Khammee</strong>
-            <b aria-hidden="true">↗</b>
-          </a>
-          <a href="https://www.instagram.com/z2zs.lab/" target="_blank" rel="noopener noreferrer">
-            <span>Instagram</span>
-            <strong>@z2zs.lab</strong>
-            <b aria-hidden="true">↗</b>
-          </a>
+          {settings.socialLinks.map((url) => {
+            const network = new URL(url).hostname.includes("instagram") ? "Instagram" : "Facebook";
+            return (
+              <a href={url} key={url} target="_blank" rel="noopener noreferrer">
+                <span>{network}</span>
+                <strong>{network === "Instagram" ? "@z2zs.lab" : "Aitthikorn Khammee"}</strong>
+                <b aria-hidden="true">↗</b>
+              </a>
+            );
+          })}
         </div>
       </section>
     </div>

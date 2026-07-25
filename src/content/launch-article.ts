@@ -1,6 +1,6 @@
-import type { Article } from "@/lib/content-types";
+import type { LegacyArticle } from "@/lib/content-types";
 
-export const launchArticle: Article = {
+export const launchArticle: LegacyArticle = {
   slug: "okmd-ai-playground-review",
   atlasLocation: {
     countryCode: "TH",
@@ -17,7 +17,9 @@ export const launchArticle: Article = {
     en: "We tested the interface, examined its API, and traced the THB 28.355 million programme behind it to see who this public AI platform really helps—and where it still falls short.",
   },
   cover: {
-    src: "/images/okmd-ai-playground.png",
+    src: "/images/okmd-ai-playground.webp",
+    width: 1003,
+    height: 1568,
     alt: {
       th: "ภาพนำเสนอบทวิเคราะห์ OKMD AI Playground",
       en: "Cover image for the OKMD AI Playground analysis",

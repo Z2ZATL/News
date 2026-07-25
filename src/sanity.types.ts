@@ -28,7 +28,7 @@ export type Settings = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  siteTitle?: LocalizedString;
+  siteTitle: LocalizedString;
   defaultOg?: {
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -36,8 +36,8 @@ export type Settings = {
     crop?: SanityImageCrop;
     _type: "image";
   };
-  socialLinks?: Array<string>;
-  footer?: LocalizedText;
+  socialLinks: Array<string>;
+  footer: LocalizedText;
 };
 
 export type LocalizedText = {
@@ -75,9 +75,9 @@ export type Project = {
   _updatedAt: string;
   _rev: string;
   slug: Slug;
-  title?: LocalizedString;
-  summary?: LocalizedText;
-  body?: LocalizedBody;
+  title: LocalizedString;
+  summary: LocalizedText;
+  body: LocalizedBody;
   assets?: Array<{
     asset?: SanityImageAssetReference;
     media?: unknown;
@@ -88,47 +88,73 @@ export type Project = {
   }>;
   links?: Array<string>;
   promoted?: boolean;
-  status?: "draft" | "published" | "archived";
+  status: "draft" | "published" | "archived";
 };
 
 export type LocalizedBody = {
   _type: "localizedBody";
-  th?: Array<{
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      href?: string;
-      _type: "link";
-      _key: string;
-    }>;
-    level?: number;
-    _type: "block";
-    _key: string;
-  }>;
-  en?: Array<{
-    children?: Array<{
-      marks?: Array<string>;
-      text?: string;
-      _type: "span";
-      _key: string;
-    }>;
-    style?: "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
-    listItem?: "bullet" | "number";
-    markDefs?: Array<{
-      href?: string;
-      _type: "link";
-      _key: string;
-    }>;
-    level?: number;
-    _type: "block";
-    _key: string;
-  }>;
+  th?: Array<
+    | {
+        children?: Array<{
+          marks?: Array<string>;
+          text?: string;
+          _type: "span";
+          _key: string;
+        }>;
+        style?:
+          "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+        listItem?: "bullet" | "number";
+        markDefs?: Array<{
+          href?: string;
+          _type: "link";
+          _key: string;
+        }>;
+        level?: number;
+        _type: "block";
+        _key: string;
+      }
+    | {
+        asset?: SanityImageAssetReference;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        alt: string;
+        caption?: string;
+        _type: "articleImage";
+        _key: string;
+      }
+  >;
+  en?: Array<
+    | {
+        children?: Array<{
+          marks?: Array<string>;
+          text?: string;
+          _type: "span";
+          _key: string;
+        }>;
+        style?:
+          "normal" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "blockquote";
+        listItem?: "bullet" | "number";
+        markDefs?: Array<{
+          href?: string;
+          _type: "link";
+          _key: string;
+        }>;
+        level?: number;
+        _type: "block";
+        _key: string;
+      }
+    | {
+        asset?: SanityImageAssetReference;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        alt: string;
+        caption?: string;
+        _type: "articleImage";
+        _key: string;
+      }
+  >;
 };
 
 export type Slug = {
@@ -161,7 +187,7 @@ export type Article = {
   title?: LocalizedString;
   excerpt?: LocalizedText;
   body?: LocalizedBody;
-  cover?: {
+  cover: {
     asset?: SanityImageAssetReference;
     media?: unknown;
     hotspot?: SanityImageHotspot;
@@ -170,8 +196,8 @@ export type Article = {
     caption?: LocalizedString;
     _type: "image";
   };
-  category?: CategoryReference;
-  author?: AuthorReference;
+  category: CategoryReference;
+  author: AuthorReference;
   atlasLocation: {
     countryCode: string;
     latitude: number;
@@ -179,6 +205,11 @@ export type Article = {
     label?: LocalizedString;
   };
   tags?: Array<string>;
+  video?: {
+    embedUrl?: string;
+    sourceUrl?: string;
+    title?: LocalizedString;
+  };
   sources?: Array<{
     label?: LocalizedString;
     url: string;
@@ -344,27 +375,103 @@ export type AllSanitySchemaTypes =
 
 // Source: ../src/lib/content.ts
 // Variable: articleQuery
-// Query: *[_type == "article" && status == "published"] | order(publishedAt desc) {  "slug": slug.current,  title,  excerpt,  "cover": {    "src": cover.asset->url,    "alt": cover.alt  },  "category": category->title,  author->{name, role},  atlasLocation,  body,  tags,  sources,  featured,  publishedAt,  updatedAt,  "readingMinutes": 9}
+// Query: *[_type == "article" && status == "published"] | order(publishedAt desc) {  "slug": slug.current,  title,  excerpt,  "cover": {    "src": cover.asset->url,    "width": cover.asset->metadata.dimensions.width,    "height": cover.asset->metadata.dimensions.height,    "alt": cover.alt  },  "category": category->title,  "author": {"name": author->name, "role": author->role},  atlasLocation,  "body": {    "th": body.th[]{      ...,      _type == "articleImage" => {        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    },    "en": body.en[]{      ...,      _type == "articleImage" => {        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    }  },  video,  tags,  sources,  featured,  publishedAt,  updatedAt,  "readingMinutes": 9}
 export type ArticleQueryResult = Array<{
   slug: string;
   title: LocalizedString | null;
   excerpt: LocalizedText | null;
   cover: {
     src: string | null;
+    width: number | null;
+    height: number | null;
     alt: LocalizedString | null;
   };
   category: LocalizedString | null;
   author: {
     name: string;
     role: LocalizedString | null;
-  } | null;
+  };
   atlasLocation: {
     countryCode: string;
     latitude: number;
     longitude: number;
     label?: LocalizedString;
   };
-  body: LocalizedBody | null;
+  body: {
+    th: Array<
+      | {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          caption?: string;
+          _type: "articleImage";
+          _key: string;
+          src: string | null;
+          width: number | null;
+          height: number | null;
+        }
+      | {
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }
+    > | null;
+    en: Array<
+      | {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          caption?: string;
+          _type: "articleImage";
+          _key: string;
+          src: string | null;
+          width: number | null;
+          height: number | null;
+        }
+      | {
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }
+    > | null;
+  };
+  video: {
+    embedUrl?: string;
+    sourceUrl?: string;
+    title?: LocalizedString;
+  } | null;
   tags: Array<string> | null;
   sources: Array<{
     label?: LocalizedString;
@@ -379,27 +486,103 @@ export type ArticleQueryResult = Array<{
 
 // Source: ../src/lib/content.ts
 // Variable: draftArticleQuery
-// Query: *[_type == "article" && slug.current == $slug][0] {  "slug": slug.current,  title,  excerpt,  "cover": {    "src": cover.asset->url,    "alt": cover.alt  },  "category": category->title,  author->{name, role},  atlasLocation,  body,  tags,  sources,  featured,  publishedAt,  updatedAt,  "readingMinutes": 9}
+// Query: *[_type == "article" && slug.current == $slug][0] {  "slug": slug.current,  title,  excerpt,  "cover": {    "src": cover.asset->url,    "width": cover.asset->metadata.dimensions.width,    "height": cover.asset->metadata.dimensions.height,    "alt": cover.alt  },  "category": category->title,  "author": {"name": author->name, "role": author->role},  atlasLocation,  "body": {    "th": body.th[]{      ...,      _type == "articleImage" => {        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    },    "en": body.en[]{      ...,      _type == "articleImage" => {        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    }  },  video,  tags,  sources,  featured,  publishedAt,  updatedAt,  "readingMinutes": 9}
 export type DraftArticleQueryResult = {
   slug: string;
   title: LocalizedString | null;
   excerpt: LocalizedText | null;
   cover: {
     src: string | null;
+    width: number | null;
+    height: number | null;
     alt: LocalizedString | null;
   };
   category: LocalizedString | null;
   author: {
     name: string;
     role: LocalizedString | null;
-  } | null;
+  };
   atlasLocation: {
     countryCode: string;
     latitude: number;
     longitude: number;
     label?: LocalizedString;
   };
-  body: LocalizedBody | null;
+  body: {
+    th: Array<
+      | {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          caption?: string;
+          _type: "articleImage";
+          _key: string;
+          src: string | null;
+          width: number | null;
+          height: number | null;
+        }
+      | {
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }
+    > | null;
+    en: Array<
+      | {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          caption?: string;
+          _type: "articleImage";
+          _key: string;
+          src: string | null;
+          width: number | null;
+          height: number | null;
+        }
+      | {
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }
+    > | null;
+  };
+  video: {
+    embedUrl?: string;
+    sourceUrl?: string;
+    title?: LocalizedString;
+  } | null;
   tags: Array<string> | null;
   sources: Array<{
     label?: LocalizedString;
@@ -412,11 +595,185 @@ export type DraftArticleQueryResult = {
   readingMinutes: 9;
 } | null;
 
+// Source: ../src/lib/content.ts
+// Variable: projectQuery
+// Query: *[_type == "project" && status == "published"] | order(promoted desc, title.en asc) {    "slug": slug.current, title, summary, promoted, links,    "body": {      "th": body.th[]{        ...,        _type == "articleImage" => {          "src": asset->url,          "width": asset->metadata.dimensions.width,          "height": asset->metadata.dimensions.height        }      },      "en": body.en[]{        ...,        _type == "articleImage" => {          "src": asset->url,          "width": asset->metadata.dimensions.width,          "height": asset->metadata.dimensions.height        }      }    }  }
+export type ProjectQueryResult = Array<{
+  slug: string;
+  title: LocalizedString;
+  summary: LocalizedText;
+  promoted: boolean | null;
+  links: Array<string> | null;
+  body: {
+    th: Array<
+      | {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          caption?: string;
+          _type: "articleImage";
+          _key: string;
+          src: string | null;
+          width: number | null;
+          height: number | null;
+        }
+      | {
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }
+    > | null;
+    en: Array<
+      | {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          caption?: string;
+          _type: "articleImage";
+          _key: string;
+          src: string | null;
+          width: number | null;
+          height: number | null;
+        }
+      | {
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }
+    > | null;
+  };
+}>;
+
+// Source: ../src/lib/content.ts
+// Variable: settingsQuery
+// Query: *[_type == "settings" && _id == "settings"][0] {siteTitle, footer, socialLinks}
+export type SettingsQueryResult = {
+  siteTitle: LocalizedString;
+  footer: LocalizedText;
+  socialLinks: Array<string>;
+} | null;
+
+// Source: ../src/lib/content.ts
+// Variable: draftProjectQuery
+// Query: *[_type == "project" && slug.current == $slug][0] {    "slug": slug.current, title, summary, promoted, links,    "body": {      "th": body.th[]{        ...,        _type == "articleImage" => {          "src": asset->url,          "width": asset->metadata.dimensions.width,          "height": asset->metadata.dimensions.height        }      },      "en": body.en[]{        ...,        _type == "articleImage" => {          "src": asset->url,          "width": asset->metadata.dimensions.width,          "height": asset->metadata.dimensions.height        }      }    }  }
+export type DraftProjectQueryResult = {
+  slug: string;
+  title: LocalizedString;
+  summary: LocalizedText;
+  promoted: boolean | null;
+  links: Array<string> | null;
+  body: {
+    th: Array<
+      | {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          caption?: string;
+          _type: "articleImage";
+          _key: string;
+          src: string | null;
+          width: number | null;
+          height: number | null;
+        }
+      | {
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }
+    > | null;
+    en: Array<
+      | {
+          asset?: SanityImageAssetReference;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          alt: string;
+          caption?: string;
+          _type: "articleImage";
+          _key: string;
+          src: string | null;
+          width: number | null;
+          height: number | null;
+        }
+      | {
+          children?: Array<{
+            marks?: Array<string>;
+            text?: string;
+            _type: "span";
+            _key: string;
+          }>;
+          style?:
+            "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
+          listItem?: "bullet" | "number";
+          markDefs?: Array<{
+            href?: string;
+            _type: "link";
+            _key: string;
+          }>;
+          level?: number;
+          _type: "block";
+          _key: string;
+        }
+    > | null;
+  };
+} | null;
+
 // Query TypeMap
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    '*[_type == "article" && status == "published"] | order(publishedAt desc) {\n  "slug": slug.current,\n  title,\n  excerpt,\n  "cover": {\n    "src": cover.asset->url,\n    "alt": cover.alt\n  },\n  "category": category->title,\n  author->{name, role},\n  atlasLocation,\n  body,\n  tags,\n  sources,\n  featured,\n  publishedAt,\n  updatedAt,\n  "readingMinutes": 9\n}': ArticleQueryResult;
-    '*[_type == "article" && slug.current == $slug][0] {\n  "slug": slug.current,\n  title,\n  excerpt,\n  "cover": {\n    "src": cover.asset->url,\n    "alt": cover.alt\n  },\n  "category": category->title,\n  author->{name, role},\n  atlasLocation,\n  body,\n  tags,\n  sources,\n  featured,\n  publishedAt,\n  updatedAt,\n  "readingMinutes": 9\n}': DraftArticleQueryResult;
+    '*[_type == "article" && status == "published"] | order(publishedAt desc) {\n  "slug": slug.current,\n  title,\n  excerpt,\n  "cover": {\n    "src": cover.asset->url,\n    "width": cover.asset->metadata.dimensions.width,\n    "height": cover.asset->metadata.dimensions.height,\n    "alt": cover.alt\n  },\n  "category": category->title,\n  "author": {"name": author->name, "role": author->role},\n  atlasLocation,\n  "body": {\n    "th": body.th[]{\n      ...,\n      _type == "articleImage" => {\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    },\n    "en": body.en[]{\n      ...,\n      _type == "articleImage" => {\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    }\n  },\n  video,\n  tags,\n  sources,\n  featured,\n  publishedAt,\n  updatedAt,\n  "readingMinutes": 9\n}': ArticleQueryResult;
+    '*[_type == "article" && slug.current == $slug][0] {\n  "slug": slug.current,\n  title,\n  excerpt,\n  "cover": {\n    "src": cover.asset->url,\n    "width": cover.asset->metadata.dimensions.width,\n    "height": cover.asset->metadata.dimensions.height,\n    "alt": cover.alt\n  },\n  "category": category->title,\n  "author": {"name": author->name, "role": author->role},\n  atlasLocation,\n  "body": {\n    "th": body.th[]{\n      ...,\n      _type == "articleImage" => {\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    },\n    "en": body.en[]{\n      ...,\n      _type == "articleImage" => {\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    }\n  },\n  video,\n  tags,\n  sources,\n  featured,\n  publishedAt,\n  updatedAt,\n  "readingMinutes": 9\n}': DraftArticleQueryResult;
+    '*[_type == "project" && status == "published"] | order(promoted desc, title.en asc) {\n    "slug": slug.current, title, summary, promoted, links,\n    "body": {\n      "th": body.th[]{\n        ...,\n        _type == "articleImage" => {\n          "src": asset->url,\n          "width": asset->metadata.dimensions.width,\n          "height": asset->metadata.dimensions.height\n        }\n      },\n      "en": body.en[]{\n        ...,\n        _type == "articleImage" => {\n          "src": asset->url,\n          "width": asset->metadata.dimensions.width,\n          "height": asset->metadata.dimensions.height\n        }\n      }\n    }\n  }': ProjectQueryResult;
+    '*[_type == "settings" && _id == "settings"][0] {siteTitle, footer, socialLinks}': SettingsQueryResult;
+    '*[_type == "project" && slug.current == $slug][0] {\n    "slug": slug.current, title, summary, promoted, links,\n    "body": {\n      "th": body.th[]{\n        ...,\n        _type == "articleImage" => {\n          "src": asset->url,\n          "width": asset->metadata.dimensions.width,\n          "height": asset->metadata.dimensions.height\n        }\n      },\n      "en": body.en[]{\n        ...,\n        _type == "articleImage" => {\n          "src": asset->url,\n          "width": asset->metadata.dimensions.width,\n          "height": asset->metadata.dimensions.height\n        }\n      }\n    }\n  }': DraftProjectQueryResult;
   }
 }

@@ -1,11 +1,16 @@
+import { readJsonBody, RequestBodyError } from "@/lib/request-body";
+
 export async function POST(request: Request) {
-  const contentLength = Number(request.headers.get("content-length") ?? "0");
-  if (contentLength > 16_384) return new Response(null, { status: 413 });
   let payload: unknown;
   try {
-    payload = await request.json();
-  } catch {
-    return new Response(null, { status: 400 });
+    payload = await readJsonBody(request, {
+      allowedContentTypes: ["application/csp-report", "application/json", "application/reports+json"],
+      maximumBytes: 16_384,
+    });
+  } catch (error) {
+    return new Response(null, {
+      status: error instanceof RequestBodyError ? error.status : 400,
+    });
   }
 
   const report = sanitizeReport(payload);

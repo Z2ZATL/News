@@ -1,22 +1,25 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { Noto_Sans_Thai, Space_Grotesk } from "next/font/google";
-import Script from "next/script";
 
 import "./globals.css";
 import { SITE_URL } from "@/lib/site-config";
 
 const thai = Noto_Sans_Thai({
   variable: "--font-thai",
-  subsets: ["thai", "latin"],
+  subsets: ["thai"],
   display: "optional",
+  preload: false,
 });
 
 const space = Space_Grotesk({
   variable: "--font-space",
   subsets: ["latin"],
   display: "optional",
+  preload: false,
 });
+
+const themeInit = `try{const saved=localStorage.getItem("z2zs:theme");const theme=saved==="light"?"light":"dark";document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme}catch{document.documentElement.dataset.theme="dark";document.documentElement.style.colorScheme="dark"}`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -37,7 +40,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang={locale} className={`${thai.variable} ${space.variable}`} suppressHydrationWarning>
       <head>
-        <Script nonce={nonce} src="/theme-init.js" strategy="beforeInteractive" />
+        <script
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: themeInit }}
+        />
       </head>
       <body>{children}</body>
     </html>
