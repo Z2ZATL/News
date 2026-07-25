@@ -70,6 +70,7 @@ export function AtlasCanvasLoader({
   nodes: AtlasMapNode[];
 }>) {
   const [enabled, setEnabled] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const [interactionPaused, setInteractionPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [selectedAnchor, setSelectedAnchor] = useState<
@@ -131,6 +132,7 @@ export function AtlasCanvasLoader({
 
   useEffect(() => {
     setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    setHydrated(true);
   }, []);
 
   const enableCanvas = () => {
@@ -143,6 +145,7 @@ export function AtlasCanvasLoader({
   return (
     <div
       className={styles.visualStack}
+      data-atlas-hydrated={hydrated ? "true" : "false"}
       data-atlas-state={state}
       onFocusCapture={enableCanvas}
       onPointerEnter={() => {

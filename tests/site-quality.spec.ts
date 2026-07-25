@@ -261,6 +261,7 @@ test("Atlas groups signals by country and reveals ranked side panels on demand",
   await expect(atlas.locator('[data-kind="story-country"]')).toHaveCount(3);
   await expect(atlas.locator('[data-kind="product-country"]')).toHaveCount(1);
   await expect(atlas.locator("[data-atlas-card]")).toHaveCount(0);
+  await expect(atlas).toHaveAttribute("data-atlas-hydrated", "true");
   await atlas.hover();
   await expect(atlas).toHaveAttribute("data-atlas-state", "ready", {
     timeout: 20_000,
