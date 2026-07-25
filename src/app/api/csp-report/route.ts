@@ -1,6 +1,15 @@
 import { readJsonBody, RequestBodyError } from "@/lib/request-body";
+import { allowRequest } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  try {
+    if (!(await allowRequest(request, { limit: 10, scope: "csp-report", windowSeconds: 60 }))) {
+      return new Response(null, { headers: { "Retry-After": "60" }, status: 429 });
+    }
+  } catch {
+    return new Response(null, { headers: { "Retry-After": "60" }, status: 429 });
+  }
+
   let payload: unknown;
   try {
     payload = await readJsonBody(request, {

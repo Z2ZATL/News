@@ -33,6 +33,11 @@ ticket and atomically consumes its identifier before enabling draft mode.
 Never embed the ticket signing secret in the Studio bundle, send a reusable
 secret in a URL, or log preview query strings.
 
+Application-level Redis limits protect draft-ticket attempts (5/minute), CSP
+reports (10/minute), and reaction reads/writes even when a platform firewall
+rule is unavailable. Vercel Firewall remains an independent outer layer; do not
+remove the application limits after adding WAF rules.
+
 ## Launch controls
 
 - Vercel preview deployment protection

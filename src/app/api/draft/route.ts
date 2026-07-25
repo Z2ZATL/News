@@ -5,8 +5,20 @@ import { redirect } from "next/navigation";
 
 import { consumeOnce, hasRedisConfiguration } from "@/lib/redis-rest";
 import { verifyPreviewTicket } from "@/lib/preview-ticket";
+import { allowRequest } from "@/lib/rate-limit";
 
 export async function GET(request: Request) {
+  try {
+    if (!(await allowRequest(request, { limit: 5, scope: "draft-preview", windowSeconds: 60 }))) {
+      return new Response("Too Many Requests", {
+        headers: { "Retry-After": "60" },
+        status: 429,
+      });
+    }
+  } catch {
+    return new Response("Preview unavailable", { status: 503 });
+  }
+
   const url = new URL(request.url);
   const ticket = verifyPreviewTicket(
     url.searchParams.get("ticket") ?? "",

@@ -358,8 +358,21 @@ test("security endpoints reject invalid input and preserve nonce integrity", asy
 
   const draftUnauthorized = await request.get(
     "/api/draft?slug=../../etc&locale=th",
+    { headers: { "x-forwarded-for": "198.51.100.73" } },
   );
   expect(draftUnauthorized.status()).toBe(401);
+
+  for (let requestNumber = 0; requestNumber < 4; requestNumber += 1) {
+    const rejectedDraft = await request.get("/api/draft?ticket=invalid", {
+      headers: { "x-forwarded-for": "198.51.100.73" },
+    });
+    expect(rejectedDraft.status()).toBe(401);
+  }
+  const draftRateLimited = await request.get("/api/draft?ticket=invalid", {
+    headers: { "x-forwarded-for": "198.51.100.73" },
+  });
+  expect(draftRateLimited.status()).toBe(429);
+  expect(draftRateLimited.headers()["retry-after"]).toBe("60");
 
   const revalidateUnauthorized = await request.post("/api/revalidate", {
     data: "{}",
@@ -381,6 +394,24 @@ test("security endpoints reject invalid input and preserve nonce integrity", asy
     },
   });
   expect(revalidateMalformed.status()).toBe(400);
+
+  const cspRateHeaders = {
+    "content-type": "application/csp-report",
+    "x-forwarded-for": "198.51.100.74",
+  };
+  for (let requestNumber = 0; requestNumber < 10; requestNumber += 1) {
+    const acceptedReport = await request.post("/api/csp-report", {
+      data: "{}",
+      headers: cspRateHeaders,
+    });
+    expect(acceptedReport.status()).toBe(204);
+  }
+  const cspRateLimited = await request.post("/api/csp-report", {
+    data: "{}",
+    headers: cspRateHeaders,
+  });
+  expect(cspRateLimited.status()).toBe(429);
+  expect(cspRateLimited.headers()["retry-after"]).toBe("60");
 
   const reactionCrossOrigin = await request.post("/api/reactions", {
     data: { reaction: "love", slug: "okmd-ai-playground-review" },
