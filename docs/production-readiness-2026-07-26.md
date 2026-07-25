@@ -69,6 +69,10 @@ This file records read-only checks made before any production mutation. Values t
 - GitHub remains private on the Free plan. CI, signed commits, PR review practice,
   and local guardrails are required, but unavailable paid branch-enforcement
   controls are not represented as active.
+- Dependabot alerts and automated security fixes are enabled. Private-repository
+  rulesets remain unavailable on the current Free account; the GitHub API
+  returned an explicit upgrade requirement. Commits are not yet signed because
+  no repository signing key is configured; do not represent this control as active.
 
 Official references:
 
