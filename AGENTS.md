@@ -28,8 +28,9 @@ Do not treat a target in the build plan as already implemented. Inspect the sour
   The existing Vercel deployment remains a temporary rollback target until an
   approved DNS cutover; Vercel Hobby must not be used for commercial promotion.
 - Netlify sites remain unlinked from the private organization repository.
-  Releases use authenticated CLI manual deploys from a reviewed commit because
-  private organization-repository Git integration is not in the Free plan.
+  Releases use the authenticated CLI from the manually dispatched Linux
+  workflow in `.github/workflows/deploy-netlify.yml`. This avoids paid private
+  repository integration and the Netlify OpenNext symlink failure on Windows.
 - Repository: private GitHub repository `Z2ZATL/News`.
 - Package manager: pnpm with committed lockfiles and frozen installs in CI.
 
@@ -158,9 +159,10 @@ Any DNS, registrar, email-authentication, access-control, secret-rotation, produ
   treat Vercel Hobby as a compliant permanent host for commercial promotion.
   ADR 0004 records the accepted Netlify Free migration. Do not cut over DNS
   until the preview passes all gates and the exact DNS change is approved.
-- A Netlify draft deploy may be created for validation. Never add `--prod` or
-  attach a custom domain until the corresponding release and DNS mutations are
-  explicitly approved.
+- A Netlify draft deploy may be created for validation through the manual
+  deployment workflow. Its production path requires the exact confirmation
+  phrase. Never attach a custom domain until the corresponding release and DNS
+  mutations are explicitly approved.
 - Deploy to production only when the user has requested or approved a production release.
 
 ## Required validation

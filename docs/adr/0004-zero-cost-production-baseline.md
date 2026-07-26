@@ -31,9 +31,11 @@ repository.
   revalidation used by this application.
 - Do not connect the private `Z2ZATL/News` organization repository to Netlify.
   Netlify reserves private organization-repository Git integration for paid
-  plans. Keep CI on GitHub Actions and use authenticated Netlify CLI manual
-  deploys of a reviewed, green commit. A draft deploy is created without
-  `--prod`; production requires the explicit `--prod` command after approval.
+  plans. Keep CI on GitHub Actions and use the authenticated Netlify CLI from a
+  manually dispatched Linux workflow after a reviewed, green commit. This also
+  avoids the OpenNext symlink failure observed on Windows with pnpm. A draft
+  deploy is created without `--prod`; production additionally requires the
+  exact confirmation phrase recorded in the workflow after approval.
 - The founder has accepted the zero-cost constraint. Build and test a Netlify
   preview, but keep the current Vercel deployment as rollback until the Netlify
   preview passes every gate and DNS cutover is explicitly approved.

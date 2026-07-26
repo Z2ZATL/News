@@ -1,0 +1,114 @@
+name: Deploy Netlify
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Site to deploy
+        required: true
+        default: public
+        type: choice
+        options:
+          - public
+          - studio
+          - both
+      release:
+        description: Draft preview or production release
+        required: true
+        default: preview
+        type: choice
+        options:
+          - preview
+          - production
+      production_confirmation:
+        description: For production, enter DEPLOY news.z2zs.space
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: netlify-${{ inputs.target }}-${{ inputs.release }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require an exact production confirmation
+        env:
+          CONFIRMATION: ${{ inputs.production_confirmation }}
+          RELEASE: ${{ inputs.release }}
+        run: |
+          if [ "$RELEASE" = "production" ] && [ "$CONFIRMATION" != "DEPLOY news.z2zs.space" ]; then
+            echo "Production confirmation did not match." >&2
+            exit 1
+          fi
+
+  public:
+    if: inputs.target == 'public' || inputs.target == 'both'
+    needs: validate
+    runs-on: ubuntu-latest
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_PUBLIC_SITE_ID }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.16.0
+          run_install: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Deploy public site
+        env:
+          DEPLOY_CONTEXT: ${{ inputs.release == 'production' && 'production' || 'deploy-preview' }}
+          DEPLOY_FLAG: ${{ inputs.release == 'production' && '--prod' || '' }}
+        run: |
+          test -n "$NETLIFY_AUTH_TOKEN"
+          test -n "$NETLIFY_SITE_ID"
+          pnpm --package=netlify-cli@27.0.0 dlx netlify deploy \
+            --site "$NETLIFY_SITE_ID" \
+            --context "$DEPLOY_CONTEXT" \
+            $DEPLOY_FLAG \
+            --message "github:${GITHUB_SHA}" \
+            --json
+
+  studio:
+    if: inputs.target == 'studio' || inputs.target == 'both'
+    needs: validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: studio
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_STUDIO_SITE_ID }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.16.0
+          run_install: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - name: Deploy Studio and preview broker
+        env:
+          DEPLOY_CONTEXT: ${{ inputs.release == 'production' && 'production' || 'deploy-preview' }}
+          DEPLOY_FLAG: ${{ inputs.release == 'production' && '--prod' || '' }}
+        run: |
+          test -n "$NETLIFY_AUTH_TOKEN"
+          test -n "$NETLIFY_SITE_ID"
+          pnpm --package=netlify-cli@27.0.0 dlx netlify deploy \
+            --site "$NETLIFY_SITE_ID" \
+            --context "$DEPLOY_CONTEXT" \
+            $DEPLOY_FLAG \
+            --message "github:${GITHUB_SHA}" \
+            --json
