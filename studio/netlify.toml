@@ -18,7 +18,7 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://cdn.sanity.io; font-src 'self' data:; connect-src 'self' https://*.api.sanity.io wss://*.api.sanity.io https://cdn.sanity.io; worker-src 'self' blob:; frame-ancestors 'none'; frame-src 'none'; base-uri 'self'; object-src 'none'; form-action 'self'; upgrade-insecure-requests"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://core.sanity-cdn.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://cdn.sanity.io; font-src 'self' data: https://studio-static.sanity.io; connect-src 'self' https://*.api.sanity.io wss://*.api.sanity.io https://cdn.sanity.io; worker-src 'self' blob:; frame-ancestors 'none'; frame-src 'none'; base-uri 'self'; object-src 'none'; form-action 'self'; upgrade-insecure-requests"
     Referrer-Policy = "no-referrer"
     Strict-Transport-Security = "max-age=31536000"
     X-Content-Type-Options = "nosniff"
