@@ -1,4 +1,6 @@
 import { spawn } from "node:child_process";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import * as chromeLauncher from "chrome-launcher";
@@ -24,6 +26,7 @@ const minimumScores = {
   performance: 0.95,
   seo: 1,
 };
+const maximumScoreAttempts = 3;
 
 const server = spawn(
   process.execPath,
@@ -71,10 +74,8 @@ async function waitForServer() {
 async function runLighthouse(route, chromePath, profile) {
   const auditUrl = new URL(route, baseUrl);
   auditUrl.searchParams.set("lighthouse", "1");
-  const browser = await chromeLauncher.launch({
-    chromePath,
-    chromeFlags: ["--headless=new", "--no-sandbox"],
-  });
+  const userDataDir = await mkdtemp(join(tmpdir(), "z2zs-lighthouse-"));
+  let browser;
   const baseConfig = profile === "desktop" ? desktopConfig : mobileConfig;
   const useArmCpuWorkaround =
     process.platform === "win32" &&
@@ -97,6 +98,14 @@ async function runLighthouse(route, chromePath, profile) {
       }
     : baseConfig;
   try {
+    browser = await chromeLauncher.launch({
+      chromePath,
+      chromeFlags: ["--headless=new", "--no-sandbox"],
+      // chrome-launcher's automatic cleanup can race the final Chromium process
+      // on Windows ARM and throw an uncaught EPERM. Owning the directory lets us
+      // wait for process release and retry cleanup without weakening the audit.
+      userDataDir,
+    });
     return await lighthouse(
       auditUrl.toString(),
       {
@@ -108,13 +117,21 @@ async function runLighthouse(route, chromePath, profile) {
       config,
     );
   } finally {
-    try {
-      await browser.kill();
-    } catch {
-      // Windows can retain Edge profile files briefly after the process exits.
+    if (browser) {
+      try {
+        await browser.kill();
+      } catch {
+        // Windows can retain Edge profile files briefly after the process exits.
+      }
     }
     await new Promise((resolve) => {
       setTimeout(resolve, 1_500);
+    });
+    await rm(userDataDir, {
+      force: true,
+      maxRetries: 20,
+      recursive: true,
+      retryDelay: 250,
     });
   }
 }
@@ -136,6 +153,25 @@ async function runLighthouseWithTraceRetry(route, chromePath, profile) {
   return undefined;
 }
 
+function categoryScore(result, category) {
+  return result?.lhr.categories[category]?.score ?? null;
+}
+
+function resultFailsThreshold(result) {
+  return Object.entries(minimumScores).some(([category, minimum]) => {
+    const score = categoryScore(result, category);
+    return score === null || score < minimum;
+  });
+}
+
+function medianScore(results, category) {
+  const scores = results
+    .map((result) => categoryScore(result, category))
+    .filter((score) => score !== null)
+    .sort((left, right) => left - right);
+  return scores[Math.floor(scores.length / 2)] ?? null;
+}
+
 try {
   await waitForServer();
   const automaticChromePath = chromium.executablePath();
@@ -144,31 +180,59 @@ try {
   const failures = [];
   for (const profile of profiles) {
     for (const route of routes) {
-    const result = await runLighthouseWithTraceRetry(route, chromePath, profile);
-    if (!result) {
+    const firstResult = await runLighthouseWithTraceRetry(route, chromePath, profile);
+    if (!firstResult) {
       failures.push(`${profile} ${route}: Lighthouse returned no result.`);
       continue;
     }
 
+    const results = [firstResult];
+    if (resultFailsThreshold(firstResult)) {
+      // Lighthouse deliberately adds CPU and network throttling, so runs close
+      // to a threshold can vary on shared CI workers. Re-run only a failing
+      // route and gate on the median of three measurements. Passing routes
+      // still consume one run, while a persistent regression fails in at
+      // least two of three runs.
+      for (let attempt = 2; attempt <= maximumScoreAttempts; attempt += 1) {
+        console.log(
+          `${profile} ${route} is below a target; collecting median sample ${String(attempt)}/${String(maximumScoreAttempts)}.`,
+        );
+        const retry = await runLighthouseWithTraceRetry(route, chromePath, profile);
+        if (retry) results.push(retry);
+      }
+      if (results.length !== maximumScoreAttempts) {
+        failures.push(
+          `${profile} ${route}: Lighthouse returned only ${String(results.length)} of ${String(maximumScoreAttempts)} score samples.`,
+        );
+        continue;
+      }
+    }
+
     const scores = {};
     for (const [category, minimum] of Object.entries(minimumScores)) {
-      const categoryResult = result.lhr.categories[category];
-      if (categoryResult?.score === null) {
-        const runtimeMessage = result.lhr.runtimeError?.message ?? "No runtime error reported.";
+      const score = medianScore(results, category);
+      if (score === null) {
+        const runtimeMessage =
+          results.at(-1)?.lhr.runtimeError?.message ?? "No runtime error reported.";
         failures.push(`${profile} ${route}: ${category} did not produce a score. ${runtimeMessage}`);
         scores[category] = 0;
         continue;
       }
-      const score = categoryResult?.score ?? 0;
       scores[category] = Math.round(score * 100);
       if (score < minimum) {
         failures.push(
           `${profile} ${route}: ${category} ${String(Math.round(score * 100))} is below ${String(Math.round(minimum * 100))}.`,
         );
+        const diagnosticResult = [...results].sort((left, right) => {
+          const leftScore = categoryScore(left, category) ?? 0;
+          const rightScore = categoryScore(right, category) ?? 0;
+          return leftScore - rightScore;
+        })[Math.floor(results.length / 2)] ?? results.at(-1);
+        const categoryResult = diagnosticResult?.lhr.categories[category];
         const failedAudits = (categoryResult?.auditRefs ?? [])
           .filter(({ weight }) => weight > 0)
           .map(({ id, weight }) => ({
-            audit: result.lhr.audits[id],
+            audit: diagnosticResult?.lhr.audits[id],
             weight,
           }))
           .filter(({ audit }) => audit && audit.score !== null && audit.score < 1)
@@ -198,7 +262,7 @@ try {
             "mainthread-work-breakdown",
             "unused-javascript",
           ]) {
-            const diagnostic = result.lhr.audits[id];
+            const diagnostic = diagnosticResult?.lhr.audits[id];
             if (diagnostic) {
               console.log(`${profile} ${route} ${id}: ${JSON.stringify(diagnostic.details?.items?.slice(0, 5) ?? diagnostic.displayValue ?? diagnostic.score)}`);
             }

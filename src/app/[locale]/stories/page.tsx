@@ -58,7 +58,6 @@ export default async function Stories({ params }: { params: Promise<{ locale: st
                 width={article.cover.width ?? 640}
                 height={article.cover.height ?? 400}
                 sizes="(max-width: 640px) calc(100vw - 86px), 280px"
-                loading={index === 0 ? "eager" : "lazy"}
               />
             </div>
             <b aria-hidden="true">↗</b>

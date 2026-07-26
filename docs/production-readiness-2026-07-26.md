@@ -17,6 +17,8 @@ This file records read-only checks made before any production mutation. Values t
   credentials and unique 256-bit preview, webhook, reaction-cookie, and
   rate-limit secrets. Preview and production Redis keys use separate
   namespaces.
+- Public-site environment metadata was re-read through the Netlify API after
+  setup. It contains no `SANITY_STUDIO_*` variables.
 
 ## Studio and CMS
 
@@ -26,9 +28,16 @@ This file records read-only checks made before any production mutation. Values t
 - The Studio has the same preview-ticket secret as the public site and has its
   public Sanity project/dataset configuration. Its server-side public-preview
   destination will be set after the first public deploy-preview URL exists.
+- Studio environment metadata was re-read through the Netlify API after setup.
+  It contains only the Studio project, dataset, synchronized preview ticket,
+  and production preview-broker origin. Netlify Free rejected build-only
+  variable scopes as a paid control, so the standard Free scopes are retained;
+  Studio remains a static build and no secret is referenced by client code.
 - Sanity project: `Z2Zs Lab News` (`kbore3rf`) under organization `Z2Zs`
 - Sanity created an automatic 30-day Growth Trial with no payment method and an
-  explicit automatic downgrade to Free; no paid upgrade was selected
+  explicit automatic downgrade to Free. The project plan page provides no
+  early-downgrade control, so the trial cannot be ended from project settings;
+  no paid upgrade was selected.
 - Public `production` dataset created automatically and confirmed public
 - Production content migrated and verified: 7 articles, 10 assets, 1 author,
   5 categories, 1 project, and site settings
@@ -37,6 +46,10 @@ This file records read-only checks made before any production mutation. Values t
 - The expiring migration token was revoked immediately after use
 - A dedicated `Viewer` token named `Z2Zs Lab draft preview` was created and
   verified against the Sanity API without exposing or committing its value
+- A replacement read-only `Viewer` token named
+  `Z2Zs Lab Netlify preview 2026-07-27` was validated against the Sanity API and
+  installed as a secret in both Netlify deploy contexts. The original token
+  remains pending explicit deletion approval.
 - Required before promotion: install the viewer token as a server-only hosting
   variable, create the signed webhook, and deploy a separate Studio whose
   editorial access requires Sanity authentication
@@ -56,8 +69,9 @@ This file records read-only checks made before any production mutation. Values t
 ## Promotion blockers
 
 1. Create separate public-site and Studio Netlify Free previews without changing DNS.
-2. Finish the public-site and Studio environment variables, install the existing
-   viewer token as server-only, and create the webhook secret.
+2. Deploy the public preview, then set the Studio's deploy-preview
+   `NEWS_PREVIEW_ORIGIN` to that exact URL and create the signed Sanity webhook
+   with the already installed server-only secret.
 3. Run preview functional, security, accessibility, and performance checks.
 4. Publish the DNSSEC DS record at the registrar; preserve existing MX/DKIM/tracking records.
 5. Request exact DNS cutover approval, retain Vercel as rollback, and run production smoke checks.
