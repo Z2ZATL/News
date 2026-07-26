@@ -390,7 +390,9 @@
 
 @media (max-width: 700px) {
   .globeStage {
-    min-height: 650px;
+    /* Keep the immersive Atlas as a complete opening viewport. This also
+       prevents the next section heading from peeking into the initial fold. */
+    min-height: 100svh;
   }
 
   .canvasFrame {

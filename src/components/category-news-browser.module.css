@@ -1,4 +1,6 @@
 .section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1400px;
   padding: clamp(4.5rem, 8vw, 8rem) 4vw clamp(6rem, 10vw, 10rem);
   border-top: 1px solid var(--line);
   background:
@@ -317,6 +319,7 @@
   }
 
   .heading h1 {
+    font-family: system-ui, -apple-system, "Segoe UI", "Leelawadee UI", Tahoma, sans-serif;
     font-size: clamp(2.5rem, 12vw, 4rem);
   }
 }

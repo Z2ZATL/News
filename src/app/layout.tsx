@@ -9,10 +9,7 @@ const thai = Noto_Sans_Thai({
   variable: "--font-thai",
   subsets: ["thai"],
   display: "optional",
-  // Thai headings are the mobile home-page LCP. Preload the Thai subset so
-  // the browser does not discover it only after the render-blocking CSS has
-  // arrived. Keep Space Grotesk lazy because it is not required for that LCP.
-  preload: true,
+  preload: false,
 });
 
 const space = Space_Grotesk({

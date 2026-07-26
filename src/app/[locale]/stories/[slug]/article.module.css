@@ -67,6 +67,8 @@
 }
 
 .cover {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 760px;
   display: grid;
   place-items: center;
   width: min(1240px, calc(100% - 8vw));
@@ -148,6 +150,8 @@
 }
 
 .articleGrid {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 2400px;
   display: grid;
   grid-template-columns: minmax(180px, 240px) minmax(0, 780px);
   gap: clamp(3rem, 8vw, 9rem);
@@ -383,7 +387,11 @@
   .articleGrid { width: calc(100% - 40px); }
 
   .heroInner { padding-top: 5.5rem; }
-  .hero h1 { letter-spacing: -.04em; }
+  .hero h1 {
+    font-family: system-ui, -apple-system, "Segoe UI", "Leelawadee UI", Tahoma, sans-serif;
+    font-size: 2.6rem;
+    letter-spacing: -.035em;
+  }
   :global(html[lang="th"]) .hero h1 { letter-spacing: -.02em; }
   .meta { gap: .5rem 1rem; }
   .meta span + span::before { margin-right: 1rem; }
