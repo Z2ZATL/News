@@ -72,9 +72,14 @@ jobs:
         run: |
           test -n "$NETLIFY_AUTH_TOKEN"
           test -n "$NETLIFY_SITE_ID"
+          deploy_alias=()
+          if [ "$DEPLOY_CONTEXT" = "deploy-preview" ]; then
+            deploy_alias=(--alias preview)
+          fi
           pnpm --package=netlify-cli@27.0.0 dlx netlify deploy \
             --site "$NETLIFY_SITE_ID" \
             --context "$DEPLOY_CONTEXT" \
+            "${deploy_alias[@]}" \
             $DEPLOY_FLAG \
             --message "github:${GITHUB_SHA}" \
             --json
@@ -106,9 +111,14 @@ jobs:
         run: |
           test -n "$NETLIFY_AUTH_TOKEN"
           test -n "$NETLIFY_SITE_ID"
+          deploy_alias=()
+          if [ "$DEPLOY_CONTEXT" = "deploy-preview" ]; then
+            deploy_alias=(--alias preview)
+          fi
           pnpm --package=netlify-cli@27.0.0 dlx netlify deploy \
             --site "$NETLIFY_SITE_ID" \
             --context "$DEPLOY_CONTEXT" \
+            "${deploy_alias[@]}" \
             $DEPLOY_FLAG \
             --message "github:${GITHUB_SHA}" \
             --json
