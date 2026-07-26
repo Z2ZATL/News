@@ -8,6 +8,7 @@ import {
   type ReactionId,
   type ReactionState,
 } from "@/lib/reaction-types";
+import { redisKey } from "@/lib/redis-key";
 import { hasRedisConfiguration, redisCommand, redisPipeline } from "@/lib/redis-rest";
 
 export interface ReactionStore {
@@ -76,8 +77,10 @@ return next
 const redisStore: ReactionStore = {
   async get(slugs, visitorId) {
     const commands = slugs.flatMap((slug) => [
-      ["HGETALL", `reaction:counts:${slug}`],
-      ...(visitorId ? [["GET", `reaction:visitor:${visitorId}:${slug}`]] : []),
+      ["HGETALL", redisKey(`reaction:counts:${slug}`)],
+      ...(visitorId
+        ? [["GET", redisKey(`reaction:visitor:${visitorId}:${slug}`)]]
+        : []),
     ]);
     const results = await redisPipeline<unknown[]>(commands);
     let offset = 0;
@@ -99,8 +102,8 @@ const redisStore: ReactionStore = {
       "EVAL",
       setReactionScript,
       2,
-      `reaction:visitor:${visitorId}:${slug}`,
-      `reaction:counts:${slug}`,
+      redisKey(`reaction:visitor:${visitorId}:${slug}`),
+      redisKey(`reaction:counts:${slug}`),
       reaction ?? "",
       31_536_000,
     ]);

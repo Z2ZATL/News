@@ -1,5 +1,7 @@
 import "server-only";
 
+import { redisKey } from "@/lib/redis-key";
+
 const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
 const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
@@ -46,6 +48,13 @@ export async function redisPipeline<T extends readonly unknown[]>(
 }
 
 export async function consumeOnce(key: string, ttlSeconds: number): Promise<boolean> {
-  const result = await redisCommand<"OK" | null>(["SET", key, "1", "NX", "EX", ttlSeconds]);
+  const result = await redisCommand<"OK" | null>([
+    "SET",
+    redisKey(key),
+    "1",
+    "NX",
+    "EX",
+    ttlSeconds,
+  ]);
   return result === "OK";
 }

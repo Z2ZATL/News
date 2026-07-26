@@ -40,7 +40,9 @@ export default defineConfig({
         : previous,
     productionUrl: (previous, context) => {
       const slug = context.document.slug as { current?: string } | undefined;
-      const origin = process.env.SANITY_STUDIO_PREVIEW_BROKER_ORIGIN;
+      const origin =
+        process.env.SANITY_STUDIO_PREVIEW_BROKER_ORIGIN ??
+        (typeof window === "undefined" ? undefined : window.location.origin);
       if (!slug?.current || !origin) return Promise.resolve(previous);
       const url = new URL("/api/preview", origin);
       url.searchParams.set("slug", slug.current);

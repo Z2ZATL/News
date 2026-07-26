@@ -9,6 +9,7 @@ import {
   readBoundedBody,
   RequestBodyError,
 } from "../src/lib/request-body.ts";
+import { redisKey } from "../src/lib/redis-key.ts";
 
 const secret = "test-only-preview-ticket-secret-with-32-bytes";
 const payload = {
@@ -88,6 +89,27 @@ void describe("bounded request bodies", () => {
       }),
       (error: unknown) =>
         error instanceof RequestBodyError && error.status === 415,
+    );
+  });
+});
+
+void describe("Redis key isolation", () => {
+  void it("separates production, preview, branch, and local data", () => {
+    assert.equal(
+      redisKey("reaction:counts:example", { DEPLOY_ENV: "production" }),
+      "z2zs:production:reaction:counts:example",
+    );
+    assert.equal(
+      redisKey("reaction:counts:example", { DEPLOY_ENV: "preview" }),
+      "z2zs:preview:reaction:counts:example",
+    );
+    assert.equal(
+      redisKey("rate:example", { CONTEXT: "branch-deploy" }),
+      "z2zs:branch:rate:example",
+    );
+    assert.equal(
+      redisKey("preview-ticket:example", {}),
+      "z2zs:development:preview-ticket:example",
     );
   });
 });

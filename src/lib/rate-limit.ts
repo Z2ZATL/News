@@ -3,6 +3,7 @@ import "server-only";
 import { createHmac } from "node:crypto";
 
 import { isProductionDeployment } from "@/lib/deployment";
+import { redisKey } from "@/lib/redis-key";
 import { hasRedisConfiguration, redisCommand } from "@/lib/redis-rest";
 
 const memoryWindows = new Map<string, { count: number; expiresAt: number }>();
@@ -30,7 +31,7 @@ export async function allowRequest(
   request: Request,
   options: Readonly<{ limit: number; scope: string; windowSeconds: number }>,
 ): Promise<boolean> {
-  const key = `rate:${options.scope}:${identifier(request, options.scope)}`;
+  const key = redisKey(`rate:${options.scope}:${identifier(request, options.scope)}`);
   if (process.env.REACTION_STORE === "memory") {
     const now = Date.now();
     const current = memoryWindows.get(key);
