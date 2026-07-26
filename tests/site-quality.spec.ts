@@ -87,6 +87,8 @@ test("home replaces featured news with a keyboard-accessible category browser", 
   await expect(
     browser.getByRole("heading", { name: "เลือกหมวดข่าวที่คุณสนใจ" }),
   ).toBeVisible();
+  await page.waitForTimeout(750);
+  await expect(browser).toHaveAttribute("data-category-browser", "waiting");
   await expect(page.getByText("บทวิเคราะห์ล่าสุด")).toHaveCount(0);
   await expect(page.getByText("ลองให้จริง แล้วค่อยเล่า")).toHaveCount(0);
 

@@ -26,7 +26,7 @@ const minimumScores = {
   performance: 0.95,
   seo: 1,
 };
-const maximumScoreAttempts = 3;
+const maximumScoreAttempts = 5;
 
 const server = spawn(
   process.execPath,
@@ -190,9 +190,9 @@ try {
     if (resultFailsThreshold(firstResult)) {
       // Lighthouse deliberately adds CPU and network throttling, so runs close
       // to a threshold can vary on shared CI workers. Re-run only a failing
-      // route and gate on the median of three measurements. Passing routes
-      // still consume one run, while a persistent regression fails in at
-      // least two of three runs.
+      // route and gate on the median of five measurements. Passing routes
+      // still consume one run, while one or two noisy samples cannot fail an
+      // otherwise healthy release.
       for (let attempt = 2; attempt <= maximumScoreAttempts; attempt += 1) {
         console.log(
           `${profile} ${route} is below a target; collecting median sample ${String(attempt)}/${String(maximumScoreAttempts)}.`,
