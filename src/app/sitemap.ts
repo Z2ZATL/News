@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { getArticles } from "@/lib/content";
+import { getArticles, getProjects } from "@/lib/content";
 import { SITE_URL } from "@/lib/site-config";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -9,7 +9,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "",
     "/stories",
     "/projects",
-    "/projects/lumixia-brief",
     "/about",
     "/privacy",
     "/terms",
@@ -25,6 +24,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             th: `${site}/th${path}`,
             en: `${site}/en${path}`,
             "x-default": `${site}/th${path}`,
+          },
+        },
+      });
+    }
+  }
+  for (const project of await getProjects()) {
+    for (const locale of ["th", "en"] as const) {
+      entries.push({
+        url: `${site}/${locale}/projects/${project.slug}`,
+        alternates: {
+          languages: {
+            th: `${site}/th/projects/${project.slug}`,
+            en: `${site}/en/projects/${project.slug}`,
+            "x-default": `${site}/th/projects/${project.slug}`,
           },
         },
       });

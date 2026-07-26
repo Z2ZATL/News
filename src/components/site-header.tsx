@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { ThemeMenu } from "@/components/theme-menu";
 import type { Locale } from "@/lib/i18n";
 import { ui } from "@/lib/i18n";
-import { ThemeMenu } from "@/components/theme-menu";
 
 import styles from "./site-header.module.css";
 
@@ -13,22 +13,22 @@ export function SiteHeader({ locale }: Readonly<{ locale: Locale }>) {
 
   return (
     <header className={styles.header}>
-      <Link href={`/${locale}`} className={styles.brand} aria-label="Z2Zs Lab home">
-        <Image src="/images/z2zs-mark.png" width={64} height={64} alt="" priority unoptimized />
+      <Link href={`/${locale}`} prefetch={false} className={styles.brand} aria-label="Z2Zs Lab home">
+        <Image src="/images/z2zs-mark.webp" width={64} height={64} alt="" priority unoptimized />
         <span>Z2Zs Lab</span>
         <span className={styles.signal} aria-hidden="true" />
       </Link>
       <nav className={styles.nav} aria-label={locale === "th" ? "เมนูหลัก" : "Primary navigation"}>
-        <Link href={`/${locale}/stories`}>{labels.stories}</Link>
-        <Link href={`/${locale}/projects`}>{labels.projects}</Link>
-        <Link href={`/${locale}/about`}>{labels.about}</Link>
+        <Link href={`/${locale}/stories`} prefetch={false}>{labels.stories}</Link>
+        <Link href={`/${locale}/projects`} prefetch={false}>{labels.projects}</Link>
+        <Link href={`/${locale}/about`} prefetch={false}>{labels.about}</Link>
       </nav>
       <div className={styles.actions}>
         <ThemeMenu locale={locale} />
-        <Link href={`/${locale}/search`} className={styles.search}>
+        <Link href={`/${locale}/search`} prefetch={false} className={styles.search}>
           {labels.search}
         </Link>
-        <Link href={`/${alternate}`} className={styles.language} hrefLang={alternate}>
+        <Link href={`/${alternate}`} prefetch={false} className={styles.language} hrefLang={alternate}>
           {alternate.toUpperCase()}
         </Link>
         <details className={styles.mobileMenu}>
@@ -37,10 +37,10 @@ export function SiteHeader({ locale }: Readonly<{ locale: Locale }>) {
             <span />
           </summary>
           <nav aria-label={locale === "th" ? "เมนูมือถือ" : "Mobile navigation"}>
-            <Link href={`/${locale}/stories`}>{labels.stories}</Link>
-            <Link href={`/${locale}/projects`}>{labels.projects}</Link>
-            <Link href={`/${locale}/about`}>{labels.about}</Link>
-            <Link href={`/${locale}/search`}>{labels.search}</Link>
+            <Link href={`/${locale}/stories`} prefetch={false}>{labels.stories}</Link>
+            <Link href={`/${locale}/projects`} prefetch={false}>{labels.projects}</Link>
+            <Link href={`/${locale}/about`} prefetch={false}>{labels.about}</Link>
+            <Link href={`/${locale}/search`} prefetch={false}>{labels.search}</Link>
           </nav>
         </details>
       </div>

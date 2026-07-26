@@ -13,6 +13,7 @@
 # testing
 /coverage
 /test-results
+/.migration-backups
 /.lighthouseci
 
 # next.js
@@ -34,12 +35,14 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
 
+# netlify
+.netlify
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-.vercel

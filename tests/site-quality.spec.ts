@@ -90,6 +90,10 @@ test("home replaces featured news with a keyboard-accessible category browser", 
   await expect(page.getByText("บทวิเคราะห์ล่าสุด")).toHaveCount(0);
   await expect(page.getByText("ลองให้จริง แล้วค่อยเล่า")).toHaveCount(0);
 
+  await page.evaluate(() => {
+    document.querySelector("[data-category-browser]")?.scrollIntoView();
+  });
+
   const publicAi = browser.getByRole("tab", { name: /AI ภาครัฐ/ });
   const codingAi = browser.getByRole("tab", { name: /AI เขียนโค้ด/ });
   await expect(publicAi).toHaveAttribute("aria-selected", "true");
@@ -253,23 +257,27 @@ test("Atlas upgrades to WebGL on interaction and survives context loss", async (
 test("Atlas groups signals by country and reveals ranked side panels on demand", async ({
   page,
 }) => {
+  await page.goto("/th/stories/th-ai-passport-recap-developer-tools");
+  await page.evaluate(() => {
+    document
+      .getElementById("reactions-th-ai-passport-recap-developer-tools")
+      ?.scrollIntoView();
+  });
+  await page.locator('button[aria-label^="รักเลย"]').click();
   await page.goto("/th");
   const atlas = page.locator("[data-atlas-state]");
 
   await expect(atlas.locator('[data-kind="story-country"]')).toHaveCount(3);
   await expect(atlas.locator('[data-kind="product-country"]')).toHaveCount(1);
   await expect(atlas.locator("[data-atlas-card]")).toHaveCount(0);
+  await expect(atlas).toHaveAttribute("data-atlas-hydrated", "true");
+  // The previous test leaves the shared worker cursor over the Atlas. Move it
+  // outside first so this test exercises a real pointer-entry interaction.
+  await page.mouse.move(0, 0);
   await atlas.hover();
   await expect(atlas).toHaveAttribute("data-atlas-state", "ready", {
     timeout: 20_000,
   });
-  await page.evaluate(() => {
-    window.localStorage.setItem(
-      "z2zs:story-reaction:th-ai-passport-recap-developer-tools",
-      "love",
-    );
-  });
-
   const thailand = atlas.locator(
     'button[data-kind="story-country"][data-country="TH"]',
   );
@@ -290,38 +298,47 @@ test("Atlas groups signals by country and reveals ranked side panels on demand",
   );
   await expect(cards.nth(0)).toContainText("Aitthikorn Khammee");
 
-  const china = atlas.locator(
-    'button[data-kind="story-country"][data-country="CN"]',
-  );
-  const switchStartedAt = await china.evaluate((element) => {
+  const switchDuration = await page.evaluate(async () => {
+    const root = document.querySelector<HTMLElement>("[data-atlas-state]");
+    const china = root?.querySelector<HTMLButtonElement>(
+      'button[data-kind="story-country"][data-country="CN"]',
+    );
+    if (!root || !china) return Number.POSITIVE_INFINITY;
+
     const startedAt = performance.now();
-    (element as HTMLButtonElement).click();
-    return startedAt;
+    china.click();
+    return new Promise<number>((resolve) => {
+      const measure = () => {
+        const line = root.querySelector<SVGLineElement>("svg line");
+        const lineX = Number(line?.getAttribute("x1"));
+        const dotX = Number.parseFloat(china.style.left);
+        const elapsed = performance.now() - startedAt;
+        if (Math.abs(lineX - dotX) < 0.5 || elapsed >= 300) {
+          resolve(elapsed);
+          return;
+        }
+        requestAnimationFrame(measure);
+      };
+      measure();
+    });
   });
-  await expect
-    .poll(async () => {
-      const lineX = Number(await atlas.locator("svg line").first().getAttribute("x1"));
-      const dotX = Number.parseFloat(
-        await china.evaluate((element) => element.style.left),
-      );
-      return Math.abs(lineX - dotX);
-    })
-    .toBeLessThan(0.5);
-  const switchDuration = await page.evaluate(
-    (startedAt) => performance.now() - startedAt,
-    switchStartedAt,
-  );
   expect(switchDuration).toBeLessThan(300);
 });
 
-test("story reactions persist locally and stay out of Lab pages", async ({
+test("story reactions aggregate anonymously, persist, and stay out of Lab pages", async ({
   page,
 }) => {
   await page.goto("/th/stories/okmd-ai-playground-review");
+  await page.evaluate(() => {
+    document
+      .getElementById("reactions-okmd-ai-playground-review")
+      ?.scrollIntoView();
+  });
   const love = page.getByRole("button", { name: "รักเลย" });
   await expect(love).toHaveAttribute("aria-pressed", "false");
   await love.click();
   await expect(love).toHaveAttribute("aria-pressed", "true");
+  await expect(love).toHaveAccessibleName(/1/);
 
   await page.reload();
   await expect(page.getByRole("button", { name: "รักเลย" })).toHaveAttribute(
@@ -354,13 +371,33 @@ test("security endpoints reject invalid input and preserve nonce integrity", asy
   });
   expect(cspMalformed.status()).toBe(400);
 
+  const cspOversized = await request.post("/api/csp-report", {
+    data: "x".repeat(16_385),
+    headers: { "content-type": "application/csp-report" },
+  });
+  expect(cspOversized.status()).toBe(413);
+
   const draftUnauthorized = await request.get(
     "/api/draft?slug=../../etc&locale=th",
+    { headers: { "x-forwarded-for": "198.51.100.73" } },
   );
   expect(draftUnauthorized.status()).toBe(401);
 
+  for (let requestNumber = 0; requestNumber < 4; requestNumber += 1) {
+    const rejectedDraft = await request.get("/api/draft?ticket=invalid", {
+      headers: { "x-forwarded-for": "198.51.100.73" },
+    });
+    expect(rejectedDraft.status()).toBe(401);
+  }
+  const draftRateLimited = await request.get("/api/draft?ticket=invalid", {
+    headers: { "x-forwarded-for": "198.51.100.73" },
+  });
+  expect(draftRateLimited.status()).toBe(429);
+  expect(draftRateLimited.headers()["retry-after"]).toBe("60");
+
   const revalidateUnauthorized = await request.post("/api/revalidate", {
     data: "{}",
+    headers: { "content-type": "application/json" },
   });
   expect(revalidateUnauthorized.status()).toBe(401);
 
@@ -378,4 +415,56 @@ test("security endpoints reject invalid input and preserve nonce integrity", asy
     },
   });
   expect(revalidateMalformed.status()).toBe(400);
+
+  const cspRateHeaders = {
+    "content-type": "application/csp-report",
+    "x-forwarded-for": "198.51.100.74",
+  };
+  for (let requestNumber = 0; requestNumber < 10; requestNumber += 1) {
+    const acceptedReport = await request.post("/api/csp-report", {
+      data: "{}",
+      headers: cspRateHeaders,
+    });
+    expect(acceptedReport.status()).toBe(204);
+  }
+  const cspRateLimited = await request.post("/api/csp-report", {
+    data: "{}",
+    headers: cspRateHeaders,
+  });
+  expect(cspRateLimited.status()).toBe(429);
+  expect(cspRateLimited.headers()["retry-after"]).toBe("60");
+
+  const reactionCrossOrigin = await request.post("/api/reactions", {
+    data: { reaction: "love", slug: "okmd-ai-playground-review" },
+    headers: { origin: "https://attacker.example" },
+  });
+  expect(reactionCrossOrigin.status()).toBe(403);
+
+  const reactionOversized = await request.post("/api/reactions", {
+    data: JSON.stringify({ reaction: "love", slug: "x".repeat(2_100) }),
+    headers: {
+      "content-type": "application/json",
+      origin: "http://127.0.0.1:3000",
+      "x-forwarded-for": "198.51.100.71",
+    },
+  });
+  expect(reactionOversized.status()).toBe(413);
+
+  const rateHeaders = {
+    "content-type": "application/json",
+    origin: "http://127.0.0.1:3000",
+    "x-forwarded-for": "198.51.100.72",
+  };
+  for (let requestNumber = 0; requestNumber < 20; requestNumber += 1) {
+    const allowed = await request.post("/api/reactions", {
+      data: { reaction: "love", slug: "okmd-ai-playground-review" },
+      headers: rateHeaders,
+    });
+    expect(allowed.status()).toBe(200);
+  }
+  const rateLimited = await request.post("/api/reactions", {
+    data: { reaction: "love", slug: "okmd-ai-playground-review" },
+    headers: rateHeaders,
+  });
+  expect(rateLimited.status()).toBe(429);
 });

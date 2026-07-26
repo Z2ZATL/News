@@ -1,0 +1,10 @@
+[build]
+  command = "corepack pnpm build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[dev]
+  command = "corepack pnpm dev"
+  targetPort = 3000

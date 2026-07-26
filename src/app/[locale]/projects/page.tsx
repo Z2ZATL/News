@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 
 import { isLocale, ui } from "@/lib/i18n";
 import { localizedAlternates } from "@/lib/metadata";
+import { getProjects } from "@/lib/content";
 
 import styles from "./projects.module.css";
 
@@ -29,6 +30,9 @@ export default async function Projects({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const th = locale === "th";
+  const projects = await getProjects();
+  const featured = projects.find((project) => project.promoted) ?? projects[0];
+  if (!featured) notFound();
 
   return (
     <div className={styles.projects}>
@@ -50,7 +54,7 @@ export default async function Projects({ params }: { params: Promise<{ locale: s
         <article className={styles.projectCard}>
           <Link
             className={styles.projectLink}
-            href={`/${locale}/projects/lumixia-brief` as Route}
+            href={`/${locale}/projects/${featured.slug}` as Route}
           >
             <div className={styles.projectCopy}>
               <div className={styles.meta}>
@@ -59,12 +63,8 @@ export default async function Projects({ params }: { params: Promise<{ locale: s
                 <span>WORK &amp; PRODUCTIVITY</span>
               </div>
               <p className={styles.brand}>LUMIXIA / 001</p>
-              <h2 id="featured-project">Lumixia Brief</h2>
-              <p className={styles.summary}>
-                {th
-                  ? "เปลี่ยนไอเดียที่ยังคลุมเครือให้เป็น brief ที่ทีมและ AI เข้าใจตรงกัน ก่อนเริ่มลงมือทำ"
-                  : "Turn a vague idea into a brief that people and AI can agree on before the work begins."}
-              </p>
+              <h2 id="featured-project">{featured.title[locale]}</h2>
+              <p className={styles.summary}>{featured.summary[locale]}</p>
               <span className={styles.readMore}>
                 {th ? "ดูเบื้องหลังโปรเจกต์" : "Explore the project"} <b aria-hidden="true">↗</b>
               </span>
@@ -96,6 +96,18 @@ export default async function Projects({ params }: { params: Promise<{ locale: s
             </div>
           </Link>
         </article>
+        {projects.length > 1 ? (
+          <div className={styles.projectList}>
+            {projects.filter((project) => project.slug !== featured.slug).map((project) => (
+              <Link href={`/${locale}/projects/${project.slug}` as Route} key={project.slug}>
+                <span>LAB</span>
+                <h2>{project.title[locale]}</h2>
+                <p>{project.summary[locale]}</p>
+                <b aria-hidden="true">↗</b>
+              </Link>
+            ))}
+          </div>
+        ) : null}
       </section>
     </div>
   );

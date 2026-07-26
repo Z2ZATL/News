@@ -2,264 +2,412 @@ import "server-only";
 
 import { createClient } from "@sanity/client";
 import { defineQuery } from "groq";
+import { z } from "zod";
 
-import { facebookArticles } from "@/content/facebook-articles";
-import { launchArticle } from "@/content/launch-article";
-import type {
-  Article,
-  ArticleSection,
-  LocalizedText,
-} from "@/lib/content-types";
-import type { DraftArticleQueryResult } from "@/sanity.types";
+import type { Article, Project, SiteSettings } from "@/lib/content-types";
+import { isProductionDeployment } from "@/lib/deployment";
+import { fixtureArticles, fixtureProjects, fixtureSettings } from "@/lib/fixture-content";
 
-const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
-const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET ?? "production";
-const token = process.env.SANITY_API_READ_TOKEN;
-const localArticles = [launchArticle, ...facebookArticles];
-
-const publishedSanity =
-  projectId && token
-    ? createClient({
-        projectId,
-        dataset,
-        apiVersion: "2025-01-01",
-        token,
-        useCdn: true,
-        perspective: "published",
-      })
-    : null;
-
-const draftSanity =
-  projectId && token
-    ? createClient({
-        projectId,
-        dataset,
-        apiVersion: "2025-01-01",
-        token,
-        useCdn: false,
-        perspective: "drafts",
-      })
-    : null;
-
-const articleQuery = defineQuery(`*[_type == "article" && status == "published"] | order(publishedAt desc) {
-  "slug": slug.current,
-  title,
-  excerpt,
-  "cover": {
-    "src": cover.asset->url,
-    "alt": cover.alt
-  },
-  "category": category->title,
-  author->{name, role},
-  atlasLocation,
-  body,
-  tags,
-  sources,
-  featured,
-  publishedAt,
-  updatedAt,
-  "readingMinutes": 9
-}`);
-const draftArticleQuery = defineQuery(`*[_type == "article" && slug.current == $slug][0] {
-  "slug": slug.current,
-  title,
-  excerpt,
-  "cover": {
-    "src": cover.asset->url,
-    "alt": cover.alt
-  },
-  "category": category->title,
-  author->{name, role},
-  atlasLocation,
-  body,
-  tags,
-  sources,
-  featured,
-  publishedAt,
-  updatedAt,
-  "readingMinutes": 9
-}`);
-
-interface PortableSpan {
-  _type?: string;
-  text?: string;
-}
-
-interface PortableBlock {
-  _type?: string;
-  style?: string;
-  listItem?: string;
-  children?: PortableSpan[];
-}
-
-type RemoteArticle = NonNullable<DraftArticleQueryResult>;
-
-function blockText(block: PortableBlock): string {
-  return block.children?.map((child) => child.text ?? "").join("") ?? "";
-}
-
-function toSections(blocks: PortableBlock[] | undefined): ArticleSection[] {
-  const sections: ArticleSection[] = [{ paragraphs: [] }];
-  for (const block of blocks ?? []) {
-    if (block._type !== "block") continue;
-    const text = blockText(block).trim();
-    if (!text) continue;
-    if (block.style === "h2" || block.style === "h3") {
-      sections.push({ heading: text, paragraphs: [] });
-      continue;
-    }
-    const current = sections.at(-1);
-    if (!current) continue;
-    if (block.listItem) {
-      current.bullets = [...(current.bullets ?? []), text];
-    } else {
-      current.paragraphs.push(text);
-    }
+const slugSchema = z.string().regex(/^[a-z0-9-]{1,120}$/);
+const localizedSchema = z
+  .object({
+    en: z.string().trim().min(1).max(10_000),
+    th: z.string().trim().min(1).max(10_000),
+  })
+  .strict();
+const httpsUrlSchema = z.url().refine((value) => new URL(value).protocol === "https:");
+const sanityImageUrlSchema = httpsUrlSchema.refine(
+  (value) => new URL(value).hostname === "cdn.sanity.io",
+);
+const safeLinkSchema = z.string().max(2_048).refine((value) => {
+  if (value.startsWith("/")) return !value.startsWith("//");
+  try {
+    const protocol = new URL(value).protocol;
+    return protocol === "https:" || protocol === "mailto:";
+  } catch {
+    return false;
   }
-  return sections.filter((section) => section.heading || section.paragraphs.length || section.bullets?.length);
+});
+const markDefinitionSchema = z
+  .object({
+    _key: z.string().min(1).max(128),
+    _type: z.literal("link"),
+    href: safeLinkSchema,
+  })
+  .strict();
+const spanSchema = z
+  .object({
+    _key: z.string().min(1).max(128),
+    _type: z.literal("span"),
+    marks: z.array(z.string().max(128)).max(20).default([]),
+    text: z.string().max(50_000),
+  })
+  .strict();
+const portableBlockSchema = z
+  .object({
+    _key: z.string().min(1).max(128),
+    _type: z.literal("block"),
+    children: z.array(spanSchema).min(1).max(500),
+    level: z.number().int().min(1).max(10).optional(),
+    listItem: z.enum(["bullet", "number"]).optional(),
+    markDefs: z.array(markDefinitionSchema).max(100).default([]),
+    style: z
+      .enum(["normal", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote"])
+      .default("normal"),
+  })
+  .strict()
+  .transform((value) => ({
+    _key: value._key,
+    _type: value._type,
+    children: value.children,
+    markDefs: value.markDefs,
+    style: value.style,
+    ...(value.level === undefined ? {} : { level: value.level }),
+    ...(value.listItem === undefined ? {} : { listItem: value.listItem }),
+  }));
+const articleImageSchema = z
+  .object({
+    _key: z.string().min(1).max(128),
+    _type: z.literal("articleImage"),
+    alt: z.string().trim().min(1).max(1_000),
+    caption: z.string().trim().max(2_000),
+    height: z.number().int().positive().max(20_000),
+    src: sanityImageUrlSchema,
+    width: z.number().int().positive().max(20_000),
+  })
+  .strict();
+const bodySchema = z.array(z.union([portableBlockSchema, articleImageSchema])).min(1).max(1_000);
+type ValidatedBody = z.infer<typeof bodySchema>;
+
+function estimateThaiReadingMinutes(body: ValidatedBody): number {
+  const characters = body.reduce((total, block) => {
+    if (block._type !== "block") return total;
+    return total + block.children.reduce((sum, child) => sum + child.text.replace(/\s/g, "").length, 0);
+  }, 0);
+  return Math.max(1, Math.min(120, Math.ceil(characters / 500)));
 }
 
-function normalizeLocalized(
-  value:
-    | {
-        th?: string;
-        en?: string;
+const articleSchema = z
+  .object({
+    atlasLocation: z
+      .object({
+        countryCode: z.string().regex(/^[A-Z]{2}$/),
+        label: localizedSchema,
+        latitude: z.number().min(-90).max(90),
+        longitude: z.number().min(-180).max(180),
+      })
+      .strict(),
+    author: z
+      .object({
+        name: z.string().trim().min(1).max(200),
+        role: localizedSchema,
+      })
+      .strict(),
+    body: z.object({ en: bodySchema, th: bodySchema }).strict(),
+    category: localizedSchema,
+    cover: z
+      .object({
+        alt: localizedSchema,
+        height: z.number().int().positive().max(20_000),
+        src: sanityImageUrlSchema,
+        width: z.number().int().positive().max(20_000),
+      })
+      .strict(),
+    excerpt: localizedSchema,
+    featured: z.boolean().default(false),
+    publishedAt: z.iso.datetime(),
+    slug: slugSchema,
+    sources: z
+      .array(z.object({ label: localizedSchema, url: httpsUrlSchema }).strict())
+      .max(50),
+    tags: z.array(z.string().trim().min(1).max(100)).max(30),
+    title: localizedSchema,
+    updatedAt: z.iso.datetime(),
+    video: z
+      .object({
+        embedUrl: httpsUrlSchema.refine(
+          (value) => new URL(value).hostname === "player.vimeo.com",
+        ),
+        sourceUrl: httpsUrlSchema,
+        title: localizedSchema,
+      })
+      .strict()
+      .optional(),
+  })
+  .strict()
+  .transform(({ video, ...value }) => ({
+    ...value,
+    readingMinutes: estimateThaiReadingMinutes(value.body.th),
+    ...(video === undefined ? {} : { video }),
+  }));
+
+const projectSchema = z
+  .object({
+    body: z.object({ en: bodySchema, th: bodySchema }).strict(),
+    links: z.array(httpsUrlSchema).max(20),
+    promoted: z.boolean().default(false),
+    slug: slugSchema,
+    summary: localizedSchema,
+    title: localizedSchema,
+  })
+  .strict();
+const settingsSchema = z
+  .object({
+    footer: localizedSchema,
+    siteTitle: localizedSchema,
+    socialLinks: z.array(httpsUrlSchema).max(20),
+  })
+  .strict();
+
+const articleProjection = `{
+  "slug": slug.current,
+  "title": {"th": title.th, "en": title.en},
+  "excerpt": {"th": excerpt.th, "en": excerpt.en},
+  "cover": {
+    "src": cover.asset->url,
+    "width": cover.asset->metadata.dimensions.width,
+    "height": cover.asset->metadata.dimensions.height,
+    "alt": {"th": cover.alt.th, "en": cover.alt.en}
+  },
+  "category": {"th": category->title.th, "en": category->title.en},
+  "author": {
+    "name": author->name,
+    "role": {"th": author->role.th, "en": author->role.en}
+  },
+  "atlasLocation": {
+    "countryCode": atlasLocation.countryCode,
+    "latitude": atlasLocation.latitude,
+    "longitude": atlasLocation.longitude,
+    "label": {"th": atlasLocation.label.th, "en": atlasLocation.label.en}
+  },
+  "body": {
+    "th": body.th[]{
+      ...,
+      _type == "articleImage" => {
+        "src": asset->url,
+        "width": asset->metadata.dimensions.width,
+        "height": asset->metadata.dimensions.height
       }
-    | null
-    | undefined,
-): LocalizedText | null {
-  return value?.th && value.en ? { th: value.th, en: value.en } : null;
+    },
+    "en": body.en[]{
+      ...,
+      _type == "articleImage" => {
+        "src": asset->url,
+        "width": asset->metadata.dimensions.width,
+        "height": asset->metadata.dimensions.height
+      }
+    }
+  },
+  defined(video) => {
+    "video": {
+      "embedUrl": video.embedUrl,
+      "sourceUrl": video.sourceUrl,
+      "title": {"th": video.title.th, "en": video.title.en}
+    }
+  },
+  tags,
+  "sources": sources[]{
+    "label": {"th": label.th, "en": label.en},
+    url
+  },
+  featured,
+  publishedAt,
+  updatedAt
+}`;
+
+const articleQuery = defineQuery(
+  `*[_type == "article" && status == "published"] | order(publishedAt desc) ${articleProjection}`,
+);
+const draftArticleQuery = defineQuery(
+  `*[_type == "article" && slug.current == $slug][0] ${articleProjection}`,
+);
+const projectQuery = defineQuery(
+  `*[_type == "project" && status == "published"] | order(promoted desc, title.en asc) {
+    "slug": slug.current,
+    "title": {"th": title.th, "en": title.en},
+    "summary": {"th": summary.th, "en": summary.en},
+    promoted, links,
+    "body": {
+      "th": body.th[]{
+        ...,
+        _type == "articleImage" => {
+          "src": asset->url,
+          "width": asset->metadata.dimensions.width,
+          "height": asset->metadata.dimensions.height
+        }
+      },
+      "en": body.en[]{
+        ...,
+        _type == "articleImage" => {
+          "src": asset->url,
+          "width": asset->metadata.dimensions.width,
+          "height": asset->metadata.dimensions.height
+        }
+      }
+    }
+  }`,
+);
+const settingsQuery = defineQuery(
+  `*[_type == "settings" && _id == "settings"][0] {
+    "siteTitle": {"th": siteTitle.th, "en": siteTitle.en},
+    "footer": {"th": footer.th, "en": footer.en},
+    socialLinks
+  }`,
+);
+const draftProjectQuery = defineQuery(
+  `*[_type == "project" && slug.current == $slug][0] {
+    "slug": slug.current,
+    "title": {"th": title.th, "en": title.en},
+    "summary": {"th": summary.th, "en": summary.en},
+    promoted, links,
+    "body": {
+      "th": body.th[]{
+        ...,
+        _type == "articleImage" => {
+          "src": asset->url,
+          "width": asset->metadata.dimensions.width,
+          "height": asset->metadata.dimensions.height
+        }
+      },
+      "en": body.en[]{
+        ...,
+        _type == "articleImage" => {
+          "src": asset->url,
+          "width": asset->metadata.dimensions.width,
+          "height": asset->metadata.dimensions.height
+        }
+      }
+    }
+  }`,
+);
+
+type ContentMode = "fixture" | "sanity";
+
+function contentMode(): ContentMode {
+  const configured = process.env.CONTENT_SOURCE;
+  if (configured === "fixture" || configured === "sanity") return configured;
+  return isProductionDeployment() ? "sanity" : "fixture";
 }
 
-function normalizeArticle(article: RemoteArticle): Article | null {
-  const title = normalizeLocalized(article.title);
-  const excerpt = normalizeLocalized(article.excerpt);
-  const coverAlt = normalizeLocalized(article.cover.alt);
-  const category = normalizeLocalized(article.category);
-  const authorRole = normalizeLocalized(article.author?.role);
-  const atlasLocation = article.atlasLocation as
-    | { countryCode?: string; latitude?: number; longitude?: number; label?: { th?: string; en?: string } | null }
-    | null
-    | undefined;
-  const atlasLabel = normalizeLocalized(atlasLocation?.label);
-  if (
-    !title ||
-    !excerpt ||
-    !coverAlt ||
-    !category ||
-    !authorRole ||
-    !atlasLabel ||
-    typeof atlasLocation?.countryCode !== "string" ||
-    !/^[A-Z]{2}$/.test(atlasLocation.countryCode) ||
-    typeof atlasLocation.latitude !== "number" ||
-    !Number.isFinite(atlasLocation.latitude) ||
-    atlasLocation.latitude < -90 ||
-    atlasLocation.latitude > 90 ||
-    typeof atlasLocation.longitude !== "number" ||
-    !Number.isFinite(atlasLocation.longitude) ||
-    atlasLocation.longitude < -180 ||
-    atlasLocation.longitude > 180 ||
-    !article.cover.src ||
-    !article.author ||
-    !article.publishedAt ||
-    !article.updatedAt
-  ) {
-    return null;
+function sanityProjectConfig() {
+  const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
+  if (!projectId) {
+    throw new Error("Sanity content source is not configured");
   }
-
-  const sources = (article.sources ?? []).flatMap((source) => {
-    const label = normalizeLocalized(source.label);
-    return label ? [{ label, url: source.url }] : [];
-  });
-
   return {
-    slug: article.slug,
-    atlasLocation: {
-      countryCode: atlasLocation.countryCode,
-      latitude: atlasLocation.latitude,
-      longitude: atlasLocation.longitude,
-      label: atlasLabel,
-    },
-    title,
-    excerpt,
-    category,
-    cover: {
-      src: article.cover.src,
-      alt: coverAlt,
-    },
-    author: {
-      name: article.author.name,
-      role: authorRole,
-    },
-    body: {
-      th: toSections(article.body?.th),
-      en: toSections(article.body?.en),
-    },
-    tags: article.tags ?? [],
-    sources,
-    featured: article.featured ?? false,
-    publishedAt: article.publishedAt,
-    updatedAt: article.updatedAt,
-    readingMinutes: article.readingMinutes,
-  };
+    apiVersion: "2025-01-01",
+    dataset: process.env.NEXT_PUBLIC_SANITY_DATASET ?? "production",
+    projectId,
+  } as const;
+}
+
+function publishedSanityClient() {
+  return createClient({
+    ...sanityProjectConfig(),
+    perspective: "published",
+    useCdn: true,
+  });
+}
+
+function draftSanityClient() {
+  const token = process.env.SANITY_API_READ_TOKEN;
+  if (!token) throw new Error("Sanity draft preview is not configured");
+  const shared = sanityProjectConfig();
+  return {
+    client: createClient({ ...shared, perspective: "drafts", token, useCdn: false }),
+  }.client;
+}
+
+function validateArticle(value: unknown): Article | null {
+  const parsed = articleSchema.safeParse(value);
+  if (parsed.success) return parsed.data;
+  const slug =
+    value && typeof value === "object" && "slug" in value && typeof value.slug === "string"
+      ? value.slug
+      : "unknown";
+  console.error("content_validation_failed", {
+    issues: parsed.error.issues.map((issue) => ({ code: issue.code, path: issue.path.join(".") })),
+    slug,
+  });
+  return null;
+}
+
+function sorted(articles: readonly Article[]): Article[] {
+  return [...articles].sort(
+    (left, right) => Date.parse(right.publishedAt) - Date.parse(left.publishedAt),
+  );
 }
 
 export async function getArticles(): Promise<Article[]> {
-  if (!publishedSanity) {
-    return [...localArticles].sort(
-      (left, right) => Date.parse(right.publishedAt) - Date.parse(left.publishedAt),
-    );
-  }
-
-  const remote = await publishedSanity.fetch(articleQuery, {}, {
-    next: { tags: ["article"] },
+  if (contentMode() === "fixture") return sorted(fixtureArticles);
+  const published = publishedSanityClient();
+  const values = await published.fetch<unknown[]>(articleQuery, {}, {
+    next: { tags: ["article", "author", "category"] },
   });
-
-  const combined = new Map(
-    localArticles.map((article) => [article.slug, article] as const),
-  );
-  for (const article of remote.map(normalizeArticle)) {
-    if (!article) continue;
-    const local = combined.get(article.slug);
-    if (!local) {
-      combined.set(article.slug, article);
-      continue;
-    }
-
-    // Sanity's schema currently does not carry local-only media (video embeds
-    // and section illustrations). Keep those fields when a remote document
-    // overrides the editorial copy for the same slug.
-    combined.set(article.slug, {
-      ...article,
-      ...(article.video ?? local.video ? { video: article.video ?? local.video } : {}),
-      cover: { ...local.cover, ...article.cover },
-      body: {
-        th: article.body.th.map((section, index) => {
-          const image = section.image ?? local.body.th[index]?.image;
-          return image ? { ...section, image } : section;
-        }),
-        en: article.body.en.map((section, index) => {
-          const image = section.image ?? local.body.en[index]?.image;
-          return image ? { ...section, image } : section;
-        }),
-      },
-    });
-  }
-
-  return [...combined.values()].sort(
-    (left, right) => Date.parse(right.publishedAt) - Date.parse(left.publishedAt),
-  );
+  return sorted(values.flatMap((value) => {
+    const article = validateArticle(value);
+    return article ? [article] : [];
+  }));
 }
 
 export async function getArticle(
   slug: string,
   options: Readonly<{ draft?: boolean }> = {},
 ): Promise<Article | null> {
-  if (options.draft && draftSanity) {
-    const remote = await draftSanity.fetch(draftArticleQuery, { slug });
-    if (remote) return normalizeArticle(remote);
+  if (!slugSchema.safeParse(slug).success) return null;
+  if (contentMode() === "fixture") {
+    return fixtureArticles.find((article) => article.slug === slug) ?? null;
   }
-
+  if (options.draft) {
+    return validateArticle(await draftSanityClient().fetch<unknown>(draftArticleQuery, { slug }));
+  }
   const articles = await getArticles();
   return articles.find((article) => article.slug === slug) ?? null;
+}
+
+export async function getProjects(): Promise<Project[]> {
+  if (contentMode() === "fixture") return fixtureProjects;
+  const published = publishedSanityClient();
+  const values = await published.fetch<unknown[]>(projectQuery, {}, {
+    next: { tags: ["project"] },
+  });
+  return values.flatMap((value) => {
+    const parsed = projectSchema.safeParse(value);
+    if (parsed.success) return [parsed.data];
+    console.error("project_validation_failed", {
+      issues: parsed.error.issues.map((issue) => ({ code: issue.code, path: issue.path.join(".") })),
+    });
+    return [];
+  });
+}
+
+export async function getProject(
+  slug: string,
+  options: Readonly<{ draft?: boolean }> = {},
+): Promise<Project | null> {
+  if (!slugSchema.safeParse(slug).success) return null;
+  if (contentMode() === "sanity" && options.draft) {
+    const parsed = projectSchema.safeParse(
+      await draftSanityClient().fetch<unknown>(draftProjectQuery, { slug }),
+    );
+    if (parsed.success) return parsed.data;
+    return null;
+  }
+  return (await getProjects()).find((project) => project.slug === slug) ?? null;
+}
+
+export async function getSiteSettings(): Promise<SiteSettings> {
+  if (contentMode() === "fixture") return fixtureSettings;
+  const published = publishedSanityClient();
+  const value = await published.fetch<unknown>(settingsQuery, {}, {
+    next: { tags: ["settings"] },
+  });
+  const parsed = settingsSchema.safeParse(value);
+  if (!parsed.success) {
+    console.error("settings_validation_failed", {
+      issues: parsed.error.issues.map((issue) => ({ code: issue.code, path: issue.path.join(".") })),
+    });
+    throw new Error("Published site settings are invalid or missing");
+  }
+  return parsed.data;
 }

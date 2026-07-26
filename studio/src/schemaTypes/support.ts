@@ -35,13 +35,25 @@ export const project = defineType({
   type: "document",
   fields: [
     defineField({ name: "slug", type: "slug", options: { source: "title.en" }, validation: (rule) => rule.required() }),
-    defineField({ name: "title", type: "localizedString" }),
-    defineField({ name: "summary", type: "localizedText" }),
-    defineField({ name: "body", type: "localizedBody" }),
+    defineField({ name: "title", type: "localizedString", validation: (rule) => rule.required() }),
+    defineField({ name: "summary", type: "localizedText", validation: (rule) => rule.required() }),
+    defineField({ name: "body", type: "localizedBody", validation: (rule) => rule.required() }),
     defineField({ name: "assets", type: "array", of: [defineArrayMember({ type: "image" })] }),
-    defineField({ name: "links", type: "array", of: [defineArrayMember({ type: "url" })] }),
+    defineField({
+      name: "links",
+      type: "array",
+      of: [defineArrayMember({ type: "url", validation: (rule) => rule.uri({ scheme: ["https"] }) })],
+      validation: (rule) => rule.unique().max(20),
+    }),
     defineField({ name: "promoted", type: "boolean", initialValue: false }),
-    defineField({ name: "status", type: "string", options: { list: ["draft", "published", "archived"] } }),
+    defineField({
+      name: "status",
+      type: "string",
+      options: { list: ["draft", "published", "archived"] },
+      initialValue: "draft",
+      readOnly: true,
+      validation: (rule) => rule.required(),
+    }),
   ],
 });
 
@@ -50,9 +62,14 @@ export const settings = defineType({
   title: "Settings",
   type: "document",
   fields: [
-    defineField({ name: "siteTitle", type: "localizedString" }),
+    defineField({ name: "siteTitle", type: "localizedString", validation: (rule) => rule.required() }),
     defineField({ name: "defaultOg", type: "image" }),
-    defineField({ name: "socialLinks", type: "array", of: [defineArrayMember({ type: "url" })] }),
-    defineField({ name: "footer", type: "localizedText" }),
+    defineField({
+      name: "socialLinks",
+      type: "array",
+      of: [defineArrayMember({ type: "url", validation: (rule) => rule.uri({ scheme: ["https"] }) })],
+      validation: (rule) => rule.required().unique().max(20),
+    }),
+    defineField({ name: "footer", type: "localizedText", validation: (rule) => rule.required() }),
   ],
 });

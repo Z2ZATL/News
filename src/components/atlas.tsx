@@ -23,9 +23,11 @@ const products = [
 export function Atlas({
   articles,
   locale,
+  reactionTotals,
 }: Readonly<{
   articles: Article[];
   locale: Locale;
+  reactionTotals: Record<string, number>;
 }>) {
   const latestArticle = articles[0];
   if (!latestArticle) return null;
@@ -55,6 +57,7 @@ export function Atlas({
           author: item.author.name,
           href: `/${locale}/stories/${item.slug}` as AtlasMapNode["signals"][number]["href"],
           publishedAt: item.publishedAt,
+          reactionScore: reactionTotals[item.slug] ?? 0,
           slug: item.slug,
           title: item.title[locale],
         })),
@@ -77,6 +80,7 @@ export function Atlas({
         author: product.author,
         href: `/${locale}/projects/${product.slug}` as AtlasMapNode["signals"][number]["href"],
         publishedAt: latestArticle.publishedAt,
+        reactionScore: 0,
         slug: product.slug,
         title: product.label,
       },
@@ -87,6 +91,21 @@ export function Atlas({
   return (
     <section className={styles.atlas} aria-label={ui[locale].atlasLabel}>
       <div className={styles.globeStage}>
+        <nav
+          className={styles.semanticIndex}
+          aria-label={locale === "th" ? "ลิงก์ข่าวและผลงานในแผนที่โลก" : "Atlas story and project links"}
+        >
+          {mapNodes.map((node) => (
+            <section key={node.id}>
+              <h2>{node.accessibleLabel}</h2>
+              {node.signals.map((signal) => (
+                <Link href={signal.href} key={signal.slug}>
+                  {signal.title} · {signal.author}
+                </Link>
+              ))}
+            </section>
+          ))}
+        </nav>
         <AtlasCanvasLoader
           navigationLabel={
             locale === "th" ? "ประเทศที่มีข่าวและผลงานบนแผนที่โลก" : "Countries with stories and products"

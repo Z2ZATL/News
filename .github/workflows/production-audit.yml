@@ -1,0 +1,29 @@
+name: Production audit
+
+on:
+  schedule:
+    - cron: "17 2 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-audit
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Verify live headers, public feeds, and DNS ownership
+        env:
+          AUDIT_CNAME_SUFFIX: ${{ vars.AUDIT_CNAME_SUFFIX }}
+          AUDIT_SITE_URL: https://news.z2zs.space
+          AUDIT_STUDIO_ENABLED: ${{ vars.AUDIT_STUDIO_ENABLED }}
+        run: node scripts/production-audit.mjs

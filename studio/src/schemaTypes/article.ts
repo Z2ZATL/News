@@ -33,13 +33,24 @@ export const article = defineType({
       name: "cover",
       type: "image",
       options: { hotspot: true },
+      validation: (rule) => rule.required(),
       fields: [
         defineField({ name: "alt", type: "localizedString" }),
         defineField({ name: "caption", type: "localizedString" }),
       ],
     }),
-    defineField({ name: "category", type: "reference", to: [{ type: "category" }] }),
-    defineField({ name: "author", type: "reference", to: [{ type: "author" }] }),
+    defineField({
+      name: "category",
+      type: "reference",
+      to: [{ type: "category" }],
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: "author",
+      type: "reference",
+      to: [{ type: "author" }],
+      validation: (rule) => rule.required(),
+    }),
     defineField({
       name: "atlasLocation",
       title: "Atlas location",
@@ -68,6 +79,33 @@ export const article = defineType({
       ],
     }),
     defineField({ name: "tags", type: "array", of: [defineArrayMember({ type: "string" })] }),
+    defineField({
+      name: "video",
+      type: "object",
+      fields: [
+        defineField({
+          name: "embedUrl",
+          type: "url",
+          validation: (rule) =>
+            rule.uri({ scheme: ["https"] }).custom((value) => {
+              if (!value) return true;
+              try {
+                return new URL(value).hostname === "player.vimeo.com"
+                  ? true
+                  : "Only player.vimeo.com embeds are allowed.";
+              } catch {
+                return "Enter a valid Vimeo embed URL.";
+              }
+            }),
+        }),
+        defineField({
+          name: "sourceUrl",
+          type: "url",
+          validation: (rule) => rule.uri({ scheme: ["https"] }),
+        }),
+        defineField({ name: "title", type: "localizedString" }),
+      ],
+    }),
     defineField({
       name: "sources",
       type: "array",
@@ -100,8 +138,8 @@ export const article = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({ name: "featured", type: "boolean", initialValue: false }),
-    defineField({ name: "publishedAt", type: "datetime" }),
-    defineField({ name: "updatedAt", type: "datetime" }),
+    defineField({ name: "publishedAt", type: "datetime", readOnly: true }),
+    defineField({ name: "updatedAt", type: "datetime", readOnly: true }),
   ],
   preview: {
     select: { title: "title.th", subtitle: "status", media: "cover" },

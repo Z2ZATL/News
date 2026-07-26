@@ -22,7 +22,7 @@
   --image-placeholder: #09111a;
   --section-bg: linear-gradient(180deg, #05080c, #070b10 62%, #05070a);
   --on-accent: #021016;
-  --font-body: var(--font-thai), system-ui, sans-serif;
+  --font-body: var(--font-space), var(--font-thai), system-ui, sans-serif;
   --font-display: var(--font-space), var(--font-thai), system-ui, sans-serif;
 }
 
@@ -128,6 +128,18 @@ img { max-width: 100%; }
 }
 :lang(th) .lede { line-height: 1.9; }
 @media (max-width: 640px) {
+  /* Native mobile fonts paint immediately and already include platform-tuned
+     Thai shaping. Keep the editorial web fonts for larger screens, where the
+     extra request is amortized across a wider, less CPU-constrained layout. */
+  html[class] {
+    /* next/font emits its variables on the generated html class after this
+       stylesheet. The important flag keeps the mobile override authoritative. */
+    --font-thai: system-ui, -apple-system, "Segoe UI", sans-serif !important;
+    --font-space: system-ui, -apple-system, "Segoe UI", sans-serif !important;
+    --font-body: system-ui, -apple-system, "Segoe UI", sans-serif !important;
+    --font-display: system-ui, -apple-system, "Segoe UI", sans-serif !important;
+  }
+
   .page-shell { padding-right: 20px; padding-left: 20px; }
   .page-title { letter-spacing: -.045em; }
   :lang(th) .page-title {

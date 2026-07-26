@@ -3,7 +3,8 @@ import { draftMode, headers } from "next/headers";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
-import { ArticleReactions } from "@/components/article-reactions";
+import { ArticleReactionsLoader } from "@/components/article-reactions-loader";
+import { ArticleBody } from "@/components/article-body";
 import { JsonLd } from "@/components/json-ld";
 import { ReadingProgress } from "@/components/reading-progress";
 import { getArticle } from "@/lib/content";
@@ -49,13 +50,14 @@ export default async function ArticlePage({
   if (!article) notFound();
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const date = formatArticleDate(article.publishedAt, locale);
-  const sections = article.body[locale]
-    .map((section, index) =>
-      section.heading
-        ? { heading: section.heading, id: `section-${String(index)}` }
-        : null,
-    )
-    .filter((section): section is { heading: string; id: string } => section !== null);
+  const sections = article.body[locale].flatMap((block) => {
+    if (block._type !== "block" || (block.style !== "h2" && block.style !== "h3")) return [];
+    const heading = block.children
+      .map((child) => ("text" in child && typeof child.text === "string" ? child.text : ""))
+      .join("")
+      .trim();
+    return heading && block._key ? [{ heading, id: `section-${block._key}` }] : [];
+  });
 
   return (
     <article className={styles.article}>
@@ -101,6 +103,7 @@ export default async function ArticlePage({
                 alt={article.cover.alt[locale]}
                 width={article.cover.width ?? 1920}
                 height={article.cover.height ?? 1080}
+                sizes="(max-width: 640px) calc(100vw - 40px), (max-width: 1480px) 96vw, 1440px"
                 priority
               />
               <span>{locale === "th" ? "เปิดวิดีโอต้นฉบับ" : "Open original video"}</span>
@@ -129,7 +132,7 @@ export default async function ArticlePage({
             alt={article.cover.alt[locale]}
             width={article.cover.width ?? 1456}
             height={article.cover.height ?? 1456}
-            priority
+            sizes="(max-width: 640px) calc(100vw - 40px), (max-width: 1348px) 92vw, 1240px"
           />
         </figure>
       )}
@@ -150,32 +153,10 @@ export default async function ArticlePage({
           </nav>
         </aside>
         <div className={styles.body}>
-          {article.body[locale].map((section, index) => (
-            <section
-              className={section.heading ? undefined : styles.intro}
-              id={section.heading ? `section-${String(index)}` : undefined}
-              key={section.heading ?? `intro-${String(index)}`}
-            >
-              {section.heading ? <h2>{section.heading}</h2> : null}
-              {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-              {section.image ? (
-                <figure className={styles.sectionFigure}>
-                  <a href={section.image.src} target="_blank" rel="noopener noreferrer">
-                    <Image
-                      src={section.image.src}
-                      alt={section.image.alt}
-                      width={section.image.width}
-                      height={section.image.height}
-                      sizes="(max-width: 900px) calc(100vw - 40px), 780px"
-                    />
-                  </a>
-                  <figcaption>{section.image.caption}</figcaption>
-                </figure>
-              ) : null}
-              {section.bullets ? <ul>{section.bullets.map((item) => <li key={item}>{item}</li>)}</ul> : null}
-            </section>
-          ))}
-          <ArticleReactions
+          <div className={styles.intro}>
+            <ArticleBody value={article.body[locale]} />
+          </div>
+          <ArticleReactionsLoader
             articleTitle={article.title[locale]}
             locale={locale}
             slug={article.slug}

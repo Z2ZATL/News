@@ -8,7 +8,7 @@ export default defineConfig({
   expect: { timeout: 10_000 },
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
-  retries: process.env.CI ? 1 : 0,
+  retries: 0,
   reporter: process.env.CI ? "github" : "list",
   use: {
     baseURL: `http://127.0.0.1:${port}`,
@@ -27,10 +27,18 @@ export default defineConfig({
   webServer: {
     command: `corepack pnpm start --port ${port}`,
     env: {
+      CONTENT_SOURCE: "fixture",
+      PREVIEW_TICKET_SECRET: "playwright-preview-ticket-secret-32-bytes",
+      RATE_LIMIT_SECRET: "playwright-rate-limit-secret-32-bytes",
+      REACTION_COOKIE_SECRET: "playwright-reaction-cookie-secret-32-bytes",
+      REACTION_STORE: "memory",
       SANITY_WEBHOOK_SECRET: "playwright-webhook-secret",
     },
     url: `http://127.0.0.1:${port}/th`,
-    reuseExistingServer: !process.env.CI,
+    // A reused local server may have production/default environment values and
+    // silently invalidate reaction, preview, and rate-limit coverage. Tests own
+    // their server so every run exercises the declared deterministic fixture.
+    reuseExistingServer: false,
     timeout: 120_000,
   },
 });

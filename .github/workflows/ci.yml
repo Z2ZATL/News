@@ -8,6 +8,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   public-site:
     runs-on: ubuntu-latest
@@ -26,8 +30,11 @@ jobs:
       - run: pnpm peers check
       - run: pnpm typecheck
       - run: pnpm lint
+      - run: pnpm test:unit
+      - run: pnpm content:migrate
       - run: pnpm scan:secrets
       - run: pnpm build
+      - run: pnpm --package=netlify-cli@27.0.0 dlx netlify build --offline --context deploy-preview
       - run: pnpm audit --audit-level=moderate
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
@@ -57,4 +64,5 @@ jobs:
       - run: pnpm typegen
       - run: git diff --exit-code -- ../src/sanity.types.ts schema.json
       - run: pnpm build
+      - run: pnpm --package=netlify-cli@27.0.0 dlx netlify build --offline --context deploy-preview
       - run: pnpm audit --audit-level=moderate

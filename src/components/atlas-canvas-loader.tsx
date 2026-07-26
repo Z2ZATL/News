@@ -8,17 +8,13 @@ import {
   type ReactNode,
   useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
+import { flushSync } from "react-dom";
 
 import type { AtlasMapNode, AtlasScreenPosition } from "@/lib/atlas-types";
-import {
-  REACTION_UPDATED_EVENT,
-  storedReactionScore,
-} from "@/lib/reaction-storage";
 
 import styles from "./atlas.module.css";
 
@@ -74,9 +70,12 @@ export function AtlasCanvasLoader({
   nodes: AtlasMapNode[];
 }>) {
   const [enabled, setEnabled] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const [interactionPaused, setInteractionPaused] = useState(false);
-  const [reactionVersion, setReactionVersion] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [selectedAnchor, setSelectedAnchor] = useState<
+    Readonly<{ x: number; y: number }> | null
+  >(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [state, setState] = useState<"waiting" | "loading" | "ready" | "fallback">(
     "waiting",
@@ -87,17 +86,16 @@ export function AtlasCanvasLoader({
 
   const selectedNode = nodes.find((node) => node.id === selectedId) ?? null;
   const selectedFallbackPoint = fallbackPoint(selectedNode);
+  const selectedAnchorPoint = selectedAnchor ?? selectedFallbackPoint;
   const selectedSignals = useMemo(() => {
-    void reactionVersion;
     if (!selectedNode) return [];
     return [...selectedNode.signals]
       .sort((left, right) => {
-        const scoreDifference =
-          storedReactionScore(right.slug) - storedReactionScore(left.slug);
+        const scoreDifference = right.reactionScore - left.reactionScore;
         return scoreDifference || Date.parse(right.publishedAt) - Date.parse(left.publishedAt);
       })
       .slice(0, 6);
-  }, [reactionVersion, selectedNode]);
+  }, [selectedNode]);
 
   const updatePositions = useCallback(
     (positions: AtlasScreenPosition[]) => {
@@ -132,36 +130,9 @@ export function AtlasCanvasLoader({
     setState("fallback");
   }, []);
 
-  useLayoutEffect(() => {
-    const position = selectedId
-      ? latestPositionsRef.current.get(selectedId)
-      : undefined;
-    if (!position) return;
-
-    for (const [index, connector] of connectorRefs.current) {
-      const target = connectorTargets[index];
-      if (!target) continue;
-      connector.setAttribute("x1", String(position.x));
-      connector.setAttribute("y1", String(position.y));
-      connector.setAttribute("x2", String(target.x));
-      connector.setAttribute("y2", String(target.y));
-    }
-  }, [selectedId]);
-
   useEffect(() => {
     setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-  }, []);
-
-  useEffect(() => {
-    const refresh = () => {
-      setReactionVersion((current) => current + 1);
-    };
-    window.addEventListener("storage", refresh);
-    window.addEventListener(REACTION_UPDATED_EVENT, refresh);
-    return () => {
-      window.removeEventListener("storage", refresh);
-      window.removeEventListener(REACTION_UPDATED_EVENT, refresh);
-    };
+    setHydrated(true);
   }, []);
 
   const enableCanvas = () => {
@@ -174,9 +145,16 @@ export function AtlasCanvasLoader({
   return (
     <div
       className={styles.visualStack}
+      data-atlas-hydrated={hydrated ? "true" : "false"}
       data-atlas-state={state}
       onFocusCapture={enableCanvas}
-      onPointerEnter={enableCanvas}
+      onPointerEnter={() => {
+        enableCanvas();
+        setInteractionPaused(true);
+      }}
+      onPointerLeave={() => {
+        setInteractionPaused(false);
+      }}
       onTouchStart={enableCanvas}
     >
       <div className={styles.planetFallback} aria-hidden="true" />
@@ -193,19 +171,24 @@ export function AtlasCanvasLoader({
               data-longitude={node.longitude}
               key={node.id}
               onClick={() => {
-                setSelectedId((current) => (current === node.id ? null : node.id));
+                const nextId = selectedId === node.id ? null : node.id;
+                const nextAnchor = nextId
+                  ? latestPositionsRef.current.get(nextId) ?? fallbackPoint(node)
+                  : null;
+                // Keep the DOM cards and connector origin in the same input
+                // event. Without a synchronous commit, a busy renderer can
+                // leave the previous country's connector visible for several
+                // frames even though the new point has already been chosen.
+                flushSync(() => {
+                  setSelectedAnchor(nextAnchor);
+                  setSelectedId(nextId);
+                });
               }}
               onBlur={() => {
                 setInteractionPaused(false);
               }}
               onFocus={() => {
                 setInteractionPaused(true);
-              }}
-              onPointerEnter={() => {
-                setInteractionPaused(true);
-              }}
-              onPointerLeave={() => {
-                setInteractionPaused(false);
               }}
               ref={(element) => {
                 if (element) nodeRefs.current.set(node.id, element);
@@ -247,9 +230,9 @@ export function AtlasCanvasLoader({
                   className={styles.connector}
                   data-kind={selectedNode?.kind}
                   key={signal.slug}
-                  x1={selectedFallbackPoint.x}
+                  x1={selectedAnchorPoint.x}
                   x2={connectorTargets[index]?.x}
-                  y1={selectedFallbackPoint.y}
+                  y1={selectedAnchorPoint.y}
                   y2={connectorTargets[index]?.y}
                   ref={(element) => {
                     if (!element) {

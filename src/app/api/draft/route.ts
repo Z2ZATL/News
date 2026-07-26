@@ -1,21 +1,33 @@
 import { createClient } from "@sanity/client";
 import { draftMode } from "next/headers";
+import type { Route } from "next";
 import { redirect } from "next/navigation";
 
-import { safeEqual } from "@/lib/safe-equal";
+import { consumeOnce, hasRedisConfiguration } from "@/lib/redis-rest";
+import { verifyPreviewTicket } from "@/lib/preview-ticket";
+import { allowRequest } from "@/lib/rate-limit";
 
 export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const secret = url.searchParams.get("secret") ?? "";
-  const slug = url.searchParams.get("slug") ?? "";
-  const locale = url.searchParams.get("locale") ?? "th";
+  try {
+    if (!(await allowRequest(request, { limit: 5, scope: "draft-preview", windowSeconds: 60 }))) {
+      return new Response("Too Many Requests", {
+        headers: { "Retry-After": "60" },
+        status: 429,
+      });
+    }
+  } catch {
+    return new Response("Preview unavailable", { status: 503 });
+  }
 
-  if (!safeEqual(secret, process.env.SANITY_PREVIEW_SECRET)) {
+  const url = new URL(request.url);
+  const ticket = verifyPreviewTicket(
+    url.searchParams.get("ticket") ?? "",
+    process.env.PREVIEW_TICKET_SECRET,
+  );
+  if (!ticket) {
     return new Response("Unauthorized", { status: 401 });
   }
-  if (!/^[a-z0-9-]{1,120}$/.test(slug) || (locale !== "th" && locale !== "en")) {
-    return new Response("Bad Request", { status: 400 });
-  }
+  if (!hasRedisConfiguration()) return new Response("Preview unavailable", { status: 503 });
 
   const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
   const token = process.env.SANITY_API_READ_TOKEN;
@@ -29,11 +41,20 @@ export async function GET(request: Request) {
     perspective: "drafts",
   });
   const exists = await client.fetch<boolean>(
-    `count(*[_type == "article" && slug.current == $slug]) > 0`,
-    { slug },
+    `count(*[_type == $documentType && slug.current == $slug]) > 0`,
+    { documentType: ticket.documentType, slug: ticket.slug },
   );
   if (!exists) return new Response("Not Found", { status: 404 });
 
+  let consumed = false;
+  try {
+    consumed = await consumeOnce(`preview-ticket:${ticket.jti}`, 120);
+  } catch {
+    return new Response("Preview unavailable", { status: 503 });
+  }
+  if (!consumed) return new Response("Unauthorized", { status: 401 });
+
   (await draftMode()).enable();
-  redirect(`/${locale}/stories/${slug}`);
+  const segment = ticket.documentType === "article" ? "stories" : "projects";
+  redirect(`/${ticket.locale}/${segment}/${ticket.slug}` as Route);
 }

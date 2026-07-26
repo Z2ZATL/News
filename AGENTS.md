@@ -9,8 +9,9 @@ Apply instructions in this order:
 1. The latest explicit user instruction.
 2. This `AGENTS.md`.
 3. Accepted ADRs and domain documentation.
-4. The Z2Zs Lab Build Plan v3.
-5. Existing implementation details.
+4. Accepted Build Plan v4 remediation decisions recorded under `docs/adr/`.
+5. The Z2Zs Lab Build Plan v3 where it does not conflict with an accepted ADR.
+6. Existing implementation details.
 
 The latest user decision overrides Build Plan v3 on CSP: the public site uses a **nonce-based CSP**. Do not revert it to a static `script-src 'self'` policy unless the user explicitly changes that decision.
 
@@ -23,7 +24,13 @@ Do not treat a target in the build plan as already implemented. Inspect the sour
 - Default language: Thai. `/` redirects to `/th`.
 - Public application: Next.js 15 App Router, React, strict TypeScript, Tailwind and CSS Modules.
 - CMS: Sanity Studio under `studio/`, deployed separately to `https://studio.z2zs.space`.
-- Hosting: separate Vercel projects for the public site and Studio.
+- Hosting target: separate Netlify Free sites for the public site and Studio.
+  The existing Vercel deployment remains a temporary rollback target until an
+  approved DNS cutover; Vercel Hobby must not be used for commercial promotion.
+- Netlify sites remain unlinked from the private organization repository.
+  Releases use the authenticated CLI from the manually dispatched Linux
+  workflow in `.github/workflows/deploy-netlify.yml`. This avoids paid private
+  repository integration and the Netlify OpenNext symlink failure on Windows.
 - Repository: private GitHub repository `Z2ZATL/News`.
 - Package manager: pnpm with committed lockfiles and frozen installs in CI.
 
@@ -66,9 +73,16 @@ Editorial workflow: `draft → review → published → archived`.
 
 ## Rendering and integration
 
-- Content pages use ISR with tag-based invalidation through the signed Sanity webhook.
+- The nonce-based CSP requires per-request HTML. Public HTML is dynamic and must
+  not be described or tested as ISR. Sanity data reads may still use Next cache
+  tags and the signed webhook for data invalidation.
+- Sanity is the only production source of truth for editorial articles, projects,
+  authors, categories, and settings. Repository content files are fixtures or
+  migration inputs only and must never silently republish archived CMS content.
 - Sanity GROQ queries must always be parameterized.
-- Published reads may use the CDN. Draft reads use the private dataset and a server-only viewer token.
+- Published reads may use the CDN. The accepted zero-cost baseline uses a public
+  Sanity dataset: unauthenticated reads must select only published records, while
+  draft preview requires a server-only viewer token and an authenticated editor.
 - Search remains a client-side filter over a prefetched index in v1. Do not add a public search API without a new decision.
 - Presentation/iframe preview remains disabled in v1. Draft preview opens in a new tab.
 - API routes must validate input with allowlists and return deliberate error statuses.
@@ -83,7 +97,9 @@ Security boundaries are product requirements, not optional cleanup.
 - Runtime CSS-in-JS is prohibited on the public site. Use Tailwind and CSS Modules.
 - The audited JSON-LD helper may serialize structured data through a nonce-authorized script. Do not use `dangerouslySetInnerHTML` for editorial or user-controlled HTML.
 - Keep the public site and Sanity Studio on separate origins. Never relax the public CSP to accommodate Studio.
-- Sanity production data remains private. Read, preview, and webhook secrets are server-only.
+- Published Sanity production data is public under the Free plan. Never store
+  secrets or confidential personal data in editorial documents. Preview and
+  webhook secrets remain server-only, and draft preview remains authenticated.
 - Never prefix secrets, tokens, or private keys with `NEXT_PUBLIC_`.
 - Validate webhook signatures against the exact raw request body.
 - Draft-mode secrets use timing-safe comparison, and redirects use allowlisted locale and slug values only.
@@ -97,7 +113,9 @@ Required public-site headers include HSTS for one year without `includeSubDomain
 
 ## Domain and infrastructure safety
 
-DNS is managed in Cloudflare; registration and transfer controls are managed in Newfold. `news.z2zs.space` and `studio.z2zs.space` remain DNS-only when pointing to Vercel.
+DNS is managed in Cloudflare; registration and transfer controls are managed in
+Newfold. `news.z2zs.space` and `studio.z2zs.space` remain DNS-only while pointing
+to either Vercel or Netlify so the application host owns caching and TLS.
 
 The zone contains unrelated production services and email records. Do not delete, replace, proxy, or broadly edit DNS records.
 
@@ -110,6 +128,11 @@ Protected records and services include:
 - `clk._domainkey`, `clk2._domainkey`, and `clkmail.brief`
 
 Never place null MX, `v=spf1 -all`, or wildcard DKIM revocation at the apex. Do not move DMARC directly to reject. Roll it out from monitoring only after SPF and DKIM alignment is verified for every legitimate sender.
+
+Application hostnames that use CNAME records cannot also carry MX or SPF TXT
+records at the same owner name. Follow ADR 0005: use explicit DMARC records
+under `_dmarc.news` and `_dmarc.studio` after exact approval, while keeping the
+apex policy in monitoring until every legitimate sender is verified.
 
 Never enable HSTS preload or `includeSubDomains` at the apex. Recovery email for domain-control accounts must use a different domain.
 
@@ -127,7 +150,19 @@ Any DNS, registrar, email-authentication, access-control, secret-rotation, produ
 - Do not use `@ts-ignore`. A justified `@ts-expect-error` is permitted only when unavoidable.
 - Avoid `any`; keep strict TypeScript settings enabled.
 - Never stage unrelated user changes.
-- Work through a branch and pull request for normal changes once branch protection is active. Do not force-push protected branches.
+- Work through a branch and pull request for normal changes. On GitHub Free,
+  apply CI, signed-commit, review, and local guardrails even when protected-branch
+  enforcement is unavailable for the private repository. Never claim that a
+  server-side rule is active without verifying it.
+- Keep production on zero-cost service tiers. Never start trials, paid add-ons,
+  metered overages, or upgrades without explicit founder authorization. Do not
+  treat Vercel Hobby as a compliant permanent host for commercial promotion.
+  ADR 0004 records the accepted Netlify Free migration. Do not cut over DNS
+  until the preview passes all gates and the exact DNS change is approved.
+- A Netlify draft deploy may be created for validation through the manual
+  deployment workflow. Its production path requires the exact confirmation
+  phrase. Never attach a custom domain until the corresponding release and DNS
+  mutations are explicitly approved.
 - Deploy to production only when the user has requested or approved a production release.
 
 ## Required validation

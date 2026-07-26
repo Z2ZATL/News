@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { draftMode } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { isLocale } from "@/lib/i18n";
 import { localizedAlternates } from "@/lib/metadata";
+import { getProject } from "@/lib/content";
 
 import styles from "./project.module.css";
 
@@ -48,6 +50,7 @@ export default async function LumixiaBrief({
 }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
+  if (!(await getProject("lumixia-brief", { draft: (await draftMode()).isEnabled }))) notFound();
   const th = locale === "th";
 
   return (
