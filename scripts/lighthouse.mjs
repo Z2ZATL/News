@@ -200,6 +200,14 @@ try {
         const retry = await runLighthouseWithTraceRetry(route, chromePath, profile);
         if (retry) results.push(retry);
       }
+      console.log(
+        `${profile} ${route} performance samples: ${results
+          .map((result) => {
+            const score = categoryScore(result, "performance");
+            return score === null ? "null" : String(Math.round(score * 100));
+          })
+          .join(", ")}.`,
+      );
       if (results.length !== maximumScoreAttempts) {
         failures.push(
           `${profile} ${route}: Lighthouse returned only ${String(results.length)} of ${String(maximumScoreAttempts)} score samples.`,

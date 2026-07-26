@@ -37,8 +37,8 @@ jobs:
       - run: pnpm --package=netlify-cli@27.0.0 dlx netlify build --offline --context deploy-preview
       - run: pnpm audit --audit-level=moderate
       - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm test:e2e
       - run: pnpm test:lighthouse
+      - run: pnpm test:e2e
 
   studio:
     runs-on: ubuntu-latest
