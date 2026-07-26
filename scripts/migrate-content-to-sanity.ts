@@ -123,8 +123,8 @@ async function main(): Promise<void> {
 
   let transaction = client.transaction();
   for (const article of fixtureArticles) {
-    const authorId = `author.${idPart(article.author.name)}`;
-    const categoryId = `category.${idPart(article.category.en)}`;
+    const authorId = `author-${idPart(article.author.name)}`;
+    const categoryId = `category-${idPart(article.category.en)}`;
     transaction = transaction.createOrReplace({
       _id: authorId,
       _type: "author",
@@ -138,7 +138,7 @@ async function main(): Promise<void> {
       title: localized("localizedString", article.category),
     });
     transaction = transaction.createOrReplace({
-      _id: `article.${article.slug}`,
+      _id: `article-${article.slug}`,
       _type: "article",
       atlasLocation: {
         _type: "object",
@@ -176,7 +176,7 @@ async function main(): Promise<void> {
   }
   for (const project of fixtureProjects) {
     transaction = transaction.createOrReplace({
-      _id: `project.${project.slug}`,
+      _id: `project-${project.slug}`,
       _type: "project",
       body: {
         _type: "localizedBody",
