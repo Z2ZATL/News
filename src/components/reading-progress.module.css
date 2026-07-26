@@ -13,6 +13,13 @@
   transform-origin: left center;
   background: linear-gradient(90deg, var(--blue), var(--cyan), #fff);
   box-shadow: 0 0 18px rgb(47 191 242 / 70%);
+  transform: scaleX(0);
+  animation: reading-progress linear both;
+  animation-timeline: scroll(root block);
+}
+
+@keyframes reading-progress {
+  to { transform: scaleX(1); }
 }
 
 @media (prefers-reduced-motion: reduce) {

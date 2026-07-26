@@ -17,7 +17,7 @@ const routes = process.env.LIGHTHOUSE_ROUTES?.split(",") ?? [
   "/th/projects/lumixia-brief",
   "/en/projects/lumixia-brief",
 ];
-const profiles = ["mobile", "desktop"];
+const profiles = process.env.LIGHTHOUSE_PROFILES?.split(",") ?? ["mobile", "desktop"];
 const minimumScores = {
   accessibility: 1,
   "best-practices": 1,

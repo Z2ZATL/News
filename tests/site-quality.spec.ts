@@ -90,6 +90,10 @@ test("home replaces featured news with a keyboard-accessible category browser", 
   await expect(page.getByText("บทวิเคราะห์ล่าสุด")).toHaveCount(0);
   await expect(page.getByText("ลองให้จริง แล้วค่อยเล่า")).toHaveCount(0);
 
+  await page.evaluate(() => {
+    document.querySelector("[data-category-browser]")?.scrollIntoView();
+  });
+
   const publicAi = browser.getByRole("tab", { name: /AI ภาครัฐ/ });
   const codingAi = browser.getByRole("tab", { name: /AI เขียนโค้ด/ });
   await expect(publicAi).toHaveAttribute("aria-selected", "true");
@@ -254,6 +258,11 @@ test("Atlas groups signals by country and reveals ranked side panels on demand",
   page,
 }) => {
   await page.goto("/th/stories/th-ai-passport-recap-developer-tools");
+  await page.evaluate(() => {
+    document
+      .getElementById("reactions-th-ai-passport-recap-developer-tools")
+      ?.scrollIntoView();
+  });
   await page.locator('button[aria-label^="รักเลย"]').click();
   await page.goto("/th");
   const atlas = page.locator("[data-atlas-state]");
@@ -320,6 +329,11 @@ test("story reactions aggregate anonymously, persist, and stay out of Lab pages"
   page,
 }) => {
   await page.goto("/th/stories/okmd-ai-playground-review");
+  await page.evaluate(() => {
+    document
+      .getElementById("reactions-okmd-ai-playground-review")
+      ?.scrollIntoView();
+  });
   const love = page.getByRole("button", { name: "รักเลย" });
   await expect(love).toHaveAttribute("aria-pressed", "false");
   await love.click();

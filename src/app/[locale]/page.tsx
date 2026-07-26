@@ -3,10 +3,8 @@ import { connection } from "next/server";
 import { notFound } from "next/navigation";
 
 import { Atlas } from "@/components/atlas";
-import {
-  CategoryNewsBrowser,
-  type NewsCategory,
-} from "@/components/category-news-browser";
+import type { NewsCategory } from "@/components/category-news-browser";
+import { CategoryNewsBrowserLoader } from "@/components/category-news-browser-loader";
 import { getArticles } from "@/lib/content";
 import { isLocale } from "@/lib/i18n";
 import { localizedAlternates } from "@/lib/metadata";
@@ -75,7 +73,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   return (
     <>
       <Atlas articles={articles} locale={locale} reactionTotals={reactionTotals} />
-      <CategoryNewsBrowser categories={[...categoryMap.values()]} locale={locale} />
+      <CategoryNewsBrowserLoader categories={[...categoryMap.values()]} locale={locale} />
     </>
   );
 }

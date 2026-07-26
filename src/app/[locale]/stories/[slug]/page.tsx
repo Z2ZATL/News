@@ -3,7 +3,7 @@ import { draftMode, headers } from "next/headers";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
-import { ArticleReactions } from "@/components/article-reactions";
+import { ArticleReactionsLoader } from "@/components/article-reactions-loader";
 import { ArticleBody } from "@/components/article-body";
 import { JsonLd } from "@/components/json-ld";
 import { ReadingProgress } from "@/components/reading-progress";
@@ -157,7 +157,7 @@ export default async function ArticlePage({
           <div className={styles.intro}>
             <ArticleBody value={article.body[locale]} />
           </div>
-          <ArticleReactions
+          <ArticleReactionsLoader
             articleTitle={article.title[locale]}
             locale={locale}
             slug={article.slug}
