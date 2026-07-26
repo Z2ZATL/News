@@ -182,16 +182,32 @@ const articleProjection = `{
   },
   "body": {
     "th": body.th[]{
-      ...,
+      _type == "block" => {
+        _key, _type,
+        children[]{_key, _type, marks, text},
+        defined(level) => {level},
+        defined(listItem) => {listItem},
+        markDefs[]{_key, _type, href},
+        style
+      },
       _type == "articleImage" => {
+        _key, _type, alt, caption,
         "src": asset->url,
         "width": asset->metadata.dimensions.width,
         "height": asset->metadata.dimensions.height
       }
     },
     "en": body.en[]{
-      ...,
+      _type == "block" => {
+        _key, _type,
+        children[]{_key, _type, marks, text},
+        defined(level) => {level},
+        defined(listItem) => {listItem},
+        markDefs[]{_key, _type, href},
+        style
+      },
       _type == "articleImage" => {
+        _key, _type, alt, caption,
         "src": asset->url,
         "width": asset->metadata.dimensions.width,
         "height": asset->metadata.dimensions.height
@@ -229,16 +245,32 @@ const projectQuery = defineQuery(
     promoted, links,
     "body": {
       "th": body.th[]{
-        ...,
+        _type == "block" => {
+          _key, _type,
+          children[]{_key, _type, marks, text},
+          defined(level) => {level},
+          defined(listItem) => {listItem},
+          markDefs[]{_key, _type, href},
+          style
+        },
         _type == "articleImage" => {
+          _key, _type, alt, caption,
           "src": asset->url,
           "width": asset->metadata.dimensions.width,
           "height": asset->metadata.dimensions.height
         }
       },
       "en": body.en[]{
-        ...,
+        _type == "block" => {
+          _key, _type,
+          children[]{_key, _type, marks, text},
+          defined(level) => {level},
+          defined(listItem) => {listItem},
+          markDefs[]{_key, _type, href},
+          style
+        },
         _type == "articleImage" => {
+          _key, _type, alt, caption,
           "src": asset->url,
           "width": asset->metadata.dimensions.width,
           "height": asset->metadata.dimensions.height
@@ -262,16 +294,32 @@ const draftProjectQuery = defineQuery(
     promoted, links,
     "body": {
       "th": body.th[]{
-        ...,
+        _type == "block" => {
+          _key, _type,
+          children[]{_key, _type, marks, text},
+          defined(level) => {level},
+          defined(listItem) => {listItem},
+          markDefs[]{_key, _type, href},
+          style
+        },
         _type == "articleImage" => {
+          _key, _type, alt, caption,
           "src": asset->url,
           "width": asset->metadata.dimensions.width,
           "height": asset->metadata.dimensions.height
         }
       },
       "en": body.en[]{
-        ...,
+        _type == "block" => {
+          _key, _type,
+          children[]{_key, _type, marks, text},
+          defined(level) => {level},
+          defined(listItem) => {listItem},
+          markDefs[]{_key, _type, href},
+          style
+        },
         _type == "articleImage" => {
+          _key, _type, alt, caption,
           "src": asset->url,
           "width": asset->metadata.dimensions.width,
           "height": asset->metadata.dimensions.height

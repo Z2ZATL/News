@@ -375,7 +375,7 @@ export type AllSanitySchemaTypes =
 
 // Source: ../src/lib/content.ts
 // Variable: articleQuery
-// Query: *[_type == "article" && status == "published"] | order(publishedAt desc) {  "slug": slug.current,  "title": {"th": title.th, "en": title.en},  "excerpt": {"th": excerpt.th, "en": excerpt.en},  "cover": {    "src": cover.asset->url,    "width": cover.asset->metadata.dimensions.width,    "height": cover.asset->metadata.dimensions.height,    "alt": {"th": cover.alt.th, "en": cover.alt.en}  },  "category": {"th": category->title.th, "en": category->title.en},  "author": {    "name": author->name,    "role": {"th": author->role.th, "en": author->role.en}  },  "atlasLocation": {    "countryCode": atlasLocation.countryCode,    "latitude": atlasLocation.latitude,    "longitude": atlasLocation.longitude,    "label": {"th": atlasLocation.label.th, "en": atlasLocation.label.en}  },  "body": {    "th": body.th[]{      ...,      _type == "articleImage" => {        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    },    "en": body.en[]{      ...,      _type == "articleImage" => {        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    }  },  defined(video) => {    "video": {      "embedUrl": video.embedUrl,      "sourceUrl": video.sourceUrl,      "title": {"th": video.title.th, "en": video.title.en}    }  },  tags,  "sources": sources[]{    "label": {"th": label.th, "en": label.en},    url  },  featured,  publishedAt,  updatedAt}
+// Query: *[_type == "article" && status == "published"] | order(publishedAt desc) {  "slug": slug.current,  "title": {"th": title.th, "en": title.en},  "excerpt": {"th": excerpt.th, "en": excerpt.en},  "cover": {    "src": cover.asset->url,    "width": cover.asset->metadata.dimensions.width,    "height": cover.asset->metadata.dimensions.height,    "alt": {"th": cover.alt.th, "en": cover.alt.en}  },  "category": {"th": category->title.th, "en": category->title.en},  "author": {    "name": author->name,    "role": {"th": author->role.th, "en": author->role.en}  },  "atlasLocation": {    "countryCode": atlasLocation.countryCode,    "latitude": atlasLocation.latitude,    "longitude": atlasLocation.longitude,    "label": {"th": atlasLocation.label.th, "en": atlasLocation.label.en}  },  "body": {    "th": body.th[]{      _type == "block" => {        _key, _type,        children[]{_key, _type, marks, text},        defined(level) => {level},        defined(listItem) => {listItem},        markDefs[]{_key, _type, href},        style      },      _type == "articleImage" => {        _key, _type, alt, caption,        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    },    "en": body.en[]{      _type == "block" => {        _key, _type,        children[]{_key, _type, marks, text},        defined(level) => {level},        defined(listItem) => {listItem},        markDefs[]{_key, _type, href},        style      },      _type == "articleImage" => {        _key, _type, alt, caption,        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    }  },  defined(video) => {    "video": {      "embedUrl": video.embedUrl,      "sourceUrl": video.sourceUrl,      "title": {"th": video.title.th, "en": video.title.en}    }  },  tags,  "sources": sources[]{    "label": {"th": label.th, "en": label.en},    url  },  featured,  publishedAt,  updatedAt}
 export type ArticleQueryResult = Array<
   | {
       slug: string;
@@ -419,26 +419,31 @@ export type ArticleQueryResult = Array<
       body: {
         th: Array<
           | {
-              asset?: SanityImageAssetReference;
-              media?: unknown;
-              hotspot?: SanityImageHotspot;
-              crop?: SanityImageCrop;
-              alt: string;
-              caption?: string;
-              _type: "articleImage";
               _key: string;
+              _type: "articleImage";
+              alt: string;
+              caption: string | null;
               src: string | null;
               width: number | null;
               height: number | null;
             }
           | {
-              children?: Array<{
-                marks?: Array<string>;
-                text?: string;
-                _type: "span";
+              _key: string;
+              _type: "block";
+              children: Array<{
                 _key: string;
-              }>;
-              style?:
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              level: number | null;
+              listItem: "bullet" | "number" | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
                 | "blockquote"
                 | "h1"
                 | "h2"
@@ -446,40 +451,114 @@ export type ArticleQueryResult = Array<
                 | "h4"
                 | "h5"
                 | "h6"
-                | "normal";
-              listItem?: "bullet" | "number";
-              markDefs?: Array<{
-                href?: string;
-                _type: "link";
-                _key: string;
-              }>;
-              level?: number;
-              _type: "block";
+                | "normal"
+                | null;
+            }
+          | {
               _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              level: number | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
+            }
+          | {
+              _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              listItem: "bullet" | "number" | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
+            }
+          | {
+              _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
             }
         > | null;
         en: Array<
           | {
-              asset?: SanityImageAssetReference;
-              media?: unknown;
-              hotspot?: SanityImageHotspot;
-              crop?: SanityImageCrop;
-              alt: string;
-              caption?: string;
-              _type: "articleImage";
               _key: string;
+              _type: "articleImage";
+              alt: string;
+              caption: string | null;
               src: string | null;
               width: number | null;
               height: number | null;
             }
           | {
-              children?: Array<{
-                marks?: Array<string>;
-                text?: string;
-                _type: "span";
+              _key: string;
+              _type: "block";
+              children: Array<{
                 _key: string;
-              }>;
-              style?:
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              level: number | null;
+              listItem: "bullet" | "number" | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
                 | "blockquote"
                 | "h1"
                 | "h2"
@@ -487,16 +566,85 @@ export type ArticleQueryResult = Array<
                 | "h4"
                 | "h5"
                 | "h6"
-                | "normal";
-              listItem?: "bullet" | "number";
-              markDefs?: Array<{
-                href?: string;
-                _type: "link";
-                _key: string;
-              }>;
-              level?: number;
-              _type: "block";
+                | "normal"
+                | null;
+            }
+          | {
               _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              level: number | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
+            }
+          | {
+              _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              listItem: "bullet" | "number" | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
+            }
+          | {
+              _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
             }
         > | null;
       };
@@ -562,26 +710,31 @@ export type ArticleQueryResult = Array<
       body: {
         th: Array<
           | {
-              asset?: SanityImageAssetReference;
-              media?: unknown;
-              hotspot?: SanityImageHotspot;
-              crop?: SanityImageCrop;
-              alt: string;
-              caption?: string;
-              _type: "articleImage";
               _key: string;
+              _type: "articleImage";
+              alt: string;
+              caption: string | null;
               src: string | null;
               width: number | null;
               height: number | null;
             }
           | {
-              children?: Array<{
-                marks?: Array<string>;
-                text?: string;
-                _type: "span";
+              _key: string;
+              _type: "block";
+              children: Array<{
                 _key: string;
-              }>;
-              style?:
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              level: number | null;
+              listItem: "bullet" | "number" | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
                 | "blockquote"
                 | "h1"
                 | "h2"
@@ -589,40 +742,114 @@ export type ArticleQueryResult = Array<
                 | "h4"
                 | "h5"
                 | "h6"
-                | "normal";
-              listItem?: "bullet" | "number";
-              markDefs?: Array<{
-                href?: string;
-                _type: "link";
-                _key: string;
-              }>;
-              level?: number;
-              _type: "block";
+                | "normal"
+                | null;
+            }
+          | {
               _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              level: number | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
+            }
+          | {
+              _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              listItem: "bullet" | "number" | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
+            }
+          | {
+              _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
             }
         > | null;
         en: Array<
           | {
-              asset?: SanityImageAssetReference;
-              media?: unknown;
-              hotspot?: SanityImageHotspot;
-              crop?: SanityImageCrop;
-              alt: string;
-              caption?: string;
-              _type: "articleImage";
               _key: string;
+              _type: "articleImage";
+              alt: string;
+              caption: string | null;
               src: string | null;
               width: number | null;
               height: number | null;
             }
           | {
-              children?: Array<{
-                marks?: Array<string>;
-                text?: string;
-                _type: "span";
+              _key: string;
+              _type: "block";
+              children: Array<{
                 _key: string;
-              }>;
-              style?:
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              level: number | null;
+              listItem: "bullet" | "number" | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
                 | "blockquote"
                 | "h1"
                 | "h2"
@@ -630,16 +857,85 @@ export type ArticleQueryResult = Array<
                 | "h4"
                 | "h5"
                 | "h6"
-                | "normal";
-              listItem?: "bullet" | "number";
-              markDefs?: Array<{
-                href?: string;
-                _type: "link";
-                _key: string;
-              }>;
-              level?: number;
-              _type: "block";
+                | "normal"
+                | null;
+            }
+          | {
               _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              level: number | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
+            }
+          | {
+              _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              listItem: "bullet" | "number" | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
+            }
+          | {
+              _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
             }
         > | null;
       };
@@ -659,7 +955,7 @@ export type ArticleQueryResult = Array<
 
 // Source: ../src/lib/content.ts
 // Variable: draftArticleQuery
-// Query: *[_type == "article" && slug.current == $slug][0] {  "slug": slug.current,  "title": {"th": title.th, "en": title.en},  "excerpt": {"th": excerpt.th, "en": excerpt.en},  "cover": {    "src": cover.asset->url,    "width": cover.asset->metadata.dimensions.width,    "height": cover.asset->metadata.dimensions.height,    "alt": {"th": cover.alt.th, "en": cover.alt.en}  },  "category": {"th": category->title.th, "en": category->title.en},  "author": {    "name": author->name,    "role": {"th": author->role.th, "en": author->role.en}  },  "atlasLocation": {    "countryCode": atlasLocation.countryCode,    "latitude": atlasLocation.latitude,    "longitude": atlasLocation.longitude,    "label": {"th": atlasLocation.label.th, "en": atlasLocation.label.en}  },  "body": {    "th": body.th[]{      ...,      _type == "articleImage" => {        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    },    "en": body.en[]{      ...,      _type == "articleImage" => {        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    }  },  defined(video) => {    "video": {      "embedUrl": video.embedUrl,      "sourceUrl": video.sourceUrl,      "title": {"th": video.title.th, "en": video.title.en}    }  },  tags,  "sources": sources[]{    "label": {"th": label.th, "en": label.en},    url  },  featured,  publishedAt,  updatedAt}
+// Query: *[_type == "article" && slug.current == $slug][0] {  "slug": slug.current,  "title": {"th": title.th, "en": title.en},  "excerpt": {"th": excerpt.th, "en": excerpt.en},  "cover": {    "src": cover.asset->url,    "width": cover.asset->metadata.dimensions.width,    "height": cover.asset->metadata.dimensions.height,    "alt": {"th": cover.alt.th, "en": cover.alt.en}  },  "category": {"th": category->title.th, "en": category->title.en},  "author": {    "name": author->name,    "role": {"th": author->role.th, "en": author->role.en}  },  "atlasLocation": {    "countryCode": atlasLocation.countryCode,    "latitude": atlasLocation.latitude,    "longitude": atlasLocation.longitude,    "label": {"th": atlasLocation.label.th, "en": atlasLocation.label.en}  },  "body": {    "th": body.th[]{      _type == "block" => {        _key, _type,        children[]{_key, _type, marks, text},        defined(level) => {level},        defined(listItem) => {listItem},        markDefs[]{_key, _type, href},        style      },      _type == "articleImage" => {        _key, _type, alt, caption,        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    },    "en": body.en[]{      _type == "block" => {        _key, _type,        children[]{_key, _type, marks, text},        defined(level) => {level},        defined(listItem) => {listItem},        markDefs[]{_key, _type, href},        style      },      _type == "articleImage" => {        _key, _type, alt, caption,        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    }  },  defined(video) => {    "video": {      "embedUrl": video.embedUrl,      "sourceUrl": video.sourceUrl,      "title": {"th": video.title.th, "en": video.title.en}    }  },  tags,  "sources": sources[]{    "label": {"th": label.th, "en": label.en},    url  },  featured,  publishedAt,  updatedAt}
 export type DraftArticleQueryResult =
   | {
       slug: string;
@@ -703,26 +999,31 @@ export type DraftArticleQueryResult =
       body: {
         th: Array<
           | {
-              asset?: SanityImageAssetReference;
-              media?: unknown;
-              hotspot?: SanityImageHotspot;
-              crop?: SanityImageCrop;
-              alt: string;
-              caption?: string;
-              _type: "articleImage";
               _key: string;
+              _type: "articleImage";
+              alt: string;
+              caption: string | null;
               src: string | null;
               width: number | null;
               height: number | null;
             }
           | {
-              children?: Array<{
-                marks?: Array<string>;
-                text?: string;
-                _type: "span";
+              _key: string;
+              _type: "block";
+              children: Array<{
                 _key: string;
-              }>;
-              style?:
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              level: number | null;
+              listItem: "bullet" | "number" | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
                 | "blockquote"
                 | "h1"
                 | "h2"
@@ -730,40 +1031,114 @@ export type DraftArticleQueryResult =
                 | "h4"
                 | "h5"
                 | "h6"
-                | "normal";
-              listItem?: "bullet" | "number";
-              markDefs?: Array<{
-                href?: string;
-                _type: "link";
-                _key: string;
-              }>;
-              level?: number;
-              _type: "block";
+                | "normal"
+                | null;
+            }
+          | {
               _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              level: number | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
+            }
+          | {
+              _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              listItem: "bullet" | "number" | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
+            }
+          | {
+              _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
             }
         > | null;
         en: Array<
           | {
-              asset?: SanityImageAssetReference;
-              media?: unknown;
-              hotspot?: SanityImageHotspot;
-              crop?: SanityImageCrop;
-              alt: string;
-              caption?: string;
-              _type: "articleImage";
               _key: string;
+              _type: "articleImage";
+              alt: string;
+              caption: string | null;
               src: string | null;
               width: number | null;
               height: number | null;
             }
           | {
-              children?: Array<{
-                marks?: Array<string>;
-                text?: string;
-                _type: "span";
+              _key: string;
+              _type: "block";
+              children: Array<{
                 _key: string;
-              }>;
-              style?:
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              level: number | null;
+              listItem: "bullet" | "number" | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
                 | "blockquote"
                 | "h1"
                 | "h2"
@@ -771,16 +1146,85 @@ export type DraftArticleQueryResult =
                 | "h4"
                 | "h5"
                 | "h6"
-                | "normal";
-              listItem?: "bullet" | "number";
-              markDefs?: Array<{
-                href?: string;
-                _type: "link";
-                _key: string;
-              }>;
-              level?: number;
-              _type: "block";
+                | "normal"
+                | null;
+            }
+          | {
               _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              level: number | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
+            }
+          | {
+              _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              listItem: "bullet" | "number" | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
+            }
+          | {
+              _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
             }
         > | null;
       };
@@ -846,26 +1290,31 @@ export type DraftArticleQueryResult =
       body: {
         th: Array<
           | {
-              asset?: SanityImageAssetReference;
-              media?: unknown;
-              hotspot?: SanityImageHotspot;
-              crop?: SanityImageCrop;
-              alt: string;
-              caption?: string;
-              _type: "articleImage";
               _key: string;
+              _type: "articleImage";
+              alt: string;
+              caption: string | null;
               src: string | null;
               width: number | null;
               height: number | null;
             }
           | {
-              children?: Array<{
-                marks?: Array<string>;
-                text?: string;
-                _type: "span";
+              _key: string;
+              _type: "block";
+              children: Array<{
                 _key: string;
-              }>;
-              style?:
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              level: number | null;
+              listItem: "bullet" | "number" | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
                 | "blockquote"
                 | "h1"
                 | "h2"
@@ -873,40 +1322,114 @@ export type DraftArticleQueryResult =
                 | "h4"
                 | "h5"
                 | "h6"
-                | "normal";
-              listItem?: "bullet" | "number";
-              markDefs?: Array<{
-                href?: string;
-                _type: "link";
-                _key: string;
-              }>;
-              level?: number;
-              _type: "block";
+                | "normal"
+                | null;
+            }
+          | {
               _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              level: number | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
+            }
+          | {
+              _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              listItem: "bullet" | "number" | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
+            }
+          | {
+              _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
             }
         > | null;
         en: Array<
           | {
-              asset?: SanityImageAssetReference;
-              media?: unknown;
-              hotspot?: SanityImageHotspot;
-              crop?: SanityImageCrop;
-              alt: string;
-              caption?: string;
-              _type: "articleImage";
               _key: string;
+              _type: "articleImage";
+              alt: string;
+              caption: string | null;
               src: string | null;
               width: number | null;
               height: number | null;
             }
           | {
-              children?: Array<{
-                marks?: Array<string>;
-                text?: string;
-                _type: "span";
+              _key: string;
+              _type: "block";
+              children: Array<{
                 _key: string;
-              }>;
-              style?:
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              level: number | null;
+              listItem: "bullet" | "number" | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
                 | "blockquote"
                 | "h1"
                 | "h2"
@@ -914,16 +1437,85 @@ export type DraftArticleQueryResult =
                 | "h4"
                 | "h5"
                 | "h6"
-                | "normal";
-              listItem?: "bullet" | "number";
-              markDefs?: Array<{
-                href?: string;
-                _type: "link";
-                _key: string;
-              }>;
-              level?: number;
-              _type: "block";
+                | "normal"
+                | null;
+            }
+          | {
               _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              level: number | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
+            }
+          | {
+              _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              listItem: "bullet" | "number" | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
+            }
+          | {
+              _key: string;
+              _type: "block";
+              children: Array<{
+                _key: string;
+                _type: "span";
+                marks: Array<string> | null;
+                text: string | null;
+              }> | null;
+              markDefs: Array<{
+                _key: string;
+                _type: "link";
+                href: string | null;
+              }> | null;
+              style:
+                | "blockquote"
+                | "h1"
+                | "h2"
+                | "h3"
+                | "h4"
+                | "h5"
+                | "h6"
+                | "normal"
+                | null;
             }
         > | null;
       };
@@ -943,7 +1535,7 @@ export type DraftArticleQueryResult =
 
 // Source: ../src/lib/content.ts
 // Variable: projectQuery
-// Query: *[_type == "project" && status == "published"] | order(promoted desc, title.en asc) {    "slug": slug.current,    "title": {"th": title.th, "en": title.en},    "summary": {"th": summary.th, "en": summary.en},    promoted, links,    "body": {      "th": body.th[]{        ...,        _type == "articleImage" => {          "src": asset->url,          "width": asset->metadata.dimensions.width,          "height": asset->metadata.dimensions.height        }      },      "en": body.en[]{        ...,        _type == "articleImage" => {          "src": asset->url,          "width": asset->metadata.dimensions.width,          "height": asset->metadata.dimensions.height        }      }    }  }
+// Query: *[_type == "project" && status == "published"] | order(promoted desc, title.en asc) {    "slug": slug.current,    "title": {"th": title.th, "en": title.en},    "summary": {"th": summary.th, "en": summary.en},    promoted, links,    "body": {      "th": body.th[]{        _type == "block" => {          _key, _type,          children[]{_key, _type, marks, text},          defined(level) => {level},          defined(listItem) => {listItem},          markDefs[]{_key, _type, href},          style        },        _type == "articleImage" => {          _key, _type, alt, caption,          "src": asset->url,          "width": asset->metadata.dimensions.width,          "height": asset->metadata.dimensions.height        }      },      "en": body.en[]{        _type == "block" => {          _key, _type,          children[]{_key, _type, marks, text},          defined(level) => {level},          defined(listItem) => {listItem},          markDefs[]{_key, _type, href},          style        },        _type == "articleImage" => {          _key, _type, alt, caption,          "src": asset->url,          "width": asset->metadata.dimensions.width,          "height": asset->metadata.dimensions.height        }      }    }  }
 export type ProjectQueryResult = Array<{
   slug: string;
   title: {
@@ -959,70 +1551,232 @@ export type ProjectQueryResult = Array<{
   body: {
     th: Array<
       | {
-          asset?: SanityImageAssetReference;
-          media?: unknown;
-          hotspot?: SanityImageHotspot;
-          crop?: SanityImageCrop;
-          alt: string;
-          caption?: string;
-          _type: "articleImage";
           _key: string;
+          _type: "articleImage";
+          alt: string;
+          caption: string | null;
           src: string | null;
           width: number | null;
           height: number | null;
         }
       | {
-          children?: Array<{
-            marks?: Array<string>;
-            text?: string;
-            _type: "span";
-            _key: string;
-          }>;
-          style?:
-            "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-          listItem?: "bullet" | "number";
-          markDefs?: Array<{
-            href?: string;
-            _type: "link";
-            _key: string;
-          }>;
-          level?: number;
-          _type: "block";
           _key: string;
+          _type: "block";
+          children: Array<{
+            _key: string;
+            _type: "span";
+            marks: Array<string> | null;
+            text: string | null;
+          }> | null;
+          level: number | null;
+          listItem: "bullet" | "number" | null;
+          markDefs: Array<{
+            _key: string;
+            _type: "link";
+            href: string | null;
+          }> | null;
+          style:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal"
+            | null;
+        }
+      | {
+          _key: string;
+          _type: "block";
+          children: Array<{
+            _key: string;
+            _type: "span";
+            marks: Array<string> | null;
+            text: string | null;
+          }> | null;
+          level: number | null;
+          markDefs: Array<{
+            _key: string;
+            _type: "link";
+            href: string | null;
+          }> | null;
+          style:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal"
+            | null;
+        }
+      | {
+          _key: string;
+          _type: "block";
+          children: Array<{
+            _key: string;
+            _type: "span";
+            marks: Array<string> | null;
+            text: string | null;
+          }> | null;
+          listItem: "bullet" | "number" | null;
+          markDefs: Array<{
+            _key: string;
+            _type: "link";
+            href: string | null;
+          }> | null;
+          style:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal"
+            | null;
+        }
+      | {
+          _key: string;
+          _type: "block";
+          children: Array<{
+            _key: string;
+            _type: "span";
+            marks: Array<string> | null;
+            text: string | null;
+          }> | null;
+          markDefs: Array<{
+            _key: string;
+            _type: "link";
+            href: string | null;
+          }> | null;
+          style:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal"
+            | null;
         }
     > | null;
     en: Array<
       | {
-          asset?: SanityImageAssetReference;
-          media?: unknown;
-          hotspot?: SanityImageHotspot;
-          crop?: SanityImageCrop;
-          alt: string;
-          caption?: string;
-          _type: "articleImage";
           _key: string;
+          _type: "articleImage";
+          alt: string;
+          caption: string | null;
           src: string | null;
           width: number | null;
           height: number | null;
         }
       | {
-          children?: Array<{
-            marks?: Array<string>;
-            text?: string;
-            _type: "span";
-            _key: string;
-          }>;
-          style?:
-            "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-          listItem?: "bullet" | "number";
-          markDefs?: Array<{
-            href?: string;
-            _type: "link";
-            _key: string;
-          }>;
-          level?: number;
-          _type: "block";
           _key: string;
+          _type: "block";
+          children: Array<{
+            _key: string;
+            _type: "span";
+            marks: Array<string> | null;
+            text: string | null;
+          }> | null;
+          level: number | null;
+          listItem: "bullet" | "number" | null;
+          markDefs: Array<{
+            _key: string;
+            _type: "link";
+            href: string | null;
+          }> | null;
+          style:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal"
+            | null;
+        }
+      | {
+          _key: string;
+          _type: "block";
+          children: Array<{
+            _key: string;
+            _type: "span";
+            marks: Array<string> | null;
+            text: string | null;
+          }> | null;
+          level: number | null;
+          markDefs: Array<{
+            _key: string;
+            _type: "link";
+            href: string | null;
+          }> | null;
+          style:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal"
+            | null;
+        }
+      | {
+          _key: string;
+          _type: "block";
+          children: Array<{
+            _key: string;
+            _type: "span";
+            marks: Array<string> | null;
+            text: string | null;
+          }> | null;
+          listItem: "bullet" | "number" | null;
+          markDefs: Array<{
+            _key: string;
+            _type: "link";
+            href: string | null;
+          }> | null;
+          style:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal"
+            | null;
+        }
+      | {
+          _key: string;
+          _type: "block";
+          children: Array<{
+            _key: string;
+            _type: "span";
+            marks: Array<string> | null;
+            text: string | null;
+          }> | null;
+          markDefs: Array<{
+            _key: string;
+            _type: "link";
+            href: string | null;
+          }> | null;
+          style:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal"
+            | null;
         }
     > | null;
   };
@@ -1045,7 +1799,7 @@ export type SettingsQueryResult = {
 
 // Source: ../src/lib/content.ts
 // Variable: draftProjectQuery
-// Query: *[_type == "project" && slug.current == $slug][0] {    "slug": slug.current,    "title": {"th": title.th, "en": title.en},    "summary": {"th": summary.th, "en": summary.en},    promoted, links,    "body": {      "th": body.th[]{        ...,        _type == "articleImage" => {          "src": asset->url,          "width": asset->metadata.dimensions.width,          "height": asset->metadata.dimensions.height        }      },      "en": body.en[]{        ...,        _type == "articleImage" => {          "src": asset->url,          "width": asset->metadata.dimensions.width,          "height": asset->metadata.dimensions.height        }      }    }  }
+// Query: *[_type == "project" && slug.current == $slug][0] {    "slug": slug.current,    "title": {"th": title.th, "en": title.en},    "summary": {"th": summary.th, "en": summary.en},    promoted, links,    "body": {      "th": body.th[]{        _type == "block" => {          _key, _type,          children[]{_key, _type, marks, text},          defined(level) => {level},          defined(listItem) => {listItem},          markDefs[]{_key, _type, href},          style        },        _type == "articleImage" => {          _key, _type, alt, caption,          "src": asset->url,          "width": asset->metadata.dimensions.width,          "height": asset->metadata.dimensions.height        }      },      "en": body.en[]{        _type == "block" => {          _key, _type,          children[]{_key, _type, marks, text},          defined(level) => {level},          defined(listItem) => {listItem},          markDefs[]{_key, _type, href},          style        },        _type == "articleImage" => {          _key, _type, alt, caption,          "src": asset->url,          "width": asset->metadata.dimensions.width,          "height": asset->metadata.dimensions.height        }      }    }  }
 export type DraftProjectQueryResult = {
   slug: string;
   title: {
@@ -1061,70 +1815,232 @@ export type DraftProjectQueryResult = {
   body: {
     th: Array<
       | {
-          asset?: SanityImageAssetReference;
-          media?: unknown;
-          hotspot?: SanityImageHotspot;
-          crop?: SanityImageCrop;
-          alt: string;
-          caption?: string;
-          _type: "articleImage";
           _key: string;
+          _type: "articleImage";
+          alt: string;
+          caption: string | null;
           src: string | null;
           width: number | null;
           height: number | null;
         }
       | {
-          children?: Array<{
-            marks?: Array<string>;
-            text?: string;
-            _type: "span";
-            _key: string;
-          }>;
-          style?:
-            "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-          listItem?: "bullet" | "number";
-          markDefs?: Array<{
-            href?: string;
-            _type: "link";
-            _key: string;
-          }>;
-          level?: number;
-          _type: "block";
           _key: string;
+          _type: "block";
+          children: Array<{
+            _key: string;
+            _type: "span";
+            marks: Array<string> | null;
+            text: string | null;
+          }> | null;
+          level: number | null;
+          listItem: "bullet" | "number" | null;
+          markDefs: Array<{
+            _key: string;
+            _type: "link";
+            href: string | null;
+          }> | null;
+          style:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal"
+            | null;
+        }
+      | {
+          _key: string;
+          _type: "block";
+          children: Array<{
+            _key: string;
+            _type: "span";
+            marks: Array<string> | null;
+            text: string | null;
+          }> | null;
+          level: number | null;
+          markDefs: Array<{
+            _key: string;
+            _type: "link";
+            href: string | null;
+          }> | null;
+          style:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal"
+            | null;
+        }
+      | {
+          _key: string;
+          _type: "block";
+          children: Array<{
+            _key: string;
+            _type: "span";
+            marks: Array<string> | null;
+            text: string | null;
+          }> | null;
+          listItem: "bullet" | "number" | null;
+          markDefs: Array<{
+            _key: string;
+            _type: "link";
+            href: string | null;
+          }> | null;
+          style:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal"
+            | null;
+        }
+      | {
+          _key: string;
+          _type: "block";
+          children: Array<{
+            _key: string;
+            _type: "span";
+            marks: Array<string> | null;
+            text: string | null;
+          }> | null;
+          markDefs: Array<{
+            _key: string;
+            _type: "link";
+            href: string | null;
+          }> | null;
+          style:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal"
+            | null;
         }
     > | null;
     en: Array<
       | {
-          asset?: SanityImageAssetReference;
-          media?: unknown;
-          hotspot?: SanityImageHotspot;
-          crop?: SanityImageCrop;
-          alt: string;
-          caption?: string;
-          _type: "articleImage";
           _key: string;
+          _type: "articleImage";
+          alt: string;
+          caption: string | null;
           src: string | null;
           width: number | null;
           height: number | null;
         }
       | {
-          children?: Array<{
-            marks?: Array<string>;
-            text?: string;
-            _type: "span";
-            _key: string;
-          }>;
-          style?:
-            "blockquote" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "normal";
-          listItem?: "bullet" | "number";
-          markDefs?: Array<{
-            href?: string;
-            _type: "link";
-            _key: string;
-          }>;
-          level?: number;
-          _type: "block";
           _key: string;
+          _type: "block";
+          children: Array<{
+            _key: string;
+            _type: "span";
+            marks: Array<string> | null;
+            text: string | null;
+          }> | null;
+          level: number | null;
+          listItem: "bullet" | "number" | null;
+          markDefs: Array<{
+            _key: string;
+            _type: "link";
+            href: string | null;
+          }> | null;
+          style:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal"
+            | null;
+        }
+      | {
+          _key: string;
+          _type: "block";
+          children: Array<{
+            _key: string;
+            _type: "span";
+            marks: Array<string> | null;
+            text: string | null;
+          }> | null;
+          level: number | null;
+          markDefs: Array<{
+            _key: string;
+            _type: "link";
+            href: string | null;
+          }> | null;
+          style:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal"
+            | null;
+        }
+      | {
+          _key: string;
+          _type: "block";
+          children: Array<{
+            _key: string;
+            _type: "span";
+            marks: Array<string> | null;
+            text: string | null;
+          }> | null;
+          listItem: "bullet" | "number" | null;
+          markDefs: Array<{
+            _key: string;
+            _type: "link";
+            href: string | null;
+          }> | null;
+          style:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal"
+            | null;
+        }
+      | {
+          _key: string;
+          _type: "block";
+          children: Array<{
+            _key: string;
+            _type: "span";
+            marks: Array<string> | null;
+            text: string | null;
+          }> | null;
+          markDefs: Array<{
+            _key: string;
+            _type: "link";
+            href: string | null;
+          }> | null;
+          style:
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "normal"
+            | null;
         }
     > | null;
   };
@@ -1134,10 +2050,10 @@ export type DraftProjectQueryResult = {
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    '*[_type == "article" && status == "published"] | order(publishedAt desc) {\n  "slug": slug.current,\n  "title": {"th": title.th, "en": title.en},\n  "excerpt": {"th": excerpt.th, "en": excerpt.en},\n  "cover": {\n    "src": cover.asset->url,\n    "width": cover.asset->metadata.dimensions.width,\n    "height": cover.asset->metadata.dimensions.height,\n    "alt": {"th": cover.alt.th, "en": cover.alt.en}\n  },\n  "category": {"th": category->title.th, "en": category->title.en},\n  "author": {\n    "name": author->name,\n    "role": {"th": author->role.th, "en": author->role.en}\n  },\n  "atlasLocation": {\n    "countryCode": atlasLocation.countryCode,\n    "latitude": atlasLocation.latitude,\n    "longitude": atlasLocation.longitude,\n    "label": {"th": atlasLocation.label.th, "en": atlasLocation.label.en}\n  },\n  "body": {\n    "th": body.th[]{\n      ...,\n      _type == "articleImage" => {\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    },\n    "en": body.en[]{\n      ...,\n      _type == "articleImage" => {\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    }\n  },\n  defined(video) => {\n    "video": {\n      "embedUrl": video.embedUrl,\n      "sourceUrl": video.sourceUrl,\n      "title": {"th": video.title.th, "en": video.title.en}\n    }\n  },\n  tags,\n  "sources": sources[]{\n    "label": {"th": label.th, "en": label.en},\n    url\n  },\n  featured,\n  publishedAt,\n  updatedAt\n}': ArticleQueryResult;
-    '*[_type == "article" && slug.current == $slug][0] {\n  "slug": slug.current,\n  "title": {"th": title.th, "en": title.en},\n  "excerpt": {"th": excerpt.th, "en": excerpt.en},\n  "cover": {\n    "src": cover.asset->url,\n    "width": cover.asset->metadata.dimensions.width,\n    "height": cover.asset->metadata.dimensions.height,\n    "alt": {"th": cover.alt.th, "en": cover.alt.en}\n  },\n  "category": {"th": category->title.th, "en": category->title.en},\n  "author": {\n    "name": author->name,\n    "role": {"th": author->role.th, "en": author->role.en}\n  },\n  "atlasLocation": {\n    "countryCode": atlasLocation.countryCode,\n    "latitude": atlasLocation.latitude,\n    "longitude": atlasLocation.longitude,\n    "label": {"th": atlasLocation.label.th, "en": atlasLocation.label.en}\n  },\n  "body": {\n    "th": body.th[]{\n      ...,\n      _type == "articleImage" => {\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    },\n    "en": body.en[]{\n      ...,\n      _type == "articleImage" => {\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    }\n  },\n  defined(video) => {\n    "video": {\n      "embedUrl": video.embedUrl,\n      "sourceUrl": video.sourceUrl,\n      "title": {"th": video.title.th, "en": video.title.en}\n    }\n  },\n  tags,\n  "sources": sources[]{\n    "label": {"th": label.th, "en": label.en},\n    url\n  },\n  featured,\n  publishedAt,\n  updatedAt\n}': DraftArticleQueryResult;
-    '*[_type == "project" && status == "published"] | order(promoted desc, title.en asc) {\n    "slug": slug.current,\n    "title": {"th": title.th, "en": title.en},\n    "summary": {"th": summary.th, "en": summary.en},\n    promoted, links,\n    "body": {\n      "th": body.th[]{\n        ...,\n        _type == "articleImage" => {\n          "src": asset->url,\n          "width": asset->metadata.dimensions.width,\n          "height": asset->metadata.dimensions.height\n        }\n      },\n      "en": body.en[]{\n        ...,\n        _type == "articleImage" => {\n          "src": asset->url,\n          "width": asset->metadata.dimensions.width,\n          "height": asset->metadata.dimensions.height\n        }\n      }\n    }\n  }': ProjectQueryResult;
+    '*[_type == "article" && status == "published"] | order(publishedAt desc) {\n  "slug": slug.current,\n  "title": {"th": title.th, "en": title.en},\n  "excerpt": {"th": excerpt.th, "en": excerpt.en},\n  "cover": {\n    "src": cover.asset->url,\n    "width": cover.asset->metadata.dimensions.width,\n    "height": cover.asset->metadata.dimensions.height,\n    "alt": {"th": cover.alt.th, "en": cover.alt.en}\n  },\n  "category": {"th": category->title.th, "en": category->title.en},\n  "author": {\n    "name": author->name,\n    "role": {"th": author->role.th, "en": author->role.en}\n  },\n  "atlasLocation": {\n    "countryCode": atlasLocation.countryCode,\n    "latitude": atlasLocation.latitude,\n    "longitude": atlasLocation.longitude,\n    "label": {"th": atlasLocation.label.th, "en": atlasLocation.label.en}\n  },\n  "body": {\n    "th": body.th[]{\n      _type == "block" => {\n        _key, _type,\n        children[]{_key, _type, marks, text},\n        defined(level) => {level},\n        defined(listItem) => {listItem},\n        markDefs[]{_key, _type, href},\n        style\n      },\n      _type == "articleImage" => {\n        _key, _type, alt, caption,\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    },\n    "en": body.en[]{\n      _type == "block" => {\n        _key, _type,\n        children[]{_key, _type, marks, text},\n        defined(level) => {level},\n        defined(listItem) => {listItem},\n        markDefs[]{_key, _type, href},\n        style\n      },\n      _type == "articleImage" => {\n        _key, _type, alt, caption,\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    }\n  },\n  defined(video) => {\n    "video": {\n      "embedUrl": video.embedUrl,\n      "sourceUrl": video.sourceUrl,\n      "title": {"th": video.title.th, "en": video.title.en}\n    }\n  },\n  tags,\n  "sources": sources[]{\n    "label": {"th": label.th, "en": label.en},\n    url\n  },\n  featured,\n  publishedAt,\n  updatedAt\n}': ArticleQueryResult;
+    '*[_type == "article" && slug.current == $slug][0] {\n  "slug": slug.current,\n  "title": {"th": title.th, "en": title.en},\n  "excerpt": {"th": excerpt.th, "en": excerpt.en},\n  "cover": {\n    "src": cover.asset->url,\n    "width": cover.asset->metadata.dimensions.width,\n    "height": cover.asset->metadata.dimensions.height,\n    "alt": {"th": cover.alt.th, "en": cover.alt.en}\n  },\n  "category": {"th": category->title.th, "en": category->title.en},\n  "author": {\n    "name": author->name,\n    "role": {"th": author->role.th, "en": author->role.en}\n  },\n  "atlasLocation": {\n    "countryCode": atlasLocation.countryCode,\n    "latitude": atlasLocation.latitude,\n    "longitude": atlasLocation.longitude,\n    "label": {"th": atlasLocation.label.th, "en": atlasLocation.label.en}\n  },\n  "body": {\n    "th": body.th[]{\n      _type == "block" => {\n        _key, _type,\n        children[]{_key, _type, marks, text},\n        defined(level) => {level},\n        defined(listItem) => {listItem},\n        markDefs[]{_key, _type, href},\n        style\n      },\n      _type == "articleImage" => {\n        _key, _type, alt, caption,\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    },\n    "en": body.en[]{\n      _type == "block" => {\n        _key, _type,\n        children[]{_key, _type, marks, text},\n        defined(level) => {level},\n        defined(listItem) => {listItem},\n        markDefs[]{_key, _type, href},\n        style\n      },\n      _type == "articleImage" => {\n        _key, _type, alt, caption,\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    }\n  },\n  defined(video) => {\n    "video": {\n      "embedUrl": video.embedUrl,\n      "sourceUrl": video.sourceUrl,\n      "title": {"th": video.title.th, "en": video.title.en}\n    }\n  },\n  tags,\n  "sources": sources[]{\n    "label": {"th": label.th, "en": label.en},\n    url\n  },\n  featured,\n  publishedAt,\n  updatedAt\n}': DraftArticleQueryResult;
+    '*[_type == "project" && status == "published"] | order(promoted desc, title.en asc) {\n    "slug": slug.current,\n    "title": {"th": title.th, "en": title.en},\n    "summary": {"th": summary.th, "en": summary.en},\n    promoted, links,\n    "body": {\n      "th": body.th[]{\n        _type == "block" => {\n          _key, _type,\n          children[]{_key, _type, marks, text},\n          defined(level) => {level},\n          defined(listItem) => {listItem},\n          markDefs[]{_key, _type, href},\n          style\n        },\n        _type == "articleImage" => {\n          _key, _type, alt, caption,\n          "src": asset->url,\n          "width": asset->metadata.dimensions.width,\n          "height": asset->metadata.dimensions.height\n        }\n      },\n      "en": body.en[]{\n        _type == "block" => {\n          _key, _type,\n          children[]{_key, _type, marks, text},\n          defined(level) => {level},\n          defined(listItem) => {listItem},\n          markDefs[]{_key, _type, href},\n          style\n        },\n        _type == "articleImage" => {\n          _key, _type, alt, caption,\n          "src": asset->url,\n          "width": asset->metadata.dimensions.width,\n          "height": asset->metadata.dimensions.height\n        }\n      }\n    }\n  }': ProjectQueryResult;
     '*[_type == "settings" && _id == "settings"][0] {\n    "siteTitle": {"th": siteTitle.th, "en": siteTitle.en},\n    "footer": {"th": footer.th, "en": footer.en},\n    socialLinks\n  }': SettingsQueryResult;
-    '*[_type == "project" && slug.current == $slug][0] {\n    "slug": slug.current,\n    "title": {"th": title.th, "en": title.en},\n    "summary": {"th": summary.th, "en": summary.en},\n    promoted, links,\n    "body": {\n      "th": body.th[]{\n        ...,\n        _type == "articleImage" => {\n          "src": asset->url,\n          "width": asset->metadata.dimensions.width,\n          "height": asset->metadata.dimensions.height\n        }\n      },\n      "en": body.en[]{\n        ...,\n        _type == "articleImage" => {\n          "src": asset->url,\n          "width": asset->metadata.dimensions.width,\n          "height": asset->metadata.dimensions.height\n        }\n      }\n    }\n  }': DraftProjectQueryResult;
+    '*[_type == "project" && slug.current == $slug][0] {\n    "slug": slug.current,\n    "title": {"th": title.th, "en": title.en},\n    "summary": {"th": summary.th, "en": summary.en},\n    promoted, links,\n    "body": {\n      "th": body.th[]{\n        _type == "block" => {\n          _key, _type,\n          children[]{_key, _type, marks, text},\n          defined(level) => {level},\n          defined(listItem) => {listItem},\n          markDefs[]{_key, _type, href},\n          style\n        },\n        _type == "articleImage" => {\n          _key, _type, alt, caption,\n          "src": asset->url,\n          "width": asset->metadata.dimensions.width,\n          "height": asset->metadata.dimensions.height\n        }\n      },\n      "en": body.en[]{\n        _type == "block" => {\n          _key, _type,\n          children[]{_key, _type, marks, text},\n          defined(level) => {level},\n          defined(listItem) => {listItem},\n          markDefs[]{_key, _type, href},\n          style\n        },\n        _type == "articleImage" => {\n          _key, _type, alt, caption,\n          "src": asset->url,\n          "width": asset->metadata.dimensions.width,\n          "height": asset->metadata.dimensions.height\n        }\n      }\n    }\n  }': DraftProjectQueryResult;
   }
 }
