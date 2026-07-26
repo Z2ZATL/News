@@ -35,7 +35,10 @@ export default defineConfig({
       SANITY_WEBHOOK_SECRET: "playwright-webhook-secret",
     },
     url: `http://127.0.0.1:${port}/th`,
-    reuseExistingServer: !process.env.CI,
+    // A reused local server may have production/default environment values and
+    // silently invalidate reaction, preview, and rate-limit coverage. Tests own
+    // their server so every run exercises the declared deterministic fixture.
+    reuseExistingServer: false,
     timeout: 120_000,
   },
 });

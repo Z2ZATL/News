@@ -76,7 +76,11 @@ async function runLighthouse(route, chromePath, profile) {
     chromeFlags: ["--headless=new", "--no-sandbox"],
   });
   const baseConfig = profile === "desktop" ? desktopConfig : mobileConfig;
-  const config = process.platform === "win32" && process.arch === "arm64"
+  const useArmCpuWorkaround =
+    process.platform === "win32" &&
+    process.arch === "arm64" &&
+    process.env.LIGHTHOUSE_FORCE_STANDARD_CPU !== "1";
+  const config = useArmCpuWorkaround
     ? {
         ...baseConfig,
         settings: {
@@ -189,6 +193,10 @@ try {
             "image-delivery-insight",
             "network-dependency-tree-insight",
             "server-response-time",
+            "bootup-time",
+            "long-tasks",
+            "mainthread-work-breakdown",
+            "unused-javascript",
           ]) {
             const diagnostic = result.lhr.audits[id];
             if (diagnostic) {
