@@ -1,4 +1,4 @@
-# Production readiness snapshot — 2026-07-26
+# Production readiness snapshot — updated 2026-07-27
 
 This file records read-only checks made before any production mutation. Values that are secrets are intentionally omitted.
 
@@ -12,7 +12,9 @@ This file records read-only checks made before any production mutation. Values t
 - Netlify Free site: `z2zs-lab-news`
   (`8e8112ad-869b-4b26-bef4-96a70b7f6c2b`), created without Git linking.
 - The Netlify authentication token and both site IDs are installed as GitHub
-  Actions secrets. No production deployment has been made.
+  Actions secrets.
+- Stable preview: `https://preview--z2zs-lab-news.netlify.app`. The site has
+  no published production deploy, custom domain, or domain alias.
 - Public Netlify production and deploy-preview contexts contain the Redis
   credentials and unique 256-bit preview, webhook, reaction-cookie, and
   rate-limit secrets. Preview and production Redis keys use separate
@@ -25,12 +27,16 @@ This file records read-only checks made before any production mutation. Values t
 - `studio.z2zs.space`: no DNS record at the time of inspection
 - Separate Netlify Free site: `z2zs-lab-studio`
   (`ca35a549-f925-4bbb-9427-82a073715af0`), created without Git linking.
+- Stable preview: `https://preview--z2zs-lab-studio.netlify.app`. The site has
+  no published production deploy, custom domain, or domain alias. A direct
+  Studio route such as `/structure/author` returns the SPA shell rather than a
+  host-level 404.
 - The Studio has the same preview-ticket secret as the public site and has its
-  public Sanity project/dataset configuration. Its server-side public-preview
-  destination will be set after the first public deploy-preview URL exists.
+  public Sanity project/dataset configuration. Its deploy-preview broker points
+  only to the stable public preview.
 - Studio environment metadata was re-read through the Netlify API after setup.
   It contains only the Studio project, dataset, synchronized preview ticket,
-  and production preview-broker origin. Netlify Free rejected build-only
+  and context-specific preview-broker origins. Netlify Free rejected build-only
   variable scopes as a paid control, so the standard Free scopes are retained;
   Studio remains a static build and no secret is referenced by client code.
 - Sanity project: `Z2Zs Lab News` (`kbore3rf`) under organization `Z2Zs`
@@ -39,24 +45,28 @@ This file records read-only checks made before any production mutation. Values t
   early-downgrade control, so the trial cannot be ended from project settings;
   no paid upgrade was selected.
 - Public `production` dataset created automatically and confirmed public
-- Production content migrated and verified: 7 articles, 10 assets, 1 author,
-  5 categories, 1 project, and site settings
-- CORS contains only `https://news.z2zs.space` (no credentials) and
-  `https://studio.z2zs.space` (credentials allowed); auto-added localhost was removed
+- Public production content re-verified through the unauthenticated Sanity API:
+  7 articles, 1 author, 5 categories, 1 project, and site settings.
+- Public-safe hyphenated document IDs are live. The 14 original dotted IDs are
+  preserved as a rollback copy pending a separate exact deletion approval.
+- CORS contains `https://news.z2zs.space` (no credentials),
+  `https://studio.z2zs.space` (credentials allowed), and the stable Studio
+  preview origin (credentials allowed). There is no wildcard or production
+  localhost origin.
 - The expiring migration token was revoked immediately after use
-- A dedicated `Viewer` token named `Z2Zs Lab draft preview` was created and
-  verified against the Sanity API without exposing or committing its value
 - A replacement read-only `Viewer` token named
   `Z2Zs Lab Netlify preview 2026-07-27` was validated against the Sanity API and
-  installed as a secret in both Netlify deploy contexts. The original token
-  remains pending explicit deletion approval.
-- Required before promotion: install the viewer token as a server-only hosting
-  variable, create the signed webhook, and deploy a separate Studio whose
-  editorial access requires Sanity authentication
+  installed as a server-only secret in both Netlify deploy contexts. The
+  superseded Viewer token has been revoked.
+- Required before promotion: rotate and synchronize a new webhook secret,
+  create the signed Sanity webhook, and perform an explicitly confirmed
+  production release. Editorial access to Studio already requires Sanity
+  authentication.
 
 ## DNS and mail
 
 - `news.z2zs.space`: CNAME claimed by Vercel
+- `studio.z2zs.space`: no DNS record
 - `_dmarc.z2zs.space`: `p=none; sp=none`, aggregate reports to `mori@z2zs.space`
 - Apex SPF: Google Workspace only (`include:_spf.google.com ~all`)
 - Apex MX: Google Workspace
@@ -68,16 +78,38 @@ This file records read-only checks made before any production mutation. Values t
 
 ## Promotion blockers
 
-1. Create separate public-site and Studio Netlify Free previews without changing DNS.
-2. Deploy the public preview, then set the Studio's deploy-preview
-   `NEWS_PREVIEW_ORIGIN` to that exact URL and create the signed Sanity webhook
-   with the already installed server-only secret.
-3. Run preview functional, security, accessibility, and performance checks.
-4. Publish the DNSSEC DS record at the registrar; preserve existing MX/DKIM/tracking records.
-5. Request exact DNS cutover approval, retain Vercel as rollback, and run production smoke checks.
-6. After approval, add `_dmarc.news.z2zs.space` and
+1. Rotate and synchronize a new server-only webhook secret, then create the
+   signed Sanity webhook.
+2. Publish the DNSSEC DS record at the registrar; preserve existing
+   MX/DKIM/tracking records.
+3. Receive the workflow's exact production confirmation and deploy both
+   reviewed Netlify sites to production.
+4. Receive exact DNS mutation approval, attach both custom domains, and change
+   only the approved `news` and `studio` CNAME records. Retain Vercel as rollback.
+5. Run production functional, security, accessibility, performance, feed,
+   structured-data, and DNS checks.
+6. After exact approval, add `_dmarc.news.z2zs.space` and
    `_dmarc.studio.z2zs.space` with `p=reject`; do not alter the apex monitoring
    policy or the `brief` sender records.
+
+## Stable preview evidence — 2026-07-27
+
+- GitHub merge commit `08bcd7e8e39cd1210ab639fb7fb2619fe71d8a43`
+  is GitHub-verified. CI attempt 2 completed successfully after the first
+  Lighthouse run exposed shared-runner score variance.
+- Manual Netlify preview workflow `30219384485` completed successfully for both
+  sites.
+- `/th`, `/en`, the Kimi and OKMD articles, Lumixia Brief, and the direct Studio
+  author route all returned HTTP 200.
+- The Thai home DOM contains Thailand, United States, and China story groups,
+  the Lumixia product, the Kimi story, and the named author.
+- The public response has nonce CSP, COOP, CORP, `credentialless` COEP,
+  restrictive permissions policy, `nosniff`, and `DENY`. Two consecutive
+  requests produced different nonces.
+- Netlify adds `includeSubDomains; preload` only on its own `*.netlify.app`
+  preview hostname. Repository configuration remains
+  `Strict-Transport-Security: max-age=31536000`; the production audit rejects
+  preload or subdomain inheritance on `news.z2zs.space`.
 
 ## Accepted zero-cost baseline on 2026-07-26
 
@@ -110,13 +142,15 @@ This file records read-only checks made before any production mutation. Values t
 - Database `z2zs-lab-news` was created on AWS `us-east-2` to match Netlify
   Free's fixed Ohio Functions region. The Upstash dashboard confirmed Free Tier,
   $0 monthly cost, 0 commands, and no payment method at creation.
-- GitHub remains private on the Free plan. CI, signed commits, PR review practice,
-  and local guardrails are required, but unavailable paid branch-enforcement
-  controls are not represented as active.
+- GitHub remains private on the Free plan. CI, GitHub-verified squash merges,
+  PR review practice, and local guardrails are required, but unavailable paid
+  branch-enforcement controls are not represented as active.
 - Dependabot alerts and automated security fixes are enabled. Private-repository
   rulesets remain unavailable on the current Free account; the GitHub API
-  returned an explicit upgrade requirement. Commits are not yet signed because
-  no repository signing key is configured; do not represent this control as active.
+  returned an explicit upgrade requirement. Local commits are not signed
+  because no local signing key is configured; production-bound squash merges
+  are performed by GitHub and their verification status is checked before
+  release.
 
 Official references:
 
@@ -130,3 +164,4 @@ Official references:
 - https://docs.netlify.com/build/frameworks/framework-setup-guides/nextjs/overview/
 - https://docs.netlify.com/build/git-workflows/overview/
 - https://docs.netlify.com/api-and-cli-guides/cli-guides/get-started-with-cli/
+- https://answers.netlify.com/t/security-headers-adding-includesubdomains-and-preload-to-strict-transport-security-header-to-sites-with-default-domain-name/19706

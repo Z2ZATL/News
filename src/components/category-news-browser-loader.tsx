@@ -50,12 +50,10 @@ export function CategoryNewsBrowserLoader(
         observer.disconnect();
         load();
       },
-      // The Atlas fills the opening viewport. Loading the image-heavy browser
-      // almost a full screen early made it compete with Thai text rendering
-      // during the first paint on slower phones. A small lead still upgrades
-      // the index before it is normally reached without paying that cost at
-      // page load.
-      { rootMargin: "160px 0px" },
+      // Keep the image-heavy interactive browser out of the opening render.
+      // The server-rendered index remains fully usable until this section
+      // reaches the reading area, then upgrades in place.
+      { rootMargin: "0px 0px -30% 0px" },
     );
     observer.observe(target);
 
