@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { AtlasCanvasLoader } from "@/components/atlas-canvas-loader";
 import type { Article } from "@/lib/content-types";
 import { getAtlasCountry } from "@/lib/atlas-countries";
@@ -99,9 +97,9 @@ export function Atlas({
             <section key={node.id}>
               <h2>{node.accessibleLabel}</h2>
               {node.signals.map((signal) => (
-                <Link href={signal.href} key={signal.slug}>
+                <a href={signal.href} key={signal.slug}>
                   {signal.title} · {signal.author}
-                </Link>
+                </a>
               ))}
             </section>
           ))}
@@ -139,9 +137,9 @@ export function Atlas({
       <noscript>
         <nav className={styles.noScriptIndex} aria-label={locale === "th" ? "ข่าวทั้งหมดในแผนที่" : "All Atlas stories"}>
           {articles.map((item) => (
-            <Link href={`/${locale}/stories/${item.slug}`} key={item.slug}>
+            <a href={`/${locale}/stories/${item.slug}`} key={item.slug}>
               {item.title[locale]} · {item.author.name}
-            </Link>
+            </a>
           ))}
         </nav>
       </noscript>

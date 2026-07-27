@@ -1,13 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import {
   Component,
   type ErrorInfo,
   type ReactNode,
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -70,7 +68,6 @@ export function AtlasCanvasLoader({
   nodes: AtlasMapNode[];
 }>) {
   const [enabled, setEnabled] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
   const [interactionPaused, setInteractionPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [selectedAnchor, setSelectedAnchor] = useState<
@@ -130,11 +127,6 @@ export function AtlasCanvasLoader({
     setState("fallback");
   }, []);
 
-  useEffect(() => {
-    setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-    setHydrated(true);
-  }, []);
-
   const enableCanvas = () => {
     if (enabled) return;
     setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -145,7 +137,7 @@ export function AtlasCanvasLoader({
   return (
     <div
       className={styles.visualStack}
-      data-atlas-hydrated={hydrated ? "true" : "false"}
+      data-atlas-hydrated="true"
       data-atlas-state={state}
       onFocusCapture={enableCanvas}
       onPointerEnter={() => {
@@ -262,7 +254,7 @@ export function AtlasCanvasLoader({
                   data-slot={Math.floor(index / 2)}
                   key={signal.slug}
                 >
-                  <Link href={signal.href}>{signal.title}</Link>
+                  <a href={signal.href}>{signal.title}</a>
                   <p>{signal.author}</p>
                 </article>
               ))}
