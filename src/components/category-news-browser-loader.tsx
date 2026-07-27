@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   type ComponentType,
   useEffect,
@@ -98,10 +97,10 @@ export function CategoryNewsBrowserLoader(
               {category.label}
             </h2>
             {category.stories.map((story) => (
-              <Link href={`/${props.locale}/stories/${story.slug}`} key={story.slug}>
+              <a href={`/${props.locale}/stories/${story.slug}`} key={story.slug}>
                 {story.title}
                 <small>{story.author}</small>
-              </Link>
+              </a>
             ))}
           </section>
         ))}
