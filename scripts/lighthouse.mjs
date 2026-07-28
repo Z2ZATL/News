@@ -178,48 +178,28 @@ try {
   const chromePath = process.env.CHROME_PATH ?? automaticChromePath;
 
   const failures = [];
-  const routeAudits = [];
   for (const profile of profiles) {
     for (const route of routes) {
-      const firstResult = await runLighthouseWithTraceRetry(route, chromePath, profile);
-      if (!firstResult) {
-        failures.push(`${profile} ${route}: Lighthouse returned no result.`);
-        continue;
+    const firstResult = await runLighthouseWithTraceRetry(route, chromePath, profile);
+    if (!firstResult) {
+      failures.push(`${profile} ${route}: Lighthouse returned no result.`);
+      continue;
+    }
+
+    const results = [firstResult];
+    if (resultFailsThreshold(firstResult)) {
+      // Lighthouse deliberately adds CPU and network throttling, so runs close
+      // to a threshold can vary on shared CI workers. Re-run only a failing
+      // route and gate on the median of five measurements. Passing routes
+      // still consume one run, while one or two noisy samples cannot fail an
+      // otherwise healthy release.
+      for (let attempt = 2; attempt <= maximumScoreAttempts; attempt += 1) {
+        console.log(
+          `${profile} ${route} is below a target; collecting median sample ${String(attempt)}/${String(maximumScoreAttempts)}.`,
+        );
+        const retry = await runLighthouseWithTraceRetry(route, chromePath, profile);
+        if (retry) results.push(retry);
       }
-      routeAudits.push({
-        profile,
-        results: [firstResult],
-        route,
-      });
-    }
-  }
-
-  const sampledAudits = routeAudits.filter(({ results }) =>
-    resultFailsThreshold(results[0]),
-  );
-  // A shared runner can remain briefly busy after a route's first trace. Gather
-  // the initial result for every route before returning to the failing routes,
-  // then collect additional samples round-robin. This keeps the same maximum
-  // of five measurements and the same thresholds, while preventing one short
-  // period of host contention from contaminating every sample of one route.
-  for (let attempt = 2; attempt <= maximumScoreAttempts; attempt += 1) {
-    if (sampledAudits.length > 0) {
-      await new Promise((resolve) => {
-        setTimeout(resolve, 5_000);
-      });
-    }
-    for (const audit of sampledAudits) {
-      const { profile, results, route } = audit;
-      console.log(
-        `${profile} ${route} is below a target; collecting interleaved median sample ${String(attempt)}/${String(maximumScoreAttempts)}.`,
-      );
-      const retry = await runLighthouseWithTraceRetry(route, chromePath, profile);
-      if (retry) results.push(retry);
-    }
-  }
-
-  for (const { profile, results, route } of routeAudits) {
-    if (resultFailsThreshold(results[0])) {
       console.log(
         `${profile} ${route} performance samples: ${results
           .map((result) => {
@@ -299,6 +279,7 @@ try {
       }
     }
     console.log(`${profile} ${route} ${JSON.stringify(scores)}`);
+    }
   }
 
   if (failures.length > 0) throw new Error(failures.join("\n"));
