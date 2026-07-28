@@ -112,6 +112,7 @@ export default async function ArticlePage({
               <span>{locale === "th" ? "เปิดวิดีโอต้นฉบับ" : "Open original video"}</span>
             </a>
             <iframe
+              {...{ credentialless: "" }}
               src={article.video.embedUrl}
               title={article.video.title[locale]}
               width={1280}
