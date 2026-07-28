@@ -19,6 +19,11 @@ This file records read-only checks made before any production mutation. Values t
   credentials and unique 256-bit preview, webhook, reaction-cookie, and
   rate-limit secrets. Preview and production Redis keys use separate
   namespaces.
+- The stable `preview--` alias is a Netlify **branch deploy**, not a Deploy
+  Preview. Its Branch deploy context now has the public Sanity identifiers,
+  an expiring Viewer token, Redis credentials, and independently generated
+  preview/webhook/reaction/rate-limit secrets. A stable alias must not be
+  treated as covered by the Deploy Previews context.
 - Public-site environment metadata was re-read through the Netlify API after
   setup. It contains no `SANITY_STUDIO_*` variables.
 
@@ -34,6 +39,10 @@ This file records read-only checks made before any production mutation. Values t
 - The Studio has the same preview-ticket secret as the public site and has its
   public Sanity project/dataset configuration. Its deploy-preview broker points
   only to the stable public preview.
+- The Studio Branch deploy context also contains the synchronized preview
+  ticket, `NEWS_PREVIEW_ORIGIN`, Studio project/dataset identifiers, and the
+  stable Studio broker origin. No Sanity read token or Redis credential is
+  present in the Studio project.
 - Studio environment metadata was re-read through the Netlify API after setup.
   It contains only the Studio project, dataset, synchronized preview ticket,
   and context-specific preview-broker origins. Netlify Free rejected build-only
@@ -47,10 +56,14 @@ This file records read-only checks made before any production mutation. Values t
 - Public `production` dataset created automatically and confirmed public
 - Public production content re-verified through the unauthenticated Sanity API:
   7 articles, 1 author, 5 categories, 1 project, and site settings.
-- Public-safe hyphenated document IDs are live. Exact-ID API checks on
-  2026-07-28 found all 14 hyphenated IDs once each and found none of the 14
-  original dotted IDs. The local pre-migration backup remains available, but
-  there is no legacy-document deletion left to perform.
+- Public-safe hyphenated document IDs are live. A second read-only audit on
+  2026-07-28 found that a later migration had recreated 14 original dotted
+  IDs beside the 14 canonical records. The dotted records were removed only
+  after exporting a recovery archive to
+  `Z2Zs Labs/News Backups/sanity-production-before-legacy-dedup-2026-07-28.tar.gz`
+  (SHA-256
+  `4F1842ABD9BB6AADC1EA8B14EB5814570188979BA1AD90C82B5BC1F9A91FF764`).
+  Studio then showed exactly 7 articles and 1 canonical author.
 - CORS contains `https://news.z2zs.space` (no credentials),
   `https://studio.z2zs.space` (credentials allowed), and the stable Studio
   preview origin (credentials allowed). There is no wildcard or production
@@ -60,6 +73,9 @@ This file records read-only checks made before any production mutation. Values t
   `Z2Zs Lab Netlify preview 2026-07-27` was validated against the Sanity API and
   installed as a server-only secret in both Netlify deploy contexts. The
   superseded Viewer token has been revoked.
+- A separate branch-only Viewer token named
+  `Netlify Preview Viewer 2026-07-28` expires on 2026-10-26. It is used only by
+  the stable branch preview and is not present in client code or Studio.
 - Required before promotion: rotate and synchronize a new webhook secret,
   create the signed Sanity webhook, and perform an explicitly confirmed
   production release. Editorial access to Studio already requires Sanity
@@ -96,21 +112,29 @@ This file records read-only checks made before any production mutation. Values t
 
 ## Stable preview evidence — 2026-07-28
 
-- GitHub merge commit `8a905b3c29701b8b447c7c2472ea4b419a984834`
-  is GitHub-verified. Main CI workflow `30259691276` attempt 2 completed
-  successfully after a stuck Netlify build process was cancelled and rerun
-  once. Public and Studio jobs both passed.
-- The final main-run Lighthouse scores were 98 for Thai home, 99 for English
-  home, and 96 for the Thai OKMD article. Accessibility, best practices, and
-  SEO were 100 on the audited routes.
-- Manual Netlify preview workflow `30261000026` completed successfully for both
-  sites from the same reviewed commit.
-- `/th`, `/en`, the Kimi and OKMD articles, Lumixia Brief, and the direct Studio
-  author route all returned HTTP 200.
+- GitHub-verified commit `fe426b848c9df8d3c28bd8b5617b13025abe4ecd`
+  passed main CI workflow `30369729410`. Type checking, linting, unit tests,
+  migration checks, secret scanning, build, Netlify offline build, audit,
+  Lighthouse, and all 10 Playwright tests completed successfully.
+- Mobile Lighthouse performance was 99 for Thai and English home, 95/98 for
+  the Thai/English OKMD article, and 98 for both Lumixia routes. Desktop
+  performance was 100 on all six routes; accessibility, best practices, and
+  SEO were 100 throughout.
+- Manual Netlify preview workflow `30375081393` completed successfully for both
+  sites. Public-only workflow `30376451161` then redeployed the corrected
+  branch-only Viewer token.
+- `/th`, `/en`, the GPT-Live, Kimi and OKMD articles, Lumixia Brief, and the
+  direct Studio author route all returned HTTP 200.
 - A live browser check confirmed that the Atlas begins in its lightweight
   `waiting` state, upgrades to `ready` only after interaction, exposes four
-  country/product points, and produces no console warning or error. The category
-  browser remains deferred before scroll.
+  country/product points, and renders one WebGL canvas with three selected-news
+  cards. The category browser remains deferred before scroll.
+- The reaction API returned HTTP 200 from the stable preview. Selecting
+  `love` updated the aggregate, survived reload through its anonymous signed
+  cookie, and remained absent from the Lumixia Lab page.
+- Studio's preview broker returned a signed one-time ticket. Its first use
+  redirected to `/th/stories/okmd-ai-playground-review` with HTTP 307 and a
+  replay of the same ticket returned HTTP 401.
 - The public response has nonce CSP, COOP, CORP, `credentialless` COEP,
   restrictive permissions policy, `nosniff`, and `DENY`. Two consecutive
   requests produced different nonces.
