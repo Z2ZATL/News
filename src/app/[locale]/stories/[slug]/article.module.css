@@ -391,6 +391,10 @@
     font-family: system-ui, -apple-system, "Segoe UI", "Leelawadee UI", Tahoma, sans-serif;
     font-size: 2.6rem;
     letter-spacing: -.035em;
+    /* Balancing a multi-line Thai headline repeatedly shapes and measures
+       complex glyph clusters on the critical render path. Natural wrapping is
+       visually stable at this fixed mobile size and paints materially sooner. */
+    text-wrap: wrap;
   }
   :global(html[lang="th"]) .hero h1 { letter-spacing: -.02em; }
   .meta { gap: .5rem 1rem; }
