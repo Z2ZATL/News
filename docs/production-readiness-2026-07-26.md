@@ -1,4 +1,4 @@
-# Production readiness snapshot — updated 2026-07-27
+# Production readiness snapshot — updated 2026-07-28
 
 This file records read-only checks made before any production mutation. Values that are secrets are intentionally omitted.
 
@@ -47,8 +47,10 @@ This file records read-only checks made before any production mutation. Values t
 - Public `production` dataset created automatically and confirmed public
 - Public production content re-verified through the unauthenticated Sanity API:
   7 articles, 1 author, 5 categories, 1 project, and site settings.
-- Public-safe hyphenated document IDs are live. The 14 original dotted IDs are
-  preserved as a rollback copy pending a separate exact deletion approval.
+- Public-safe hyphenated document IDs are live. Exact-ID API checks on
+  2026-07-28 found all 14 hyphenated IDs once each and found none of the 14
+  original dotted IDs. The local pre-migration backup remains available, but
+  there is no legacy-document deletion left to perform.
 - CORS contains `https://news.z2zs.space` (no credentials),
   `https://studio.z2zs.space` (credentials allowed), and the stable Studio
   preview origin (credentials allowed). There is no wildcard or production
@@ -92,20 +94,32 @@ This file records read-only checks made before any production mutation. Values t
    `_dmarc.studio.z2zs.space` with `p=reject`; do not alter the apex monitoring
    policy or the `brief` sender records.
 
-## Stable preview evidence — 2026-07-27
+## Stable preview evidence — 2026-07-28
 
-- GitHub merge commit `08bcd7e8e39cd1210ab639fb7fb2619fe71d8a43`
-  is GitHub-verified. CI attempt 2 completed successfully after the first
-  Lighthouse run exposed shared-runner score variance.
-- Manual Netlify preview workflow `30219384485` completed successfully for both
-  sites.
+- GitHub merge commit `8a905b3c29701b8b447c7c2472ea4b419a984834`
+  is GitHub-verified. Main CI workflow `30259691276` attempt 2 completed
+  successfully after a stuck Netlify build process was cancelled and rerun
+  once. Public and Studio jobs both passed.
+- The final main-run Lighthouse scores were 98 for Thai home, 99 for English
+  home, and 96 for the Thai OKMD article. Accessibility, best practices, and
+  SEO were 100 on the audited routes.
+- Manual Netlify preview workflow `30261000026` completed successfully for both
+  sites from the same reviewed commit.
 - `/th`, `/en`, the Kimi and OKMD articles, Lumixia Brief, and the direct Studio
   author route all returned HTTP 200.
-- The Thai home DOM contains Thailand, United States, and China story groups,
-  the Lumixia product, the Kimi story, and the named author.
+- A live browser check confirmed that the Atlas begins in its lightweight
+  `waiting` state, upgrades to `ready` only after interaction, exposes four
+  country/product points, and produces no console warning or error. The category
+  browser remains deferred before scroll.
 - The public response has nonce CSP, COOP, CORP, `credentialless` COEP,
   restrictive permissions policy, `nosniff`, and `DENY`. Two consecutive
   requests produced different nonces.
+- The unauthenticated Sanity API still returns 7 articles, 1 author,
+  5 categories, 1 project, and 1 settings document.
+- Read-only DNS checks still show `news.z2zs.space` on Vercel,
+  no `studio.z2zs.space` record, no parent DS record, and no application
+  subdomain DMARC records. The apex DMARC record remains
+  `p=none; sp=none`.
 - Netlify adds `includeSubDomains; preload` only on its own `*.netlify.app`
   preview hostname. Repository configuration remains
   `Strict-Transport-Security: max-age=31536000`; the production audit rejects

@@ -61,21 +61,31 @@ class AtlasErrorBoundary extends Component<
 }
 
 export function AtlasCanvasLoader({
+  initialSelectedId,
   navigationLabel,
   nodes,
+  startEnabled = false,
 }: Readonly<{
+  initialSelectedId?: string;
   navigationLabel: string;
   nodes: AtlasMapNode[];
+  startEnabled?: boolean;
 }>) {
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(startEnabled);
   const [interactionPaused, setInteractionPaused] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(() =>
+    startEnabled
+      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      : false,
+  );
   const [selectedAnchor, setSelectedAnchor] = useState<
     Readonly<{ x: number; y: number }> | null
   >(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(
+    initialSelectedId ?? null,
+  );
   const [state, setState] = useState<"waiting" | "loading" | "ready" | "fallback">(
-    "waiting",
+    startEnabled ? "loading" : "waiting",
   );
   const connectorRefs = useRef(new Map<number, SVGLineElement>());
   const latestPositionsRef = useRef(new Map<string, AtlasScreenPosition>());
@@ -158,6 +168,7 @@ export function AtlasCanvasLoader({
               aria-label={node.accessibleLabel}
               className={styles.node}
               data-country={node.countryCode}
+              data-atlas-node-id={node.id}
               data-kind={node.kind}
               data-latitude={node.latitude}
               data-longitude={node.longitude}
