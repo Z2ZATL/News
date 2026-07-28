@@ -27,6 +27,9 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Install system/browser dependencies early so apt and browser setup have
+      # the full validation/build window to settle before performance tracing.
+      - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm peers check
       - run: pnpm typecheck
       - run: pnpm lint
@@ -44,10 +47,12 @@ jobs:
           AUDIT_STUDIO_ENABLED: "true"
         run: node scripts/production-audit.mjs
       - run: pnpm build
+      # Measure the first clean production build. Netlify's offline verification
+      # invokes the build command again and must not run immediately before
+      # timing-sensitive Lighthouse traces on a shared two-core runner.
+      - run: pnpm test:lighthouse
       - run: pnpm --package=netlify-cli@27.0.0 dlx netlify build --offline --context deploy-preview
       - run: pnpm audit --audit-level=moderate
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm test:lighthouse
       - run: pnpm test:e2e
 
   studio:
