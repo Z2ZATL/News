@@ -1,4 +1,4 @@
-import { AtlasCanvasLoader } from "@/components/atlas-canvas-loader";
+import { AtlasInteractionLoader } from "@/components/atlas-interaction-loader";
 import type { Article } from "@/lib/content-types";
 import { getAtlasCountry } from "@/lib/atlas-countries";
 import type { AtlasMapNode } from "@/lib/atlas-types";
@@ -104,7 +104,7 @@ export function Atlas({
             </section>
           ))}
         </nav>
-        <AtlasCanvasLoader
+        <AtlasInteractionLoader
           navigationLabel={
             locale === "th" ? "ประเทศที่มีข่าวและผลงานบนแผนที่โลก" : "Countries with stories and products"
           }
