@@ -43,6 +43,12 @@ This file records read-only checks made before any production mutation. Values t
   ticket, `NEWS_PREVIEW_ORIGIN`, Studio project/dataset identifiers, and the
   stable Studio broker origin. No Sanity read token or Redis credential is
   present in the Studio project.
+- The reviewed broker now requires a Sanity user-session bearer token and
+  verifies an editor, developer, or administrator role against the fixed
+  project API before issuing a preview ticket. The Studio deploy-preview and
+  `preview` branch contexts now set `SANITY_STUDIO_NEWS_ORIGIN` to the stable
+  public preview origin; this was read back through the Netlify CLI after the
+  update. No production context was changed.
 - Studio environment metadata was re-read through the Netlify API after setup.
   It contains only the Studio project, dataset, synchronized preview ticket,
   and context-specific preview-broker origins. Netlify Free rejected build-only

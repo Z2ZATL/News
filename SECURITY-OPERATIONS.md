@@ -35,12 +35,18 @@ Never prefix a secret with `NEXT_PUBLIC_`.
 ## Draft preview protocol
 
 Sanity Studio links to a server-side preview broker on the protected Studio
-origin. The broker creates a signed, 60-second ticket containing only the document type,
-slug, locale, expiry, and a random identifier. The public draft route verifies the
-ticket and atomically consumes its identifier before enabling draft mode.
+origin. Studio sends its current Sanity user-session token to that same-origin
+broker in an `Authorization` header. The broker forwards it only to the fixed
+project-specific Sanity `/users/me` endpoint and requires an editor, developer,
+or administrator role. It never logs, persists, redirects, or returns the
+session token. Only then does it create a signed, 60-second ticket containing
+the document type, slug, locale, expiry, and a random identifier. The public
+draft route verifies the ticket and atomically consumes its identifier before
+enabling draft mode.
 
 Never embed the ticket signing secret in the Studio bundle, send a reusable
-secret in a URL, or log preview query strings.
+secret or Sanity session token in a URL, or log preview authorization headers
+or ticket query strings.
 
 Application-level Redis limits protect draft-ticket attempts (5/minute), CSP
 reports (10/minute), and reaction reads/writes even when a platform firewall
@@ -83,7 +89,9 @@ window has closed. This prevents both downtime and dangling CNAME takeover.
 7. After the rollback window closes, remove the old domain claim before deleting
    any obsolete project, then confirm that no dangling CNAME remains.
 
-The scheduled `production-audit.yml` workflow checks live headers, public feeds,
-and CNAME resolution monthly. After cutover, set repository variable
-`AUDIT_CNAME_SUFFIX` to the approved Netlify target suffix and set
-`AUDIT_STUDIO_ENABLED=true` only after the Studio hostname exists.
+The scheduled `production-audit.yml` workflow is fail-closed: it checks live
+headers, feeds, the authenticated-preview boundary, DNSSEC, mail policy, and
+exact CNAME targets for both public and Studio hosts every month. If an approved
+hosting target changes, update the hardcoded `AUDIT_PUBLIC_CNAME` and
+`AUDIT_STUDIO_CNAME` values in that reviewed workflow; do not weaken them to a
+suffix match or disable a readiness check.

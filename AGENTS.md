@@ -125,7 +125,7 @@ Protected records and services include:
 - `preview.brief.z2zs.space`
 - the proxied `bot` Cloudflare Tunnel
 - apex Google Workspace MX records
-- `clk._domainkey`, `clk2._domainkey`, and `clkmail.brief`
+- `clk._domainkey.brief`, `clk2._domainkey.brief`, and `clkmail.brief`
 
 Never place null MX, `v=spf1 -all`, or wildcard DKIM revocation at the apex. Do not move DMARC directly to reject. Roll it out from monitoring only after SPF and DKIM alignment is verified for every legitimate sender.
 

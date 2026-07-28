@@ -33,6 +33,16 @@ jobs:
       - run: pnpm test:unit
       - run: pnpm content:migrate
       - run: pnpm scan:secrets
+      - name: Validate production-audit runtime
+        env:
+          AUDIT_DNSSEC_ENABLED: "true"
+          AUDIT_DRY_RUN: "true"
+          AUDIT_MAIL_POLICY_ENABLED: "true"
+          AUDIT_PRODUCTION_READY: "true"
+          AUDIT_PUBLIC_CNAME: z2zs-lab-news.netlify.app
+          AUDIT_STUDIO_CNAME: z2zs-lab-studio.netlify.app
+          AUDIT_STUDIO_ENABLED: "true"
+        run: node scripts/production-audit.mjs
       - run: pnpm build
       - run: pnpm --package=netlify-cli@27.0.0 dlx netlify build --offline --context deploy-preview
       - run: pnpm audit --audit-level=moderate
@@ -45,6 +55,8 @@ jobs:
     timeout-minutes: 20
     env:
       SANITY_STUDIO_PROJECT_ID: testproject
+      SANITY_STUDIO_NEWS_ORIGIN: https://preview-news.example.test
+      SANITY_STUDIO_PREVIEW_BROKER_ORIGIN: https://preview-studio.example.test
     defaults:
       run:
         working-directory: studio

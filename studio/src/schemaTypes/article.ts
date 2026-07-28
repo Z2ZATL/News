@@ -1,5 +1,12 @@
 import { defineArrayMember, defineField, defineType } from "sanity";
 
+import {
+  ARTICLE_EXCERPT_MAX_LENGTH,
+  ARTICLE_META_DESCRIPTION_MAX_LENGTH,
+  ARTICLE_META_TITLE_MAX_LENGTH,
+  hasCompleteSeoOverride,
+} from "../../../shared/editorial-rules";
+
 export const article = defineType({
   name: "article",
   title: "Article",
@@ -23,9 +30,10 @@ export const article = defineType({
       validation: (rule) =>
         rule.custom((value) => {
           const localized = value as { th?: string; en?: string } | undefined;
-          return (localized?.th?.length ?? 0) <= 200 && (localized?.en?.length ?? 0) <= 200
+          return (localized?.th?.length ?? 0) <= ARTICLE_EXCERPT_MAX_LENGTH &&
+            (localized?.en?.length ?? 0) <= ARTICLE_EXCERPT_MAX_LENGTH
             ? true
-            : "Each excerpt must be 200 characters or fewer.";
+            : `Each excerpt must be ${String(ARTICLE_EXCERPT_MAX_LENGTH)} characters or fewer.`;
         }),
     }),
     defineField({ name: "body", type: "localizedBody" }),
@@ -37,6 +45,56 @@ export const article = defineType({
       fields: [
         defineField({ name: "alt", type: "localizedString" }),
         defineField({ name: "caption", type: "localizedString" }),
+      ],
+    }),
+    defineField({
+      name: "seo",
+      title: "SEO and social sharing",
+      type: "object",
+      description:
+        "Optional overrides. Leave this empty to use the article title, excerpt, and cover image.",
+      validation: (rule) =>
+        rule.custom((value) =>
+          hasCompleteSeoOverride(value)
+            ? true
+            : "Complete every Thai and English SEO field, or remove this override.",
+        ),
+      fields: [
+        defineField({
+          name: "metaTitle",
+          title: "Meta title",
+          type: "localizedString",
+          validation: (rule) =>
+            rule.custom((value) => {
+              if (!value) return true;
+              const localized = value as { th?: string; en?: string };
+              return (localized.th?.length ?? 0) <= ARTICLE_META_TITLE_MAX_LENGTH &&
+                (localized.en?.length ?? 0) <= ARTICLE_META_TITLE_MAX_LENGTH
+                ? true
+                : `Each meta title must be ${String(ARTICLE_META_TITLE_MAX_LENGTH)} characters or fewer.`;
+            }),
+        }),
+        defineField({
+          name: "metaDesc",
+          title: "Meta description",
+          type: "localizedText",
+          validation: (rule) =>
+            rule.custom((value) => {
+              if (!value) return true;
+              const localized = value as { th?: string; en?: string };
+              return (localized.th?.length ?? 0) <= ARTICLE_META_DESCRIPTION_MAX_LENGTH &&
+                (localized.en?.length ?? 0) <= ARTICLE_META_DESCRIPTION_MAX_LENGTH
+                ? true
+                : `Each meta description must be ${String(ARTICLE_META_DESCRIPTION_MAX_LENGTH)} characters or fewer.`;
+            }),
+        }),
+        defineField({
+          name: "ogImage",
+          title: "Social sharing image",
+          type: "image",
+          description: "Optional. The cover image is used when this is empty.",
+          options: { hotspot: true },
+        }),
       ],
     }),
     defineField({

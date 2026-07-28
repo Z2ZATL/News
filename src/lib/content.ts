@@ -7,6 +7,11 @@ import { z } from "zod";
 import type { Article, Project, SiteSettings } from "@/lib/content-types";
 import { isProductionDeployment } from "@/lib/deployment";
 import { fixtureArticles, fixtureProjects, fixtureSettings } from "@/lib/fixture-content";
+import {
+  ARTICLE_EXCERPT_MAX_LENGTH,
+  ARTICLE_META_DESCRIPTION_MAX_LENGTH,
+  ARTICLE_META_TITLE_MAX_LENGTH,
+} from "../../shared/editorial-rules";
 
 const slugSchema = z.string().regex(/^[a-z0-9-]{1,120}$/);
 const localizedSchema = z
@@ -15,6 +20,24 @@ const localizedSchema = z
     th: z.string().trim().min(1).max(10_000),
   })
   .strict();
+const excerptSchema = localizedSchema.refine(
+  (value) =>
+    value.th.length <= ARTICLE_EXCERPT_MAX_LENGTH &&
+    value.en.length <= ARTICLE_EXCERPT_MAX_LENGTH,
+  `Each excerpt must be ${String(ARTICLE_EXCERPT_MAX_LENGTH)} characters or fewer`,
+);
+const metaTitleSchema = localizedSchema.refine(
+  (value) =>
+    value.th.length <= ARTICLE_META_TITLE_MAX_LENGTH &&
+    value.en.length <= ARTICLE_META_TITLE_MAX_LENGTH,
+  `Each meta title must be ${String(ARTICLE_META_TITLE_MAX_LENGTH)} characters or fewer`,
+);
+const metaDescriptionSchema = localizedSchema.refine(
+  (value) =>
+    value.th.length <= ARTICLE_META_DESCRIPTION_MAX_LENGTH &&
+    value.en.length <= ARTICLE_META_DESCRIPTION_MAX_LENGTH,
+  `Each meta description must be ${String(ARTICLE_META_DESCRIPTION_MAX_LENGTH)} characters or fewer`,
+);
 const httpsUrlSchema = z.url().refine((value) => new URL(value).protocol === "https:");
 const sanityImageUrlSchema = httpsUrlSchema.refine(
   (value) => new URL(value).hostname === "cdn.sanity.io",
@@ -108,12 +131,13 @@ const articleSchema = z
     cover: z
       .object({
         alt: localizedSchema,
+        caption: localizedSchema.nullable().optional(),
         height: z.number().int().positive().max(20_000),
         src: sanityImageUrlSchema,
         width: z.number().int().positive().max(20_000),
       })
       .strict(),
-    excerpt: localizedSchema,
+    excerpt: excerptSchema,
     featured: z.boolean().default(false),
     publishedAt: z.iso.datetime(),
     slug: slugSchema,
@@ -123,6 +147,23 @@ const articleSchema = z
     tags: z.array(z.string().trim().min(1).max(100)).max(30),
     title: localizedSchema,
     updatedAt: z.iso.datetime(),
+    seo: z
+      .object({
+        metaDesc: metaDescriptionSchema,
+        metaTitle: metaTitleSchema,
+        ogImage: z
+          .object({
+            height: z.number().int().positive().max(20_000),
+            src: sanityImageUrlSchema,
+            width: z.number().int().positive().max(20_000),
+          })
+          .strict()
+          .nullable()
+          .optional(),
+      })
+      .strict()
+      .nullable()
+      .optional(),
     video: z
       .object({
         embedUrl: httpsUrlSchema.refine(
@@ -135,11 +176,27 @@ const articleSchema = z
       .optional(),
   })
   .strict()
-  .transform(({ video, ...value }) => ({
-    ...value,
-    readingMinutes: estimateThaiReadingMinutes(value.body.th),
-    ...(video === undefined ? {} : { video }),
-  }));
+  .transform(({ seo, video, ...value }) => {
+    const { caption, ...coverFields } = value.cover;
+    const cover = {
+      ...coverFields,
+      ...(caption == null ? {} : { caption }),
+    };
+    const normalizedSeo =
+      seo == null
+        ? undefined
+        : (() => {
+            const { ogImage, ...fields } = seo;
+            return { ...fields, ...(ogImage == null ? {} : { ogImage }) };
+          })();
+    return {
+      ...value,
+      cover,
+      readingMinutes: estimateThaiReadingMinutes(value.body.th),
+      ...(normalizedSeo === undefined ? {} : { seo: normalizedSeo }),
+      ...(video === undefined ? {} : { video }),
+    };
+  });
 
 const projectSchema = z
   .object({
@@ -163,11 +220,30 @@ const articleProjection = `{
   "slug": slug.current,
   "title": {"th": title.th, "en": title.en},
   "excerpt": {"th": excerpt.th, "en": excerpt.en},
+  "seo": select(
+    defined(seo) => {
+      "metaTitle": {"th": seo.metaTitle.th, "en": seo.metaTitle.en},
+      "metaDesc": {"th": seo.metaDesc.th, "en": seo.metaDesc.en},
+      "ogImage": select(
+        defined(seo.ogImage.asset) => {
+          "src": seo.ogImage.asset->url,
+          "width": seo.ogImage.asset->metadata.dimensions.width,
+          "height": seo.ogImage.asset->metadata.dimensions.height
+        },
+        null
+      )
+    },
+    null
+  ),
   "cover": {
     "src": cover.asset->url,
     "width": cover.asset->metadata.dimensions.width,
     "height": cover.asset->metadata.dimensions.height,
-    "alt": {"th": cover.alt.th, "en": cover.alt.en}
+    "alt": {"th": cover.alt.th, "en": cover.alt.en},
+    "caption": select(
+      defined(cover.caption) => {"th": cover.caption.th, "en": cover.caption.en},
+      null
+    )
   },
   "category": {"th": category->title.th, "en": category->title.en},
   "author": {

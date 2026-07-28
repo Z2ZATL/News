@@ -78,6 +78,28 @@ test("Thai home remains readable without JavaScript", async ({ browser }) => {
   await context.close();
 });
 
+test("not-found pages preserve the requested language", async ({ page }) => {
+  const thaiResponse = await page.goto("/th/not-a-real-page");
+  expect(thaiResponse?.status()).toBe(404);
+  await expect(page.locator("html")).toHaveAttribute("lang", "th");
+  await expect(page.getByRole("heading", { name: "ไม่พบหน้าที่คุณกำลังหา" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /กลับหน้าแรก/ })).toHaveAttribute("href", "/th");
+  await expect(page.locator("main")).toHaveCount(1);
+
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+
+  const englishResponse = await page.goto("/en/not-a-real-page");
+  expect(englishResponse?.status()).toBe(404);
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.getByRole("heading", { name: "We could not find that page" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Back to the home page/ })).toHaveAttribute(
+    "href",
+    "/en",
+  );
+  await expect(page.locator("main")).toHaveCount(1);
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+});
+
 test("home replaces featured news with a keyboard-accessible category browser", async ({
   page,
 }) => {
