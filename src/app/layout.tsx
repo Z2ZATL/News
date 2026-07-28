@@ -48,7 +48,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       </head>
       <body>
         {children}
-        <script nonce={nonce} src="/article-reactions.js" defer />
+        <script nonce={nonce} src="/article-reactions-bootstrap.js" defer />
       </body>
     </html>
   );
