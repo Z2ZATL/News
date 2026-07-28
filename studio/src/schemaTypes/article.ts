@@ -1,5 +1,11 @@
 import { defineArrayMember, defineField, defineType } from "sanity";
 
+import {
+  ARTICLE_META_DESCRIPTION_MAX_LENGTH,
+  ARTICLE_META_TITLE_MAX_LENGTH,
+  hasCompleteSeoOverride,
+} from "../../../shared/editorial-rules";
+
 export const article = defineType({
   name: "article",
   title: "Article",
@@ -46,22 +52,11 @@ export const article = defineType({
       description:
         "Optional overrides. Leave this empty to use the article title, excerpt, and cover image.",
       validation: (rule) =>
-        rule.custom((value) => {
-          if (!value) return true;
-          const seo = value as {
-            metaTitle?: { th?: string; en?: string };
-            metaDesc?: { th?: string; en?: string };
-          };
-          const values = [
-            seo.metaTitle?.th,
-            seo.metaTitle?.en,
-            seo.metaDesc?.th,
-            seo.metaDesc?.en,
-          ];
-          return values.every((entry) => typeof entry === "string" && entry.trim().length > 0)
+        rule.custom((value) =>
+          hasCompleteSeoOverride(value)
             ? true
-            : "Complete every Thai and English SEO field, or remove this override.";
-        }),
+            : "Complete every Thai and English SEO field, or remove this override.",
+        ),
       fields: [
         defineField({
           name: "metaTitle",
@@ -71,9 +66,10 @@ export const article = defineType({
             rule.custom((value) => {
               if (!value) return true;
               const localized = value as { th?: string; en?: string };
-              return (localized.th?.length ?? 0) <= 70 && (localized.en?.length ?? 0) <= 70
+              return (localized.th?.length ?? 0) <= ARTICLE_META_TITLE_MAX_LENGTH &&
+                (localized.en?.length ?? 0) <= ARTICLE_META_TITLE_MAX_LENGTH
                 ? true
-                : "Each meta title must be 70 characters or fewer.";
+                : `Each meta title must be ${String(ARTICLE_META_TITLE_MAX_LENGTH)} characters or fewer.`;
             }),
         }),
         defineField({
@@ -84,9 +80,10 @@ export const article = defineType({
             rule.custom((value) => {
               if (!value) return true;
               const localized = value as { th?: string; en?: string };
-              return (localized.th?.length ?? 0) <= 200 && (localized.en?.length ?? 0) <= 200
+              return (localized.th?.length ?? 0) <= ARTICLE_META_DESCRIPTION_MAX_LENGTH &&
+                (localized.en?.length ?? 0) <= ARTICLE_META_DESCRIPTION_MAX_LENGTH
                 ? true
-                : "Each meta description must be 200 characters or fewer.";
+                : `Each meta description must be ${String(ARTICLE_META_DESCRIPTION_MAX_LENGTH)} characters or fewer.`;
             }),
         }),
         defineField({

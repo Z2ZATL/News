@@ -27,7 +27,7 @@ an exact approval.
 | One launch article | Complete and expanded | Sanity contains seven articles and one Lab project. |
 | SEO overrides and social image | Complete | The article schema now has optional bilingual meta title/description and an optional social image, with safe title/excerpt/cover fallbacks for existing records. |
 | Cover caption | Complete | The existing bilingual CMS caption is projected, validated, and rendered when present. |
-| Loading and error surfaces | Accepted change | Localized segment error, global error, and not-found surfaces are present. A segment `loading.tsx` was tested and removed because Next.js leaves its streamed fallback visible when JavaScript is disabled, violating the stronger requirement that the complete article and navigation remain usable without JavaScript. |
+| Loading and error surfaces | Accepted change | ADR 0006 records why segment `loading.tsx` boundaries are omitted: Next.js leaves their streamed fallback visible when JavaScript is disabled. Localized segment error, global error, and not-found surfaces remain present. |
 
 ## CMS and rendering
 
@@ -53,7 +53,7 @@ an exact approval.
 | Input and secret boundaries | Complete | GROQ is parameterized; draft redirects and slugs are allowlisted; webhook bodies are verified raw; secrets are server-only; Portable Text protocols are allowlisted. |
 | Free production baseline | Accepted change | ADR 0004 selects Netlify Free, Sanity Free, and Upstash Free. No paid add-on or automatic top-up is enabled. |
 | Supply-chain gates | Complete | Frozen pnpm installs, strict type checking, zero-warning lint, secret scan, build, unit/E2E, axe, Lighthouse, and dependency audit run in CI. |
-| Production audit | Complete in repository | The audit now checks redirects, nonce rotation, headers, feeds, sitemap/hreflang, structured data, protected endpoints, both CNAMEs, Studio isolation, parent DS, protected apex mail state, application DMARC, and CAA. |
+| Production audit | Complete in repository | The scheduled audit is fail-closed and checks redirects, nonce rotation, headers, feeds, sitemap/hreflang, structured data, hostile preview input, both exact CNAME targets, Studio isolation, DNSSEC authenticated-data responses through Cloudflare and Google, the protected mail/brief inventory, application DMARC, and CAA. |
 | DNSSEC chain | Production pending | Cloudflare DNSKEY exists; the registrar still has no parent DS. |
 | Application-subdomain DMARC | Production pending | `_dmarc.news` and `_dmarc.studio` do not exist yet. The apex must remain `p=none; sp=none`. |
 | Netlify cutover | Production pending | `news` still points to Vercel and `studio` has no production DNS record. |

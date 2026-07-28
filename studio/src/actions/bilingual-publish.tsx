@@ -1,9 +1,7 @@
 import type { DocumentActionComponent, SanityDocument } from "sanity";
 import { useDocumentOperation } from "sanity";
 
-function hasText(value: unknown): boolean {
-  return typeof value === "string" && value.trim().length > 0;
-}
+import { hasCompleteSeoOverride, hasText } from "../../../shared/editorial-rules";
 
 function isArticleReady(document: SanityDocument | null): boolean {
   if (!document) return false;
@@ -11,12 +9,7 @@ function isArticleReady(document: SanityDocument | null): boolean {
   const excerpt = document.excerpt as { th?: unknown; en?: unknown } | undefined;
   const body = document.body as { th?: unknown[]; en?: unknown[] } | undefined;
   const cover = document.cover as { alt?: { th?: unknown; en?: unknown } } | undefined;
-  const seo = document.seo as
-    | {
-        metaTitle?: { th?: unknown; en?: unknown };
-        metaDesc?: { th?: unknown; en?: unknown };
-      }
-    | undefined;
+  const seo = document.seo;
   const slug = document.slug as { current?: unknown } | undefined;
   const atlasLocation = document.atlasLocation as
     | { countryCode?: unknown; latitude?: unknown; longitude?: unknown; label?: { th?: unknown; en?: unknown } }
@@ -38,11 +31,7 @@ function isArticleReady(document: SanityDocument | null): boolean {
       typeof atlasLocation.longitude === "number" &&
       hasText(atlasLocation.label?.th) &&
       hasText(atlasLocation.label?.en) &&
-      (!seo ||
-        (hasText(seo.metaTitle?.th) &&
-          hasText(seo.metaTitle?.en) &&
-          hasText(seo.metaDesc?.th) &&
-          hasText(seo.metaDesc?.en))),
+      hasCompleteSeoOverride(seo),
   );
 }
 

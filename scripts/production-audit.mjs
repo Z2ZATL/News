@@ -1,13 +1,15 @@
 import {
   resolveCaa,
   resolveCname,
+  resolve4,
   resolveMx,
   resolve,
   resolveTxt,
 } from "node:dns/promises";
 
 const siteUrl = new URL(process.env.AUDIT_SITE_URL ?? "https://news.z2zs.space");
-const expectedCnameSuffix = process.env.AUDIT_CNAME_SUFFIX?.toLowerCase();
+const expectedPublicCname = process.env.AUDIT_PUBLIC_CNAME?.toLowerCase();
+const expectedStudioCname = process.env.AUDIT_STUDIO_CNAME?.toLowerCase();
 const studioEnabled = process.env.AUDIT_STUDIO_ENABLED === "true";
 const dnssecEnabled = process.env.AUDIT_DNSSEC_ENABLED === "true";
 const mailPolicyEnabled = process.env.AUDIT_MAIL_POLICY_ENABLED === "true";
@@ -36,7 +38,8 @@ function assert(condition, message) {
 
 function auditReadinessConfiguration() {
   if (!productionReady) return;
-  assert(expectedCnameSuffix, "AUDIT_CNAME_SUFFIX is required for a production-ready audit");
+  assert(expectedPublicCname, "AUDIT_PUBLIC_CNAME is required for a production-ready audit");
+  assert(expectedStudioCname, "AUDIT_STUDIO_CNAME is required for a production-ready audit");
   assert(studioEnabled, "Studio checks are required for a production-ready audit");
   assert(dnssecEnabled, "DNSSEC checks are required for a production-ready audit");
   assert(mailPolicyEnabled, "Mail-policy checks are required for a production-ready audit");
@@ -183,12 +186,12 @@ async function auditSecurityEndpoints() {
   assert(reactions.status === 403, `/api/reactions without Origin returned ${reactions.status}`);
 }
 
-async function auditCname(hostname) {
+async function auditCname(hostname, expectedTarget) {
   const values = (await resolveCname(hostname)).map((value) => value.replace(/\.$/, "").toLowerCase());
   assert(values.length > 0, `${hostname} has no CNAME target`);
-  if (expectedCnameSuffix) {
+  if (expectedTarget) {
     assert(
-      values.every((value) => value.endsWith(expectedCnameSuffix)),
+      values.length === 1 && values[0] === expectedTarget,
       `${hostname} points outside the approved host target`,
     );
   }
@@ -212,9 +215,68 @@ async function auditStudio() {
   assert(hsts === "max-age=31536000", "Studio HSTS must not include subdomains or preload");
 }
 
+async function auditStudioSecurityEndpoints() {
+  for (const slug of ["../../etc", "https://evil.example"]) {
+    const url = new URL("/api/preview", studioUrl);
+    url.searchParams.set("locale", "th");
+    url.searchParams.set("slug", slug);
+    url.searchParams.set("type", "article");
+    const response = await fetch(url, {
+      headers: { "cache-control": "no-cache", "user-agent": "Z2Zs-Production-Audit/2.0" },
+      redirect: "manual",
+      signal: AbortSignal.timeout(15_000),
+    });
+    assert(response.status === 400, `Studio preview accepted hostile slug ${JSON.stringify(slug)}`);
+  }
+}
+
+async function validatedDnsJson(url, recordType) {
+  const response = await fetch(url, {
+    headers: { accept: "application/dns-json", "user-agent": "Z2Zs-Production-Audit/2.0" },
+    signal: AbortSignal.timeout(15_000),
+  });
+  assert(response.ok, `DNSSEC resolver returned HTTP ${response.status}`);
+  const result = await response.json();
+  assert(result && typeof result === "object", "DNSSEC resolver returned invalid JSON");
+  assert(result.Status === 0, `DNSSEC resolver returned status ${String(result.Status)}`);
+  assert(result.AD === true, "DNSSEC validating resolver did not set the authenticated-data flag");
+  assert(
+    Array.isArray(result.Answer) && result.Answer.some((answer) => answer?.type === recordType),
+    `DNSSEC response is missing record type ${String(recordType)}`,
+  );
+}
+
 async function auditDnssec() {
   const records = await resolve("z2zs.space", "DS");
   assert(records.length > 0, "z2zs.space has no parent DS record");
+  const resolvers = [
+    "https://cloudflare-dns.com/dns-query",
+    "https://dns.google/resolve",
+  ];
+  const queries = [
+    { name: "z2zs.space", type: "DS", recordType: 43 },
+    { name: "z2zs.space", type: "DNSKEY", recordType: 48 },
+    { name: "z2zs.space", type: "SOA", recordType: 6 },
+  ];
+  for (const resolver of resolvers) {
+    for (const query of queries) {
+      const url = new URL(resolver);
+      url.searchParams.set("name", query.name);
+      url.searchParams.set("type", query.type);
+      url.searchParams.set("do", "1");
+      await validatedDnsJson(url, query.recordType);
+    }
+  }
+}
+
+async function auditExactCname(hostname, expectedTarget) {
+  const values = (await resolveCname(hostname)).map((value) =>
+    value.replace(/\.$/, "").toLowerCase(),
+  );
+  assert(
+    values.length === 1 && values[0] === expectedTarget,
+    `${hostname} no longer matches the protected DNS inventory`,
+  );
 }
 
 async function auditMailPolicy() {
@@ -232,11 +294,36 @@ async function auditMailPolicy() {
   }
   const spf = normalizedTxt(await resolveTxt("z2zs.space"));
   assert(
-    spf.some((value) => /^v=spf1\b.*include:_spf\.google\.com\b.*~all$/i.test(value)),
-    "Apex SPF no longer includes Google Workspace",
+    spf.includes("v=spf1 include:_spf.google.com ~all"),
+    "Apex SPF no longer matches the approved Google Workspace policy",
   );
   const mx = await resolveMx("z2zs.space");
-  assert(mx.some((record) => /google\.com\.?$/i.test(record.exchange)), "Apex MX no longer uses Google");
+  assert(
+    mx.length === 1 &&
+      mx[0]?.priority === 1 &&
+      mx[0].exchange.replace(/\.$/, "").toLowerCase() === "smtp.google.com",
+    "Apex MX no longer matches the approved Google Workspace inventory",
+  );
+  await auditExactCname(
+    "clk._domainkey.brief.z2zs.space",
+    "dkim1.usuynnw3aa0o.clerk.services",
+  );
+  await auditExactCname(
+    "clk2._domainkey.brief.z2zs.space",
+    "dkim2.usuynnw3aa0o.clerk.services",
+  );
+  await auditExactCname(
+    "clkmail.brief.z2zs.space",
+    "mail.usuynnw3aa0o.clerk.services",
+  );
+  for (const hostname of ["brief.z2zs.space", "preview.brief.z2zs.space"]) {
+    const addresses = await resolve4(hostname);
+    assert(
+      addresses.length === 1 && addresses[0] === "76.76.21.21",
+      `${hostname} no longer matches the protected Vercel inventory`,
+    );
+  }
+  assert((await resolve4("bot.z2zs.space")).length > 0, "Protected bot tunnel no longer resolves");
   const caa = await resolveCaa("z2zs.space");
   assert(
     caa.some((record) => record.issue === "letsencrypt.org"),
@@ -252,10 +339,11 @@ if (!dryRun) {
   await auditPublicFiles();
   await auditArticleAndStructuredData();
   await auditSecurityEndpoints();
-  const dns = { news: await auditCname(siteUrl.hostname) };
+  const dns = { news: await auditCname(siteUrl.hostname, expectedPublicCname) };
   if (studioEnabled) {
     await auditStudio();
-    dns.studio = await auditCname(studioUrl.hostname);
+    await auditStudioSecurityEndpoints();
+    dns.studio = await auditCname(studioUrl.hostname, expectedStudioCname);
   }
   if (dnssecEnabled) await auditDnssec();
   if (mailPolicyEnabled) await auditMailPolicy();

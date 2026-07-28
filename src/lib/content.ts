@@ -7,6 +7,11 @@ import { z } from "zod";
 import type { Article, Project, SiteSettings } from "@/lib/content-types";
 import { isProductionDeployment } from "@/lib/deployment";
 import { fixtureArticles, fixtureProjects, fixtureSettings } from "@/lib/fixture-content";
+import {
+  ARTICLE_EXCERPT_MAX_LENGTH,
+  ARTICLE_META_DESCRIPTION_MAX_LENGTH,
+  ARTICLE_META_TITLE_MAX_LENGTH,
+} from "../../shared/editorial-rules";
 
 const slugSchema = z.string().regex(/^[a-z0-9-]{1,120}$/);
 const localizedSchema = z
@@ -16,16 +21,22 @@ const localizedSchema = z
   })
   .strict();
 const excerptSchema = localizedSchema.refine(
-  (value) => value.th.length <= 200 && value.en.length <= 200,
-  "Each excerpt must be 200 characters or fewer",
+  (value) =>
+    value.th.length <= ARTICLE_EXCERPT_MAX_LENGTH &&
+    value.en.length <= ARTICLE_EXCERPT_MAX_LENGTH,
+  `Each excerpt must be ${String(ARTICLE_EXCERPT_MAX_LENGTH)} characters or fewer`,
 );
 const metaTitleSchema = localizedSchema.refine(
-  (value) => value.th.length <= 70 && value.en.length <= 70,
-  "Each meta title must be 70 characters or fewer",
+  (value) =>
+    value.th.length <= ARTICLE_META_TITLE_MAX_LENGTH &&
+    value.en.length <= ARTICLE_META_TITLE_MAX_LENGTH,
+  `Each meta title must be ${String(ARTICLE_META_TITLE_MAX_LENGTH)} characters or fewer`,
 );
 const metaDescriptionSchema = localizedSchema.refine(
-  (value) => value.th.length <= 200 && value.en.length <= 200,
-  "Each meta description must be 200 characters or fewer",
+  (value) =>
+    value.th.length <= ARTICLE_META_DESCRIPTION_MAX_LENGTH &&
+    value.en.length <= ARTICLE_META_DESCRIPTION_MAX_LENGTH,
+  `Each meta description must be ${String(ARTICLE_META_DESCRIPTION_MAX_LENGTH)} characters or fewer`,
 );
 const httpsUrlSchema = z.url().refine((value) => new URL(value).protocol === "https:");
 const sanityImageUrlSchema = httpsUrlSchema.refine(
