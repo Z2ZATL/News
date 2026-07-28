@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { chmod, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { availableParallelism, tmpdir } from "node:os";
 import { join } from "node:path";
 
 import * as chromeLauncher from "chrome-launcher";
@@ -27,10 +27,20 @@ const minimumScores = {
   seo: 1,
 };
 const maximumScoreAttempts = 5;
+const cpuCount = availableParallelism();
+const useCpuAffinity = process.platform === "linux" && cpuCount >= 2;
+const serverCommand = useCpuAffinity ? "taskset" : process.execPath;
+const serverArguments = [
+  ...(useCpuAffinity ? ["--cpu-list", "0", process.execPath] : []),
+  join(process.cwd(), "node_modules", "next", "dist", "bin", "next"),
+  "start",
+  "--port",
+  String(serverPort),
+];
 
 const server = spawn(
-  process.execPath,
-  [join(process.cwd(), "node_modules", "next", "dist", "bin", "next"), "start", "--port", String(serverPort)],
+  serverCommand,
+  serverArguments,
   {
     cwd: process.cwd(),
     env: {
@@ -175,11 +185,32 @@ function medianScore(results, category) {
 try {
   await waitForServer();
   const automaticChromePath = chromium.executablePath();
-  const chromePath = process.env.CHROME_PATH ?? automaticChromePath;
+  const configuredChromePath = process.env.CHROME_PATH ?? automaticChromePath;
+  let affinityDirectory;
+  let chromePath = configuredChromePath;
+  if (useCpuAffinity) {
+    affinityDirectory = await mkdtemp(join(tmpdir(), "z2zs-chrome-affinity-"));
+    chromePath = join(affinityDirectory, "chrome");
+    const escapedChromePath = configuredChromePath.replaceAll('"', '\\"');
+    // The wrapper path is inside a fresh, process-owned OS temp directory.
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    await writeFile(
+      chromePath,
+      `#!/bin/sh\nexec taskset --cpu-list 1-${String(cpuCount - 1)} "${escapedChromePath}" "$@"\n`,
+      "utf8",
+    );
+    // The same process-owned wrapper is the only file made executable.
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    await chmod(chromePath, 0o755);
+    console.log(
+      `Lighthouse CPU isolation: Next.js on CPU 0; Chromium on CPUs 1-${String(cpuCount - 1)}.`,
+    );
+  }
 
-  const failures = [];
-  for (const profile of profiles) {
-    for (const route of routes) {
+  try {
+    const failures = [];
+    for (const profile of profiles) {
+      for (const route of routes) {
     const firstResult = await runLighthouseWithTraceRetry(route, chromePath, profile);
     if (!firstResult) {
       failures.push(`${profile} ${route}: Lighthouse returned no result.`);
@@ -279,10 +310,15 @@ try {
       }
     }
     console.log(`${profile} ${route} ${JSON.stringify(scores)}`);
+      }
+    }
+
+    if (failures.length > 0) throw new Error(failures.join("\n"));
+  } finally {
+    if (affinityDirectory) {
+      await rm(affinityDirectory, { force: true, recursive: true });
     }
   }
-
-  if (failures.length > 0) throw new Error(failures.join("\n"));
 } finally {
   server.kill();
 }
