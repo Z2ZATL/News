@@ -3,15 +3,6 @@ import { headers } from "next/headers";
 import { Noto_Sans_Thai, Space_Grotesk } from "next/font/google";
 
 import "./globals.css";
-// Promote the shared editorial shell and article-critical styles into one
-// nonce-safe external chunk. This preserves CSS Module scoping while avoiding
-// extra render-blocking requests on the longest reading route.
-import "./[locale]/stories/[slug]/article.module.css";
-import "../components/article-reactions.module.css";
-import "../components/reading-progress.module.css";
-import "../components/site-footer.module.css";
-import "../components/site-header.module.css";
-import "../components/theme-menu.module.css";
 import { SITE_URL } from "@/lib/site-config";
 
 const thai = Noto_Sans_Thai({
