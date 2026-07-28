@@ -55,6 +55,8 @@ jobs:
     timeout-minutes: 20
     env:
       SANITY_STUDIO_PROJECT_ID: testproject
+      SANITY_STUDIO_NEWS_ORIGIN: https://preview-news.example.test
+      SANITY_STUDIO_PREVIEW_BROKER_ORIGIN: https://preview-studio.example.test
     defaults:
       run:
         working-directory: studio

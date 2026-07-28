@@ -216,18 +216,26 @@ async function auditStudio() {
 }
 
 async function auditStudioSecurityEndpoints() {
-  for (const slug of ["../../etc", "https://evil.example"]) {
-    const url = new URL("/api/preview", studioUrl);
-    url.searchParams.set("locale", "th");
-    url.searchParams.set("slug", slug);
-    url.searchParams.set("type", "article");
-    const response = await fetch(url, {
-      headers: { "cache-control": "no-cache", "user-agent": "Z2Zs-Production-Audit/2.0" },
-      redirect: "manual",
-      signal: AbortSignal.timeout(15_000),
-    });
-    assert(response.status === 400, `Studio preview accepted hostile slug ${JSON.stringify(slug)}`);
-  }
+  const url = new URL("/api/preview", studioUrl);
+  const response = await fetch(url, {
+    body: JSON.stringify({
+      documentType: "article",
+      locale: "th",
+      slug: "known-public-article",
+    }),
+    headers: {
+      "cache-control": "no-cache",
+      "content-type": "application/json",
+      "user-agent": "Z2Zs-Production-Audit/2.0",
+    },
+    method: "POST",
+    redirect: "manual",
+    signal: AbortSignal.timeout(15_000),
+  });
+  assert(
+    response.status === 401,
+    `Studio preview broker must reject unauthenticated requests, received ${response.status}`,
+  );
 }
 
 async function validatedDnsJson(url, recordType) {
@@ -269,16 +277,6 @@ async function auditDnssec() {
   }
 }
 
-async function auditExactCname(hostname, expectedTarget) {
-  const values = (await resolveCname(hostname)).map((value) =>
-    value.replace(/\.$/, "").toLowerCase(),
-  );
-  assert(
-    values.length === 1 && values[0] === expectedTarget,
-    `${hostname} no longer matches the protected DNS inventory`,
-  );
-}
-
 async function auditMailPolicy() {
   const apexDmarc = normalizedTxt(await resolveTxt("_dmarc.z2zs.space"));
   assert(
@@ -304,15 +302,15 @@ async function auditMailPolicy() {
       mx[0].exchange.replace(/\.$/, "").toLowerCase() === "smtp.google.com",
     "Apex MX no longer matches the approved Google Workspace inventory",
   );
-  await auditExactCname(
+  await auditCname(
     "clk._domainkey.brief.z2zs.space",
     "dkim1.usuynnw3aa0o.clerk.services",
   );
-  await auditExactCname(
+  await auditCname(
     "clk2._domainkey.brief.z2zs.space",
     "dkim2.usuynnw3aa0o.clerk.services",
   );
-  await auditExactCname(
+  await auditCname(
     "clkmail.brief.z2zs.space",
     "mail.usuynnw3aa0o.clerk.services",
   );

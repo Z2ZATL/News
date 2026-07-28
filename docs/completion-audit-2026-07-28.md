@@ -1,7 +1,7 @@
 # Build Plan completion audit — 2026-07-28
 
 This audit compares the current implementation with Build Plan v3, the later
-founder decisions, `AGENTS.md`, and accepted ADRs 0001–0005. It distinguishes
+founder decisions, `AGENTS.md`, and accepted ADRs 0001–0006. It distinguishes
 repository completion from production infrastructure work that still requires
 an exact approval.
 
@@ -53,7 +53,7 @@ an exact approval.
 | Input and secret boundaries | Complete | GROQ is parameterized; draft redirects and slugs are allowlisted; webhook bodies are verified raw; secrets are server-only; Portable Text protocols are allowlisted. |
 | Free production baseline | Accepted change | ADR 0004 selects Netlify Free, Sanity Free, and Upstash Free. No paid add-on or automatic top-up is enabled. |
 | Supply-chain gates | Complete | Frozen pnpm installs, strict type checking, zero-warning lint, secret scan, build, unit/E2E, axe, Lighthouse, and dependency audit run in CI. |
-| Production audit | Complete in repository | The scheduled audit is fail-closed and checks redirects, nonce rotation, headers, feeds, sitemap/hreflang, structured data, hostile preview input, both exact CNAME targets, Studio isolation, DNSSEC authenticated-data responses through Cloudflare and Google, the protected mail/brief inventory, application DMARC, and CAA. |
+| Production audit | Complete in repository | The scheduled audit is fail-closed and checks redirects, nonce rotation, headers, feeds, sitemap/hreflang, structured data, unauthenticated preview-broker rejection, both exact CNAME targets, Studio isolation, DNSSEC authenticated-data responses through Cloudflare and Google, the protected mail/brief inventory, application DMARC, and CAA. Authenticated hostile-coordinate validation remains in the unit suite. |
 | DNSSEC chain | Production pending | Cloudflare DNSKEY exists; the registrar still has no parent DS. |
 | Application-subdomain DMARC | Production pending | `_dmarc.news` and `_dmarc.studio` do not exist yet. The apex must remain `p=none; sp=none`. |
 | Netlify cutover | Production pending | `news` still points to Vercel and `studio` has no production DNS record. |

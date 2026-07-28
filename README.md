@@ -34,7 +34,11 @@ corepack pnpm test:lighthouse
   stays within the Free plan.
 - Sanity dataset: public Free-plan `production`; never store secrets or
   confidential personal data in editorial documents
-- Preview uses a short-lived, single-use signed ticket. The Studio broker and public site share `PREVIEW_TICKET_SECRET`; the reusable secret never enters a URL.
+- Preview uses a short-lived, single-use signed ticket. The Studio sends its
+  current Sanity session token to the same-origin broker in an authorization
+  header; the broker verifies an editor role with Sanity before issuing the
+  ticket. Neither the session token nor the shared `PREVIEW_TICKET_SECRET`
+  enters a URL.
 - Webhook, reaction, rate-limit, Redis, and viewer credentials are server-side
   host variables only.
 - Keep both Netlify sites on the Free plan with the hard credit limit. Do not

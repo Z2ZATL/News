@@ -84,6 +84,9 @@ test("not-found pages preserve the requested language", async ({ page }) => {
   await expect(page.locator("html")).toHaveAttribute("lang", "th");
   await expect(page.getByRole("heading", { name: "ไม่พบหน้าที่คุณกำลังหา" })).toBeVisible();
   await expect(page.getByRole("link", { name: /กลับหน้าแรก/ })).toHaveAttribute("href", "/th");
+  await expect(page.locator("main")).toHaveCount(1);
+
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 
   const englishResponse = await page.goto("/en/not-a-real-page");
   expect(englishResponse?.status()).toBe(404);
@@ -93,6 +96,8 @@ test("not-found pages preserve the requested language", async ({ page }) => {
     "href",
     "/en",
   );
+  await expect(page.locator("main")).toHaveCount(1);
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });
 
 test("home replaces featured news with a keyboard-accessible category browser", async ({

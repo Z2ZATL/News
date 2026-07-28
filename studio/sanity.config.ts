@@ -3,6 +3,7 @@ import { structureTool } from "sanity/structure";
 import { visionTool } from "@sanity/vision";
 
 import { BilingualPublishAction } from "./src/actions/bilingual-publish";
+import { isAllowedPreviewBrokerOrigin } from "./src/preview-origin";
 import { schemaTypes } from "./src/schemaTypes";
 
 const projectId = process.env.SANITY_STUDIO_PROJECT_ID;
@@ -38,17 +39,55 @@ export default defineConfig({
       context.schemaType === "article" || context.schemaType === "project" || context.schemaType === "settings"
         ? previous.map((action) => (action.action === "publish" ? BilingualPublishAction : action))
         : previous,
-    productionUrl: (previous, context) => {
+    productionUrl: async (previous, context) => {
       const slug = context.document.slug as { current?: string } | undefined;
-      const origin =
-        process.env.SANITY_STUDIO_PREVIEW_BROKER_ORIGIN ??
-        (typeof window === "undefined" ? undefined : window.location.origin);
-      if (!slug?.current || !origin) return Promise.resolve(previous);
+      const currentOrigin =
+        typeof window === "undefined" ? undefined : window.location.origin;
+      const origin = process.env.SANITY_STUDIO_PREVIEW_BROKER_ORIGIN ?? currentOrigin;
+      if (
+        !slug?.current ||
+        !currentOrigin ||
+        !origin ||
+        !isAllowedPreviewBrokerOrigin(origin, currentOrigin)
+      ) {
+        return previous;
+      }
+      const token = context.getClient({ apiVersion: "2025-01-01" }).config().token;
+      if (!token) return previous;
       const url = new URL("/api/preview", origin);
-      url.searchParams.set("slug", slug.current);
-      url.searchParams.set("locale", "th");
-      url.searchParams.set("type", context.document._type);
-      return Promise.resolve(url.toString());
+      try {
+        const response = await fetch(url, {
+          body: JSON.stringify({
+            documentType: context.document._type,
+            locale: "th",
+            slug: slug.current,
+          }),
+          cache: "no-store",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          method: "POST",
+        });
+        if (!response.ok) return previous;
+        const result = (await response.json()) as unknown;
+        if (typeof result !== "object" || result === null) return previous;
+        const previewUrl = (result as { url?: unknown }).url;
+        if (typeof previewUrl !== "string") return previous;
+        const destination = new URL(previewUrl);
+        const expectedOrigin = process.env.SANITY_STUDIO_NEWS_ORIGIN;
+        if (
+          !expectedOrigin ||
+          destination.origin !== expectedOrigin ||
+          destination.pathname !== "/api/draft" ||
+          !destination.searchParams.has("ticket")
+        ) {
+          return previous;
+        }
+        return destination.toString();
+      } catch {
+        return previous;
+      }
     },
   },
 });

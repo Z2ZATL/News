@@ -1,6 +1,7 @@
 import { defineArrayMember, defineField, defineType } from "sanity";
 
 import {
+  ARTICLE_EXCERPT_MAX_LENGTH,
   ARTICLE_META_DESCRIPTION_MAX_LENGTH,
   ARTICLE_META_TITLE_MAX_LENGTH,
   hasCompleteSeoOverride,
@@ -29,9 +30,10 @@ export const article = defineType({
       validation: (rule) =>
         rule.custom((value) => {
           const localized = value as { th?: string; en?: string } | undefined;
-          return (localized?.th?.length ?? 0) <= 200 && (localized?.en?.length ?? 0) <= 200
+          return (localized?.th?.length ?? 0) <= ARTICLE_EXCERPT_MAX_LENGTH &&
+            (localized?.en?.length ?? 0) <= ARTICLE_EXCERPT_MAX_LENGTH
             ? true
-            : "Each excerpt must be 200 characters or fewer.";
+            : `Each excerpt must be ${String(ARTICLE_EXCERPT_MAX_LENGTH)} characters or fewer.`;
         }),
     }),
     defineField({ name: "body", type: "localizedBody" }),
