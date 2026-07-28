@@ -24,15 +24,18 @@ export async function generateMetadata({
   if (!isLocale(locale)) return {};
   const article = await getArticle(slug, { draft: (await draftMode()).isEnabled });
   if (!article) return {};
+  const title = article.seo?.metaTitle[locale] ?? article.title[locale];
+  const description = article.seo?.metaDesc[locale] ?? article.excerpt[locale];
+  const socialImage = article.seo?.ogImage?.src ?? article.cover.src;
   return {
-    title: article.title[locale],
-    description: article.excerpt[locale],
+    title,
+    description,
     alternates: localizedAlternates(locale, `/stories/${slug}`),
     openGraph: {
       type: "article",
-      title: article.title[locale],
-      description: article.excerpt[locale],
-      images: [{ url: article.cover.src }],
+      title,
+      description,
+      images: [{ url: socialImage }],
       publishedTime: article.publishedAt,
       modifiedTime: article.updatedAt,
     },
@@ -134,6 +137,9 @@ export default async function ArticlePage({
             height={article.cover.height ?? 1456}
             sizes="(max-width: 640px) calc(100vw - 40px), (max-width: 1348px) 92vw, 1240px"
           />
+          {article.cover.caption ? (
+            <figcaption>{article.cover.caption[locale]}</figcaption>
+          ) : null}
         </figure>
       )}
       <div className={styles.articleGrid}>

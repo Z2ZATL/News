@@ -45,8 +45,18 @@ export interface Article {
   cover: {
     src: string;
     alt: LocalizedText;
+    caption?: LocalizedText;
     width?: number;
     height?: number;
+  };
+  seo?: {
+    metaTitle: LocalizedText;
+    metaDesc: LocalizedText;
+    ogImage?: {
+      src: string;
+      width: number;
+      height: number;
+    };
   };
   video?: {
     embedUrl: string;

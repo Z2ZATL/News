@@ -196,6 +196,17 @@ export type Article = {
     caption?: LocalizedString;
     _type: "image";
   };
+  seo?: {
+    metaTitle?: LocalizedString;
+    metaDesc?: LocalizedText;
+    ogImage?: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+  };
   category: CategoryReference;
   author: AuthorReference;
   atlasLocation: {
@@ -375,7 +386,7 @@ export type AllSanitySchemaTypes =
 
 // Source: ../src/lib/content.ts
 // Variable: articleQuery
-// Query: *[_type == "article" && status == "published"] | order(publishedAt desc) {  "slug": slug.current,  "title": {"th": title.th, "en": title.en},  "excerpt": {"th": excerpt.th, "en": excerpt.en},  "cover": {    "src": cover.asset->url,    "width": cover.asset->metadata.dimensions.width,    "height": cover.asset->metadata.dimensions.height,    "alt": {"th": cover.alt.th, "en": cover.alt.en}  },  "category": {"th": category->title.th, "en": category->title.en},  "author": {    "name": author->name,    "role": {"th": author->role.th, "en": author->role.en}  },  "atlasLocation": {    "countryCode": atlasLocation.countryCode,    "latitude": atlasLocation.latitude,    "longitude": atlasLocation.longitude,    "label": {"th": atlasLocation.label.th, "en": atlasLocation.label.en}  },  "body": {    "th": body.th[]{      _type == "block" => {        _key, _type,        children[]{_key, _type, marks, text},        defined(level) => {level},        defined(listItem) => {listItem},        markDefs[]{_key, _type, href},        style      },      _type == "articleImage" => {        _key, _type, alt, caption,        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    },    "en": body.en[]{      _type == "block" => {        _key, _type,        children[]{_key, _type, marks, text},        defined(level) => {level},        defined(listItem) => {listItem},        markDefs[]{_key, _type, href},        style      },      _type == "articleImage" => {        _key, _type, alt, caption,        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    }  },  defined(video) => {    "video": {      "embedUrl": video.embedUrl,      "sourceUrl": video.sourceUrl,      "title": {"th": video.title.th, "en": video.title.en}    }  },  tags,  "sources": sources[]{    "label": {"th": label.th, "en": label.en},    url  },  featured,  publishedAt,  updatedAt}
+// Query: *[_type == "article" && status == "published"] | order(publishedAt desc) {  "slug": slug.current,  "title": {"th": title.th, "en": title.en},  "excerpt": {"th": excerpt.th, "en": excerpt.en},  "seo": select(    defined(seo) => {      "metaTitle": {"th": seo.metaTitle.th, "en": seo.metaTitle.en},      "metaDesc": {"th": seo.metaDesc.th, "en": seo.metaDesc.en},      "ogImage": select(        defined(seo.ogImage.asset) => {          "src": seo.ogImage.asset->url,          "width": seo.ogImage.asset->metadata.dimensions.width,          "height": seo.ogImage.asset->metadata.dimensions.height        },        null      )    },    null  ),  "cover": {    "src": cover.asset->url,    "width": cover.asset->metadata.dimensions.width,    "height": cover.asset->metadata.dimensions.height,    "alt": {"th": cover.alt.th, "en": cover.alt.en},    "caption": select(      defined(cover.caption) => {"th": cover.caption.th, "en": cover.caption.en},      null    )  },  "category": {"th": category->title.th, "en": category->title.en},  "author": {    "name": author->name,    "role": {"th": author->role.th, "en": author->role.en}  },  "atlasLocation": {    "countryCode": atlasLocation.countryCode,    "latitude": atlasLocation.latitude,    "longitude": atlasLocation.longitude,    "label": {"th": atlasLocation.label.th, "en": atlasLocation.label.en}  },  "body": {    "th": body.th[]{      _type == "block" => {        _key, _type,        children[]{_key, _type, marks, text},        defined(level) => {level},        defined(listItem) => {listItem},        markDefs[]{_key, _type, href},        style      },      _type == "articleImage" => {        _key, _type, alt, caption,        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    },    "en": body.en[]{      _type == "block" => {        _key, _type,        children[]{_key, _type, marks, text},        defined(level) => {level},        defined(listItem) => {listItem},        markDefs[]{_key, _type, href},        style      },      _type == "articleImage" => {        _key, _type, alt, caption,        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    }  },  defined(video) => {    "video": {      "embedUrl": video.embedUrl,      "sourceUrl": video.sourceUrl,      "title": {"th": video.title.th, "en": video.title.en}    }  },  tags,  "sources": sources[]{    "label": {"th": label.th, "en": label.en},    url  },  featured,  publishedAt,  updatedAt}
 export type ArticleQueryResult = Array<
   | {
       slug: string;
@@ -387,6 +398,21 @@ export type ArticleQueryResult = Array<
         th: string | null;
         en: string | null;
       };
+      seo: {
+        metaTitle: {
+          th: string | null;
+          en: string | null;
+        };
+        metaDesc: {
+          th: string | null;
+          en: string | null;
+        };
+        ogImage: {
+          src: string;
+          width: number | null;
+          height: number | null;
+        } | null;
+      } | null;
       cover: {
         src: string | null;
         width: number | null;
@@ -395,6 +421,10 @@ export type ArticleQueryResult = Array<
           th: string | null;
           en: string | null;
         };
+        caption: {
+          th: string | null;
+          en: string | null;
+        } | null;
       };
       category: {
         th: string | null;
@@ -678,6 +708,21 @@ export type ArticleQueryResult = Array<
         th: string | null;
         en: string | null;
       };
+      seo: {
+        metaTitle: {
+          th: string | null;
+          en: string | null;
+        };
+        metaDesc: {
+          th: string | null;
+          en: string | null;
+        };
+        ogImage: {
+          src: string;
+          width: number | null;
+          height: number | null;
+        } | null;
+      } | null;
       cover: {
         src: string | null;
         width: number | null;
@@ -686,6 +731,10 @@ export type ArticleQueryResult = Array<
           th: string | null;
           en: string | null;
         };
+        caption: {
+          th: string | null;
+          en: string | null;
+        } | null;
       };
       category: {
         th: string | null;
@@ -955,7 +1004,7 @@ export type ArticleQueryResult = Array<
 
 // Source: ../src/lib/content.ts
 // Variable: draftArticleQuery
-// Query: *[_type == "article" && slug.current == $slug][0] {  "slug": slug.current,  "title": {"th": title.th, "en": title.en},  "excerpt": {"th": excerpt.th, "en": excerpt.en},  "cover": {    "src": cover.asset->url,    "width": cover.asset->metadata.dimensions.width,    "height": cover.asset->metadata.dimensions.height,    "alt": {"th": cover.alt.th, "en": cover.alt.en}  },  "category": {"th": category->title.th, "en": category->title.en},  "author": {    "name": author->name,    "role": {"th": author->role.th, "en": author->role.en}  },  "atlasLocation": {    "countryCode": atlasLocation.countryCode,    "latitude": atlasLocation.latitude,    "longitude": atlasLocation.longitude,    "label": {"th": atlasLocation.label.th, "en": atlasLocation.label.en}  },  "body": {    "th": body.th[]{      _type == "block" => {        _key, _type,        children[]{_key, _type, marks, text},        defined(level) => {level},        defined(listItem) => {listItem},        markDefs[]{_key, _type, href},        style      },      _type == "articleImage" => {        _key, _type, alt, caption,        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    },    "en": body.en[]{      _type == "block" => {        _key, _type,        children[]{_key, _type, marks, text},        defined(level) => {level},        defined(listItem) => {listItem},        markDefs[]{_key, _type, href},        style      },      _type == "articleImage" => {        _key, _type, alt, caption,        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    }  },  defined(video) => {    "video": {      "embedUrl": video.embedUrl,      "sourceUrl": video.sourceUrl,      "title": {"th": video.title.th, "en": video.title.en}    }  },  tags,  "sources": sources[]{    "label": {"th": label.th, "en": label.en},    url  },  featured,  publishedAt,  updatedAt}
+// Query: *[_type == "article" && slug.current == $slug][0] {  "slug": slug.current,  "title": {"th": title.th, "en": title.en},  "excerpt": {"th": excerpt.th, "en": excerpt.en},  "seo": select(    defined(seo) => {      "metaTitle": {"th": seo.metaTitle.th, "en": seo.metaTitle.en},      "metaDesc": {"th": seo.metaDesc.th, "en": seo.metaDesc.en},      "ogImage": select(        defined(seo.ogImage.asset) => {          "src": seo.ogImage.asset->url,          "width": seo.ogImage.asset->metadata.dimensions.width,          "height": seo.ogImage.asset->metadata.dimensions.height        },        null      )    },    null  ),  "cover": {    "src": cover.asset->url,    "width": cover.asset->metadata.dimensions.width,    "height": cover.asset->metadata.dimensions.height,    "alt": {"th": cover.alt.th, "en": cover.alt.en},    "caption": select(      defined(cover.caption) => {"th": cover.caption.th, "en": cover.caption.en},      null    )  },  "category": {"th": category->title.th, "en": category->title.en},  "author": {    "name": author->name,    "role": {"th": author->role.th, "en": author->role.en}  },  "atlasLocation": {    "countryCode": atlasLocation.countryCode,    "latitude": atlasLocation.latitude,    "longitude": atlasLocation.longitude,    "label": {"th": atlasLocation.label.th, "en": atlasLocation.label.en}  },  "body": {    "th": body.th[]{      _type == "block" => {        _key, _type,        children[]{_key, _type, marks, text},        defined(level) => {level},        defined(listItem) => {listItem},        markDefs[]{_key, _type, href},        style      },      _type == "articleImage" => {        _key, _type, alt, caption,        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    },    "en": body.en[]{      _type == "block" => {        _key, _type,        children[]{_key, _type, marks, text},        defined(level) => {level},        defined(listItem) => {listItem},        markDefs[]{_key, _type, href},        style      },      _type == "articleImage" => {        _key, _type, alt, caption,        "src": asset->url,        "width": asset->metadata.dimensions.width,        "height": asset->metadata.dimensions.height      }    }  },  defined(video) => {    "video": {      "embedUrl": video.embedUrl,      "sourceUrl": video.sourceUrl,      "title": {"th": video.title.th, "en": video.title.en}    }  },  tags,  "sources": sources[]{    "label": {"th": label.th, "en": label.en},    url  },  featured,  publishedAt,  updatedAt}
 export type DraftArticleQueryResult =
   | {
       slug: string;
@@ -967,6 +1016,21 @@ export type DraftArticleQueryResult =
         th: string | null;
         en: string | null;
       };
+      seo: {
+        metaTitle: {
+          th: string | null;
+          en: string | null;
+        };
+        metaDesc: {
+          th: string | null;
+          en: string | null;
+        };
+        ogImage: {
+          src: string;
+          width: number | null;
+          height: number | null;
+        } | null;
+      } | null;
       cover: {
         src: string | null;
         width: number | null;
@@ -975,6 +1039,10 @@ export type DraftArticleQueryResult =
           th: string | null;
           en: string | null;
         };
+        caption: {
+          th: string | null;
+          en: string | null;
+        } | null;
       };
       category: {
         th: string | null;
@@ -1258,6 +1326,21 @@ export type DraftArticleQueryResult =
         th: string | null;
         en: string | null;
       };
+      seo: {
+        metaTitle: {
+          th: string | null;
+          en: string | null;
+        };
+        metaDesc: {
+          th: string | null;
+          en: string | null;
+        };
+        ogImage: {
+          src: string;
+          width: number | null;
+          height: number | null;
+        } | null;
+      } | null;
       cover: {
         src: string | null;
         width: number | null;
@@ -1266,6 +1349,10 @@ export type DraftArticleQueryResult =
           th: string | null;
           en: string | null;
         };
+        caption: {
+          th: string | null;
+          en: string | null;
+        } | null;
       };
       category: {
         th: string | null;
@@ -2050,8 +2137,8 @@ export type DraftProjectQueryResult = {
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    '*[_type == "article" && status == "published"] | order(publishedAt desc) {\n  "slug": slug.current,\n  "title": {"th": title.th, "en": title.en},\n  "excerpt": {"th": excerpt.th, "en": excerpt.en},\n  "cover": {\n    "src": cover.asset->url,\n    "width": cover.asset->metadata.dimensions.width,\n    "height": cover.asset->metadata.dimensions.height,\n    "alt": {"th": cover.alt.th, "en": cover.alt.en}\n  },\n  "category": {"th": category->title.th, "en": category->title.en},\n  "author": {\n    "name": author->name,\n    "role": {"th": author->role.th, "en": author->role.en}\n  },\n  "atlasLocation": {\n    "countryCode": atlasLocation.countryCode,\n    "latitude": atlasLocation.latitude,\n    "longitude": atlasLocation.longitude,\n    "label": {"th": atlasLocation.label.th, "en": atlasLocation.label.en}\n  },\n  "body": {\n    "th": body.th[]{\n      _type == "block" => {\n        _key, _type,\n        children[]{_key, _type, marks, text},\n        defined(level) => {level},\n        defined(listItem) => {listItem},\n        markDefs[]{_key, _type, href},\n        style\n      },\n      _type == "articleImage" => {\n        _key, _type, alt, caption,\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    },\n    "en": body.en[]{\n      _type == "block" => {\n        _key, _type,\n        children[]{_key, _type, marks, text},\n        defined(level) => {level},\n        defined(listItem) => {listItem},\n        markDefs[]{_key, _type, href},\n        style\n      },\n      _type == "articleImage" => {\n        _key, _type, alt, caption,\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    }\n  },\n  defined(video) => {\n    "video": {\n      "embedUrl": video.embedUrl,\n      "sourceUrl": video.sourceUrl,\n      "title": {"th": video.title.th, "en": video.title.en}\n    }\n  },\n  tags,\n  "sources": sources[]{\n    "label": {"th": label.th, "en": label.en},\n    url\n  },\n  featured,\n  publishedAt,\n  updatedAt\n}': ArticleQueryResult;
-    '*[_type == "article" && slug.current == $slug][0] {\n  "slug": slug.current,\n  "title": {"th": title.th, "en": title.en},\n  "excerpt": {"th": excerpt.th, "en": excerpt.en},\n  "cover": {\n    "src": cover.asset->url,\n    "width": cover.asset->metadata.dimensions.width,\n    "height": cover.asset->metadata.dimensions.height,\n    "alt": {"th": cover.alt.th, "en": cover.alt.en}\n  },\n  "category": {"th": category->title.th, "en": category->title.en},\n  "author": {\n    "name": author->name,\n    "role": {"th": author->role.th, "en": author->role.en}\n  },\n  "atlasLocation": {\n    "countryCode": atlasLocation.countryCode,\n    "latitude": atlasLocation.latitude,\n    "longitude": atlasLocation.longitude,\n    "label": {"th": atlasLocation.label.th, "en": atlasLocation.label.en}\n  },\n  "body": {\n    "th": body.th[]{\n      _type == "block" => {\n        _key, _type,\n        children[]{_key, _type, marks, text},\n        defined(level) => {level},\n        defined(listItem) => {listItem},\n        markDefs[]{_key, _type, href},\n        style\n      },\n      _type == "articleImage" => {\n        _key, _type, alt, caption,\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    },\n    "en": body.en[]{\n      _type == "block" => {\n        _key, _type,\n        children[]{_key, _type, marks, text},\n        defined(level) => {level},\n        defined(listItem) => {listItem},\n        markDefs[]{_key, _type, href},\n        style\n      },\n      _type == "articleImage" => {\n        _key, _type, alt, caption,\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    }\n  },\n  defined(video) => {\n    "video": {\n      "embedUrl": video.embedUrl,\n      "sourceUrl": video.sourceUrl,\n      "title": {"th": video.title.th, "en": video.title.en}\n    }\n  },\n  tags,\n  "sources": sources[]{\n    "label": {"th": label.th, "en": label.en},\n    url\n  },\n  featured,\n  publishedAt,\n  updatedAt\n}': DraftArticleQueryResult;
+    '*[_type == "article" && status == "published"] | order(publishedAt desc) {\n  "slug": slug.current,\n  "title": {"th": title.th, "en": title.en},\n  "excerpt": {"th": excerpt.th, "en": excerpt.en},\n  "seo": select(\n    defined(seo) => {\n      "metaTitle": {"th": seo.metaTitle.th, "en": seo.metaTitle.en},\n      "metaDesc": {"th": seo.metaDesc.th, "en": seo.metaDesc.en},\n      "ogImage": select(\n        defined(seo.ogImage.asset) => {\n          "src": seo.ogImage.asset->url,\n          "width": seo.ogImage.asset->metadata.dimensions.width,\n          "height": seo.ogImage.asset->metadata.dimensions.height\n        },\n        null\n      )\n    },\n    null\n  ),\n  "cover": {\n    "src": cover.asset->url,\n    "width": cover.asset->metadata.dimensions.width,\n    "height": cover.asset->metadata.dimensions.height,\n    "alt": {"th": cover.alt.th, "en": cover.alt.en},\n    "caption": select(\n      defined(cover.caption) => {"th": cover.caption.th, "en": cover.caption.en},\n      null\n    )\n  },\n  "category": {"th": category->title.th, "en": category->title.en},\n  "author": {\n    "name": author->name,\n    "role": {"th": author->role.th, "en": author->role.en}\n  },\n  "atlasLocation": {\n    "countryCode": atlasLocation.countryCode,\n    "latitude": atlasLocation.latitude,\n    "longitude": atlasLocation.longitude,\n    "label": {"th": atlasLocation.label.th, "en": atlasLocation.label.en}\n  },\n  "body": {\n    "th": body.th[]{\n      _type == "block" => {\n        _key, _type,\n        children[]{_key, _type, marks, text},\n        defined(level) => {level},\n        defined(listItem) => {listItem},\n        markDefs[]{_key, _type, href},\n        style\n      },\n      _type == "articleImage" => {\n        _key, _type, alt, caption,\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    },\n    "en": body.en[]{\n      _type == "block" => {\n        _key, _type,\n        children[]{_key, _type, marks, text},\n        defined(level) => {level},\n        defined(listItem) => {listItem},\n        markDefs[]{_key, _type, href},\n        style\n      },\n      _type == "articleImage" => {\n        _key, _type, alt, caption,\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    }\n  },\n  defined(video) => {\n    "video": {\n      "embedUrl": video.embedUrl,\n      "sourceUrl": video.sourceUrl,\n      "title": {"th": video.title.th, "en": video.title.en}\n    }\n  },\n  tags,\n  "sources": sources[]{\n    "label": {"th": label.th, "en": label.en},\n    url\n  },\n  featured,\n  publishedAt,\n  updatedAt\n}': ArticleQueryResult;
+    '*[_type == "article" && slug.current == $slug][0] {\n  "slug": slug.current,\n  "title": {"th": title.th, "en": title.en},\n  "excerpt": {"th": excerpt.th, "en": excerpt.en},\n  "seo": select(\n    defined(seo) => {\n      "metaTitle": {"th": seo.metaTitle.th, "en": seo.metaTitle.en},\n      "metaDesc": {"th": seo.metaDesc.th, "en": seo.metaDesc.en},\n      "ogImage": select(\n        defined(seo.ogImage.asset) => {\n          "src": seo.ogImage.asset->url,\n          "width": seo.ogImage.asset->metadata.dimensions.width,\n          "height": seo.ogImage.asset->metadata.dimensions.height\n        },\n        null\n      )\n    },\n    null\n  ),\n  "cover": {\n    "src": cover.asset->url,\n    "width": cover.asset->metadata.dimensions.width,\n    "height": cover.asset->metadata.dimensions.height,\n    "alt": {"th": cover.alt.th, "en": cover.alt.en},\n    "caption": select(\n      defined(cover.caption) => {"th": cover.caption.th, "en": cover.caption.en},\n      null\n    )\n  },\n  "category": {"th": category->title.th, "en": category->title.en},\n  "author": {\n    "name": author->name,\n    "role": {"th": author->role.th, "en": author->role.en}\n  },\n  "atlasLocation": {\n    "countryCode": atlasLocation.countryCode,\n    "latitude": atlasLocation.latitude,\n    "longitude": atlasLocation.longitude,\n    "label": {"th": atlasLocation.label.th, "en": atlasLocation.label.en}\n  },\n  "body": {\n    "th": body.th[]{\n      _type == "block" => {\n        _key, _type,\n        children[]{_key, _type, marks, text},\n        defined(level) => {level},\n        defined(listItem) => {listItem},\n        markDefs[]{_key, _type, href},\n        style\n      },\n      _type == "articleImage" => {\n        _key, _type, alt, caption,\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    },\n    "en": body.en[]{\n      _type == "block" => {\n        _key, _type,\n        children[]{_key, _type, marks, text},\n        defined(level) => {level},\n        defined(listItem) => {listItem},\n        markDefs[]{_key, _type, href},\n        style\n      },\n      _type == "articleImage" => {\n        _key, _type, alt, caption,\n        "src": asset->url,\n        "width": asset->metadata.dimensions.width,\n        "height": asset->metadata.dimensions.height\n      }\n    }\n  },\n  defined(video) => {\n    "video": {\n      "embedUrl": video.embedUrl,\n      "sourceUrl": video.sourceUrl,\n      "title": {"th": video.title.th, "en": video.title.en}\n    }\n  },\n  tags,\n  "sources": sources[]{\n    "label": {"th": label.th, "en": label.en},\n    url\n  },\n  featured,\n  publishedAt,\n  updatedAt\n}': DraftArticleQueryResult;
     '*[_type == "project" && status == "published"] | order(promoted desc, title.en asc) {\n    "slug": slug.current,\n    "title": {"th": title.th, "en": title.en},\n    "summary": {"th": summary.th, "en": summary.en},\n    promoted, links,\n    "body": {\n      "th": body.th[]{\n        _type == "block" => {\n          _key, _type,\n          children[]{_key, _type, marks, text},\n          defined(level) => {level},\n          defined(listItem) => {listItem},\n          markDefs[]{_key, _type, href},\n          style\n        },\n        _type == "articleImage" => {\n          _key, _type, alt, caption,\n          "src": asset->url,\n          "width": asset->metadata.dimensions.width,\n          "height": asset->metadata.dimensions.height\n        }\n      },\n      "en": body.en[]{\n        _type == "block" => {\n          _key, _type,\n          children[]{_key, _type, marks, text},\n          defined(level) => {level},\n          defined(listItem) => {listItem},\n          markDefs[]{_key, _type, href},\n          style\n        },\n        _type == "articleImage" => {\n          _key, _type, alt, caption,\n          "src": asset->url,\n          "width": asset->metadata.dimensions.width,\n          "height": asset->metadata.dimensions.height\n        }\n      }\n    }\n  }': ProjectQueryResult;
     '*[_type == "settings" && _id == "settings"][0] {\n    "siteTitle": {"th": siteTitle.th, "en": siteTitle.en},\n    "footer": {"th": footer.th, "en": footer.en},\n    socialLinks\n  }': SettingsQueryResult;
     '*[_type == "project" && slug.current == $slug][0] {\n    "slug": slug.current,\n    "title": {"th": title.th, "en": title.en},\n    "summary": {"th": summary.th, "en": summary.en},\n    promoted, links,\n    "body": {\n      "th": body.th[]{\n        _type == "block" => {\n          _key, _type,\n          children[]{_key, _type, marks, text},\n          defined(level) => {level},\n          defined(listItem) => {listItem},\n          markDefs[]{_key, _type, href},\n          style\n        },\n        _type == "articleImage" => {\n          _key, _type, alt, caption,\n          "src": asset->url,\n          "width": asset->metadata.dimensions.width,\n          "height": asset->metadata.dimensions.height\n        }\n      },\n      "en": body.en[]{\n        _type == "block" => {\n          _key, _type,\n          children[]{_key, _type, marks, text},\n          defined(level) => {level},\n          defined(listItem) => {listItem},\n          markDefs[]{_key, _type, href},\n          style\n        },\n        _type == "articleImage" => {\n          _key, _type, alt, caption,\n          "src": asset->url,\n          "width": asset->metadata.dimensions.width,\n          "height": asset->metadata.dimensions.height\n        }\n      }\n    }\n  }': DraftProjectQueryResult;

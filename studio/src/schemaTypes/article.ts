@@ -40,6 +40,65 @@ export const article = defineType({
       ],
     }),
     defineField({
+      name: "seo",
+      title: "SEO and social sharing",
+      type: "object",
+      description:
+        "Optional overrides. Leave this empty to use the article title, excerpt, and cover image.",
+      validation: (rule) =>
+        rule.custom((value) => {
+          if (!value) return true;
+          const seo = value as {
+            metaTitle?: { th?: string; en?: string };
+            metaDesc?: { th?: string; en?: string };
+          };
+          const values = [
+            seo.metaTitle?.th,
+            seo.metaTitle?.en,
+            seo.metaDesc?.th,
+            seo.metaDesc?.en,
+          ];
+          return values.every((entry) => typeof entry === "string" && entry.trim().length > 0)
+            ? true
+            : "Complete every Thai and English SEO field, or remove this override.";
+        }),
+      fields: [
+        defineField({
+          name: "metaTitle",
+          title: "Meta title",
+          type: "localizedString",
+          validation: (rule) =>
+            rule.custom((value) => {
+              if (!value) return true;
+              const localized = value as { th?: string; en?: string };
+              return (localized.th?.length ?? 0) <= 70 && (localized.en?.length ?? 0) <= 70
+                ? true
+                : "Each meta title must be 70 characters or fewer.";
+            }),
+        }),
+        defineField({
+          name: "metaDesc",
+          title: "Meta description",
+          type: "localizedText",
+          validation: (rule) =>
+            rule.custom((value) => {
+              if (!value) return true;
+              const localized = value as { th?: string; en?: string };
+              return (localized.th?.length ?? 0) <= 200 && (localized.en?.length ?? 0) <= 200
+                ? true
+                : "Each meta description must be 200 characters or fewer.";
+            }),
+        }),
+        defineField({
+          name: "ogImage",
+          title: "Social sharing image",
+          type: "image",
+          description: "Optional. The cover image is used when this is empty.",
+          options: { hotspot: true },
+        }),
+      ],
+    }),
+    defineField({
       name: "category",
       type: "reference",
       to: [{ type: "category" }],

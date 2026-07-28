@@ -24,6 +24,10 @@ jobs:
       - name: Verify live headers, public feeds, and DNS ownership
         env:
           AUDIT_CNAME_SUFFIX: ${{ vars.AUDIT_CNAME_SUFFIX }}
+          AUDIT_DNSSEC_ENABLED: ${{ vars.AUDIT_DNSSEC_ENABLED }}
+          AUDIT_MAIL_POLICY_ENABLED: ${{ vars.AUDIT_MAIL_POLICY_ENABLED }}
+          AUDIT_PRODUCTION_READY: ${{ vars.AUDIT_PRODUCTION_READY }}
           AUDIT_SITE_URL: https://news.z2zs.space
           AUDIT_STUDIO_ENABLED: ${{ vars.AUDIT_STUDIO_ENABLED }}
+          AUDIT_STUDIO_URL: https://studio.z2zs.space
         run: node scripts/production-audit.mjs

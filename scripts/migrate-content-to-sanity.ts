@@ -156,10 +156,22 @@ async function main(): Promise<void> {
         _type: "image",
         alt: localized("localizedString", article.cover.alt),
         asset: imageReference(article.cover.src),
+        ...(article.cover.caption
+          ? { caption: localized("localizedString", article.cover.caption) }
+          : {}),
       },
       excerpt: localized("localizedText", article.excerpt),
       featured: article.featured,
       publishedAt: article.publishedAt,
+      seo: {
+        _type: "object",
+        metaDesc: localized("localizedText", article.excerpt),
+        metaTitle: localized("localizedString", article.title),
+        ogImage: {
+          _type: "image",
+          asset: imageReference(article.cover.src),
+        },
+      },
       slug: { _type: "slug", current: article.slug },
       sources: article.sources.map((source, index) => ({
         _key: `source-${String(index)}`,
