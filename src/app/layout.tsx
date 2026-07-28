@@ -46,7 +46,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           dangerouslySetInnerHTML={{ __html: themeInit }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <script nonce={nonce} src="/article-reactions.js" defer />
+      </body>
     </html>
   );
 }
