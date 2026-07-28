@@ -16,6 +16,7 @@ interface InteractiveAtlasProps {
   navigationLabel: string;
   nodes: AtlasMapNode[];
   startEnabled?: boolean;
+  startPaused?: boolean;
 }
 
 export function AtlasInteractionLoader(
@@ -25,13 +26,19 @@ export function AtlasInteractionLoader(
     useState<ComponentType<InteractiveAtlasProps> | null>(null);
   const [selectedId, setSelectedId] = useState<string>();
   const focusId = useRef<string | undefined>(undefined);
+  const startPaused = useRef(false);
   const loading = useRef(false);
 
-  const activate = (nextSelectedId?: string, restoreFocus = false) => {
+  const activate = (
+    nextSelectedId?: string,
+    restoreFocus = false,
+    pauseOnMount = false,
+  ) => {
     if (nextSelectedId) {
       setSelectedId(nextSelectedId);
       if (restoreFocus) focusId.current = nextSelectedId;
     }
+    if (pauseOnMount) startPaused.current = true;
     if (loading.current || InteractiveAtlas) return;
     loading.current = true;
     void import("@/components/atlas-canvas-loader").then((module) => {
@@ -56,6 +63,7 @@ export function AtlasInteractionLoader(
         {...props}
         {...(selectedId ? { initialSelectedId: selectedId } : {})}
         startEnabled
+        startPaused={startPaused.current}
       />
     );
   }
@@ -69,10 +77,10 @@ export function AtlasInteractionLoader(
         const id = event.target instanceof HTMLElement
           ? event.target.dataset.atlasNodeId
           : undefined;
-        activate(id, Boolean(id));
+        activate(id, Boolean(id), true);
       }}
       onPointerEnter={() => {
-        activate();
+        activate(undefined, false, true);
       }}
       onTouchStart={() => {
         activate();
@@ -93,7 +101,7 @@ export function AtlasInteractionLoader(
               data-longitude={node.longitude}
               key={node.id}
               onClick={() => {
-                activate(node.id);
+                activate(node.id, false, true);
               }}
               style={{
                 translate: `${String(node.offset[0])}px ${String(node.offset[1])}px`,

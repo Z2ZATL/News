@@ -65,14 +65,16 @@ export function AtlasCanvasLoader({
   navigationLabel,
   nodes,
   startEnabled = false,
+  startPaused = false,
 }: Readonly<{
   initialSelectedId?: string;
   navigationLabel: string;
   nodes: AtlasMapNode[];
   startEnabled?: boolean;
+  startPaused?: boolean;
 }>) {
   const [enabled, setEnabled] = useState(startEnabled);
-  const [interactionPaused, setInteractionPaused] = useState(false);
+  const [interactionPaused, setInteractionPaused] = useState(startPaused);
   const [reducedMotion, setReducedMotion] = useState(() =>
     startEnabled
       ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
