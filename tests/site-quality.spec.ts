@@ -310,7 +310,9 @@ test("Atlas hides the United States marker when it rotates behind the globe", as
   await expect(unitedStates).toHaveAttribute("data-hemisphere", "back", {
     timeout: 6_000,
   });
-  await unitedStates.evaluate((element) => element.click());
+  await unitedStates.evaluate((element) => {
+    if (element instanceof HTMLButtonElement) element.click();
+  });
   await expect(unitedStates).toHaveAttribute("aria-expanded", "true");
 
   await expect
