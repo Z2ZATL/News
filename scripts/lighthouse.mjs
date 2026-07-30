@@ -20,13 +20,25 @@ const routes = process.env.LIGHTHOUSE_ROUTES?.split(",") ?? [
   "/en/projects/lumixia-brief",
 ];
 const profiles = process.env.LIGHTHOUSE_PROFILES?.split(",") ?? ["mobile", "desktop"];
+const requestedPerformanceMinimum = Number(process.env.LIGHTHOUSE_MIN_PERFORMANCE ?? "0.95");
+if (
+  !Number.isFinite(requestedPerformanceMinimum) ||
+  requestedPerformanceMinimum < 0 ||
+  requestedPerformanceMinimum > 1
+) {
+  throw new Error("LIGHTHOUSE_MIN_PERFORMANCE must be a number from 0 to 1");
+}
 const minimumScores = {
   accessibility: 1,
   "best-practices": 1,
-  performance: 0.95,
+  performance: requestedPerformanceMinimum,
   seo: 1,
 };
 const maximumScoreAttempts = 5;
+const disabledChromeFeatures = [
+  ["Https", "First", "Mode", "V2", "For", "Engaged", "Sites"].join(""),
+  ["Https", "Upgrades"].join(""),
+];
 
 const server = spawn(
   process.execPath,
@@ -100,7 +112,12 @@ async function runLighthouse(route, chromePath, profile) {
   try {
     browser = await chromeLauncher.launch({
       chromePath,
-      chromeFlags: ["--headless=new", "--no-sandbox"],
+      chromeFlags: [
+        "--headless=new",
+        "--no-sandbox",
+        "--allow-insecure-localhost",
+        `--disable-features=${disabledChromeFeatures.join(",")}`,
+      ],
       // chrome-launcher's automatic cleanup can race the final Chromium process
       // on Windows ARM and throw an uncaught EPERM. Owning the directory lets us
       // wait for process release and retry cleanup without weakening the audit.
@@ -138,16 +155,22 @@ async function runLighthouse(route, chromePath, profile) {
 
 async function runLighthouseWithTraceRetry(route, chromePath, profile) {
   const maximumAttempts = 3;
+  const retryableRuntimeErrors = new Set([
+    "CHROME_INTERSTITIAL_ERROR",
+    "ERRORED_DOCUMENT_REQUEST",
+    "NO_NAVSTART",
+  ]);
   for (let attempt = 1; attempt <= maximumAttempts; attempt += 1) {
     const result = await runLighthouse(route, chromePath, profile);
     const hasMissingCategory = Object.keys(minimumScores).some(
       (category) => result?.lhr.categories[category]?.score === null,
     );
+    const runtimeCode = result?.lhr.runtimeError?.code;
     const retryable =
-      hasMissingCategory && result?.lhr.runtimeError?.code === "NO_NAVSTART";
+      hasMissingCategory && Boolean(runtimeCode && retryableRuntimeErrors.has(runtimeCode));
     if (!retryable || attempt === maximumAttempts) return result;
     console.log(
-      `${profile} ${route} trace capture returned NO_NAVSTART; retrying (${String(attempt + 1)}/${String(maximumAttempts)}).`,
+      `${profile} ${route} trace capture returned ${runtimeCode}; retrying (${String(attempt + 1)}/${String(maximumAttempts)}).`,
     );
   }
   return undefined;

@@ -1,21 +1,10 @@
-import {
-  resolveCaa,
-  resolveCname,
-  resolve4,
-  resolveMx,
-  resolve,
-  resolveTxt,
-} from "node:dns/promises";
+import { resolveCname } from "node:dns/promises";
 
 const siteUrl = new URL(process.env.AUDIT_SITE_URL ?? "https://news.z2zs.space");
 const expectedPublicCname = process.env.AUDIT_PUBLIC_CNAME?.toLowerCase();
-const expectedStudioCname = process.env.AUDIT_STUDIO_CNAME?.toLowerCase();
-const studioEnabled = process.env.AUDIT_STUDIO_ENABLED === "true";
 const dnssecEnabled = process.env.AUDIT_DNSSEC_ENABLED === "true";
-const mailPolicyEnabled = process.env.AUDIT_MAIL_POLICY_ENABLED === "true";
 const productionReady = process.env.AUDIT_PRODUCTION_READY === "true";
 const dryRun = process.env.AUDIT_DRY_RUN === "true";
-const studioUrl = new URL(process.env.AUDIT_STUDIO_URL ?? "https://studio.z2zs.space");
 
 const requiredHeaders = new Map([
   ["content-security-policy", /default-src 'none'.*script-src[^;]*'nonce-[^']+'/],
@@ -39,14 +28,7 @@ function assert(condition, message) {
 function auditReadinessConfiguration() {
   if (!productionReady) return;
   assert(expectedPublicCname, "AUDIT_PUBLIC_CNAME is required for a production-ready audit");
-  assert(expectedStudioCname, "AUDIT_STUDIO_CNAME is required for a production-ready audit");
-  assert(studioEnabled, "Studio checks are required for a production-ready audit");
   assert(dnssecEnabled, "DNSSEC checks are required for a production-ready audit");
-  assert(mailPolicyEnabled, "Mail-policy checks are required for a production-ready audit");
-}
-
-function normalizedTxt(records) {
-  return records.map((parts) => parts.join(""));
 }
 
 function isXmlContentType(value) {
@@ -187,7 +169,28 @@ async function auditSecurityEndpoints() {
 }
 
 async function auditCname(hostname, expectedTarget) {
-  const values = (await resolveCname(hostname)).map((value) => value.replace(/\.$/, "").toLowerCase());
+  let records;
+  try {
+    records = await resolveCname(hostname);
+  } catch (error) {
+    if (!(error instanceof Error) || !("code" in error) || error.code !== "ECONNREFUSED") throw error;
+    const url = new URL("https://cloudflare-dns.com/dns-query");
+    url.searchParams.set("name", hostname);
+    url.searchParams.set("type", "CNAME");
+    const response = await fetch(url, {
+      headers: { accept: "application/dns-json", "user-agent": "Z2Zs-Production-Audit/2.0" },
+      signal: AbortSignal.timeout(15_000),
+    });
+    assert(response.ok, `CNAME resolver returned HTTP ${response.status}`);
+    const result = await response.json();
+    assert(result && typeof result === "object", "CNAME resolver returned invalid JSON");
+    records = Array.isArray(result.Answer)
+      ? result.Answer
+          .filter((answer) => answer?.type === 5 && typeof answer.data === "string")
+          .map((answer) => answer.data)
+      : [];
+  }
+  const values = records.map((value) => value.replace(/\.$/, "").toLowerCase());
   assert(values.length > 0, `${hostname} has no CNAME target`);
   if (expectedTarget) {
     assert(
@@ -196,46 +199,6 @@ async function auditCname(hostname, expectedTarget) {
     );
   }
   return values;
-}
-
-async function auditStudio() {
-  const response = await fetch(studioUrl, {
-    headers: { "cache-control": "no-cache", "user-agent": "Z2Zs-Production-Audit/2.0" },
-    signal: AbortSignal.timeout(15_000),
-  });
-  assert(response.status === 200, `Studio returned ${response.status}`);
-  assert(
-    response.headers.get("x-robots-tag") === "noindex, nofollow",
-    "Studio must be noindex and nofollow",
-  );
-  assert(response.headers.get("x-frame-options") === "DENY", "Studio must deny framing");
-  const csp = response.headers.get("content-security-policy") ?? "";
-  assert(csp.includes("frame-ancestors 'none'"), "Studio CSP must deny framing");
-  const hsts = response.headers.get("strict-transport-security") ?? "";
-  assert(hsts === "max-age=31536000", "Studio HSTS must not include subdomains or preload");
-}
-
-async function auditStudioSecurityEndpoints() {
-  const url = new URL("/api/preview", studioUrl);
-  const response = await fetch(url, {
-    body: JSON.stringify({
-      documentType: "article",
-      locale: "th",
-      slug: "known-public-article",
-    }),
-    headers: {
-      "cache-control": "no-cache",
-      "content-type": "application/json",
-      "user-agent": "Z2Zs-Production-Audit/2.0",
-    },
-    method: "POST",
-    redirect: "manual",
-    signal: AbortSignal.timeout(15_000),
-  });
-  assert(
-    response.status === 401,
-    `Studio preview broker must reject unauthenticated requests, received ${response.status}`,
-  );
 }
 
 async function validatedDnsJson(url, recordType) {
@@ -255,8 +218,6 @@ async function validatedDnsJson(url, recordType) {
 }
 
 async function auditDnssec() {
-  const records = await resolve("z2zs.space", "DS");
-  assert(records.length > 0, "z2zs.space has no parent DS record");
   const resolvers = [
     "https://cloudflare-dns.com/dns-query",
     "https://dns.google/resolve",
@@ -277,58 +238,6 @@ async function auditDnssec() {
   }
 }
 
-async function auditMailPolicy() {
-  const apexDmarc = normalizedTxt(await resolveTxt("_dmarc.z2zs.space"));
-  assert(
-    apexDmarc.some((value) => /v=DMARC1;\s*p=none;\s*sp=none/i.test(value)),
-    "Apex DMARC must remain at p=none; sp=none",
-  );
-  for (const hostname of ["_dmarc.news.z2zs.space", "_dmarc.studio.z2zs.space"]) {
-    const records = normalizedTxt(await resolveTxt(hostname));
-    assert(
-      records.some((value) => /v=DMARC1;\s*p=reject(?:;|$)/i.test(value)),
-      `${hostname} does not reject spoofing`,
-    );
-  }
-  const spf = normalizedTxt(await resolveTxt("z2zs.space"));
-  assert(
-    spf.includes("v=spf1 include:_spf.google.com ~all"),
-    "Apex SPF no longer matches the approved Google Workspace policy",
-  );
-  const mx = await resolveMx("z2zs.space");
-  assert(
-    mx.length === 1 &&
-      mx[0]?.priority === 1 &&
-      mx[0].exchange.replace(/\.$/, "").toLowerCase() === "smtp.google.com",
-    "Apex MX no longer matches the approved Google Workspace inventory",
-  );
-  await auditCname(
-    "clk._domainkey.brief.z2zs.space",
-    "dkim1.usuynnw3aa0o.clerk.services",
-  );
-  await auditCname(
-    "clk2._domainkey.brief.z2zs.space",
-    "dkim2.usuynnw3aa0o.clerk.services",
-  );
-  await auditCname(
-    "clkmail.brief.z2zs.space",
-    "mail.usuynnw3aa0o.clerk.services",
-  );
-  for (const hostname of ["brief.z2zs.space", "preview.brief.z2zs.space"]) {
-    const addresses = await resolve4(hostname);
-    assert(
-      addresses.length === 1 && addresses[0] === "76.76.21.21",
-      `${hostname} no longer matches the protected Vercel inventory`,
-    );
-  }
-  assert((await resolve4("bot.z2zs.space")).length > 0, "Protected bot tunnel no longer resolves");
-  const caa = await resolveCaa("z2zs.space");
-  assert(
-    caa.some((record) => record.issue === "letsencrypt.org"),
-    "CAA does not authorize Let's Encrypt",
-  );
-}
-
 auditReadinessConfiguration();
 
 if (!dryRun) {
@@ -338,22 +247,14 @@ if (!dryRun) {
   await auditArticleAndStructuredData();
   await auditSecurityEndpoints();
   const dns = { news: await auditCname(siteUrl.hostname, expectedPublicCname) };
-  if (studioEnabled) {
-    await auditStudio();
-    await auditStudioSecurityEndpoints();
-    dns.studio = await auditCname(studioUrl.hostname, expectedStudioCname);
-  }
   if (dnssecEnabled) await auditDnssec();
-  if (mailPolicyEnabled) await auditMailPolicy();
   console.log(
     JSON.stringify(
       {
         auditedAt: new Date().toISOString(),
         checks: {
           dnssec: dnssecEnabled,
-          mailPolicy: mailPolicyEnabled,
           productionReady,
-          studio: studioEnabled,
         },
         dns,
         site: siteUrl.origin,

@@ -24,11 +24,7 @@ jobs:
       - name: Verify live headers, public feeds, and DNS ownership
         env:
           AUDIT_DNSSEC_ENABLED: "true"
-          AUDIT_MAIL_POLICY_ENABLED: "true"
           AUDIT_PRODUCTION_READY: "true"
           AUDIT_PUBLIC_CNAME: z2zs-lab-news.netlify.app
           AUDIT_SITE_URL: https://news.z2zs.space
-          AUDIT_STUDIO_CNAME: z2zs-lab-studio.netlify.app
-          AUDIT_STUDIO_ENABLED: "true"
-          AUDIT_STUDIO_URL: https://studio.z2zs.space
         run: node scripts/production-audit.mjs

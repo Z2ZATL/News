@@ -24,9 +24,9 @@ Do not treat a target in the build plan as already implemented. Inspect the sour
 - Default language: Thai. `/` redirects to `/th`.
 - Public application: Next.js 15 App Router, React, strict TypeScript, Tailwind and CSS Modules.
 - CMS: Sanity Studio under `studio/`, deployed separately to `https://studio.z2zs.space`.
-- Hosting target: separate Netlify Free sites for the public site and Studio.
-  The existing Vercel deployment remains a temporary rollback target until an
-  approved DNS cutover; Vercel Hobby must not be used for commercial promotion.
+- Hosting: separate Netlify Free sites for the public site and Studio. The
+  production cutover is complete; Vercel configuration and local project links
+  have been retired from this repository.
 - Netlify sites remain unlinked from the private organization repository.
   Releases use the authenticated CLI from the manually dispatched Linux
   workflow in `.github/workflows/deploy-netlify.yml`. This avoids paid private
@@ -115,7 +115,7 @@ Required public-site headers include HSTS for one year without `includeSubDomain
 
 DNS is managed in Cloudflare; registration and transfer controls are managed in
 Newfold. `news.z2zs.space` and `studio.z2zs.space` remain DNS-only while pointing
-to either Vercel or Netlify so the application host owns caching and TLS.
+to Netlify so the application host owns caching and TLS.
 
 The zone contains unrelated production services and email records. Do not delete, replace, proxy, or broadly edit DNS records.
 
@@ -123,7 +123,6 @@ Protected records and services include:
 
 - `brief.z2zs.space`
 - `preview.brief.z2zs.space`
-- the proxied `bot` Cloudflare Tunnel
 - apex Google Workspace MX records
 - `clk._domainkey.brief`, `clk2._domainkey.brief`, and `clkmail.brief`
 
@@ -157,8 +156,8 @@ Any DNS, registrar, email-authentication, access-control, secret-rotation, produ
 - Keep production on zero-cost service tiers. Never start trials, paid add-ons,
   metered overages, or upgrades without explicit founder authorization. Do not
   treat Vercel Hobby as a compliant permanent host for commercial promotion.
-  ADR 0004 records the accepted Netlify Free migration. Do not cut over DNS
-  until the preview passes all gates and the exact DNS change is approved.
+  ADR 0004 records the accepted Netlify Free migration; the approved DNS
+  cutover is complete.
 - A Netlify draft deploy may be created for validation through the manual
   deployment workflow. Its production path requires the exact confirmation
   phrase. Never attach a custom domain until the corresponding release and DNS

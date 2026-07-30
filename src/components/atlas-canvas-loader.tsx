@@ -101,7 +101,9 @@ export function AtlasCanvasLoader({
     return [...selectedNode.signals]
       .sort((left, right) => {
         const scoreDifference = right.reactionScore - left.reactionScore;
-        return scoreDifference || Date.parse(right.publishedAt) - Date.parse(left.publishedAt);
+        const rightDate = right.publishedAt ? Date.parse(right.publishedAt) : 0;
+        const leftDate = left.publishedAt ? Date.parse(left.publishedAt) : 0;
+        return scoreDifference || rightDate - leftDate;
       })
       .slice(0, 6);
   }, [selectedNode]);
@@ -115,6 +117,7 @@ export function AtlasCanvasLoader({
           node.style.left = `${String(position.x)}%`;
           node.style.top = `${String(position.y)}%`;
           node.dataset.hemisphere = position.visible ? "front" : "back";
+          node.tabIndex = position.visible ? 0 : -1;
         }
         if (position.id !== selectedId) continue;
         for (const [index, connector] of connectorRefs.current) {
@@ -135,6 +138,7 @@ export function AtlasCanvasLoader({
       node.style.removeProperty("left");
       node.style.removeProperty("top");
       delete node.dataset.hemisphere;
+      node.removeAttribute("tabindex");
     }
     setState("fallback");
   }, []);

@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { Atlas } from "@/components/atlas";
 import type { NewsCategory } from "@/components/category-news-browser";
 import { CategoryNewsBrowserLoader } from "@/components/category-news-browser-loader";
-import { getArticles } from "@/lib/content";
+import { getArticles, getProjects } from "@/lib/content";
 import { isLocale } from "@/lib/i18n";
 import { localizedAlternates } from "@/lib/metadata";
 import { getReactionTotals } from "@/lib/reaction-store";
@@ -44,7 +44,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   await connection();
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
-  const articles = await getArticles();
+  const [articles, projects] = await Promise.all([getArticles(), getProjects()]);
   if (!articles.length) notFound();
   const reactionTotals = await getReactionTotals(articles.map((article) => article.slug));
 
@@ -72,7 +72,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   return (
     <>
-      <Atlas articles={articles} locale={locale} reactionTotals={reactionTotals} />
+      <Atlas
+        articles={articles}
+        locale={locale}
+        projects={projects}
+        reactionTotals={reactionTotals}
+      />
       <CategoryNewsBrowserLoader categories={[...categoryMap.values()]} locale={locale} />
     </>
   );

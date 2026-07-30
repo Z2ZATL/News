@@ -293,6 +293,38 @@ test("Atlas upgrades to WebGL on interaction and survives context loss", async (
   await expect.poll(() => firstSignal.evaluate((element) => element.style.left)).toBe("");
 });
 
+test("Atlas hides the United States marker when it rotates behind the globe", async ({
+  page,
+}) => {
+  await page.goto("/th");
+  const atlas = page.locator("[data-atlas-state]");
+  await atlas.hover();
+  await expect(atlas).toHaveAttribute("data-atlas-state", "ready", {
+    timeout: 20_000,
+  });
+
+  const unitedStates = atlas.locator(
+    'button[data-kind="story-country"][data-country="US"]',
+  );
+  await page.mouse.move(0, 0);
+  await expect(unitedStates).toHaveAttribute("data-hemisphere", "back", {
+    timeout: 6_000,
+  });
+  await unitedStates.evaluate((element) => element.click());
+  await expect(unitedStates).toHaveAttribute("aria-expanded", "true");
+
+  await expect
+    .poll(() =>
+      unitedStates.evaluate((element) => Number(getComputedStyle(element).opacity)),
+    )
+    .toBe(0);
+  await expect
+    .poll(() =>
+      unitedStates.evaluate((element) => getComputedStyle(element).pointerEvents),
+    )
+    .toBe("none");
+});
+
 test("Atlas groups signals by country and reveals ranked side panels on demand", async ({
   page,
 }) => {

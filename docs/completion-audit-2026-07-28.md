@@ -1,5 +1,10 @@
 # Build Plan completion audit — 2026-07-28
 
+> Historical snapshot only. Netlify production cutover, DNSSEC publication,
+> webhook activation, Vercel retirement, Bot removal, and the first staged
+> DMARC quarantine rollout were completed after this audit. Use `AGENTS.md`,
+> `SECURITY-OPERATIONS.md`, and live checks for current operating state.
+
 This audit compares the current implementation with Build Plan v3, the later
 founder decisions, `AGENTS.md`, and accepted ADRs 0001–0006. It distinguishes
 repository completion from production infrastructure work that still requires

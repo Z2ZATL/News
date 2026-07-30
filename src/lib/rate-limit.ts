@@ -10,9 +10,7 @@ const memoryWindows = new Map<string, { count: number; expiresAt: number }>();
 
 function clientAddress(request: Request): string {
   if (isProductionDeployment()) {
-    const netlifyAddress = request.headers.get("x-nf-client-connection-ip");
-    const vercelAddress = request.headers.get("x-vercel-forwarded-for");
-    return netlifyAddress ?? vercelAddress ?? "unknown";
+    return request.headers.get("x-nf-client-connection-ip") ?? "unknown";
   }
   const forwarded = request.headers.get("x-forwarded-for")?.split(",", 1)[0]?.trim();
   return forwarded || request.headers.get("x-real-ip") || "unknown";
