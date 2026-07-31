@@ -9,7 +9,7 @@ export const launchArticle: LegacyArticle = {
     label: { th: "ปทุมวัน กรุงเทพฯ ประเทศไทย", en: "Pathum Wan, Bangkok, Thailand" },
   },
   title: {
-    th: "เจาะ OKMD AI Playground แพลตฟอร์ม AI ภาครัฐใช้งานจริงได้แค่ไหน?",
+    th: "เจาะ OKMD AI Playground ใช้งานจริงได้แค่ไหน?",
     en: "More than another chatbot? Inside Thailand’s OKMD AI Playground",
   },
   excerpt: {
