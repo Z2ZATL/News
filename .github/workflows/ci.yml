@@ -40,11 +40,8 @@ jobs:
         env:
           AUDIT_DNSSEC_ENABLED: "true"
           AUDIT_DRY_RUN: "true"
-          AUDIT_MAIL_POLICY_ENABLED: "true"
           AUDIT_PRODUCTION_READY: "true"
           AUDIT_PUBLIC_CNAME: z2zs-lab-news.netlify.app
-          AUDIT_STUDIO_CNAME: z2zs-lab-studio.netlify.app
-          AUDIT_STUDIO_ENABLED: "true"
         run: node scripts/production-audit.mjs
       - run: pnpm build
       # Measure the first clean production build. Netlify's offline verification

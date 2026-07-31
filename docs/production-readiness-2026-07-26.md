@@ -1,5 +1,11 @@
 # Production readiness snapshot — updated 2026-07-28
 
+> Historical pre-cutover snapshot. Netlify production, the approved DNS
+> cutover, DNSSEC, webhook activation, Vercel retirement, and later security
+> operations supersede the pending-state observations below. Use
+> `SECURITY-OPERATIONS.md` and the scheduled public-site production audit for
+> current operating requirements.
+
 This file records read-only checks made before any production mutation. Values that are secrets are intentionally omitted.
 
 ## Public site

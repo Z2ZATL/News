@@ -12,7 +12,10 @@ import {
   type Group,
 } from "three";
 
-import { coordinatesToPosition } from "@/lib/atlas-geo";
+import {
+  coordinatesToPosition,
+  isPositionVisibleFromCamera,
+} from "@/lib/atlas-geo";
 import type { AtlasMapNode, AtlasScreenPosition } from "@/lib/atlas-types";
 
 import styles from "./atlas.module.css";
@@ -77,7 +80,10 @@ function Earth({
       nodes.map((node) => {
         const worldPosition = new Vector3(...coordinatesToPosition(node.latitude, node.longitude));
         worldPosition.applyMatrix4(earth.matrixWorld);
-        const visible = worldPosition.z > 0;
+        const visible = isPositionVisibleFromCamera(
+          [worldPosition.x, worldPosition.y, worldPosition.z],
+          [state.camera.position.x, state.camera.position.y, state.camera.position.z],
+        );
         const projected = worldPosition.clone().project(state.camera);
         return {
           id: node.id,

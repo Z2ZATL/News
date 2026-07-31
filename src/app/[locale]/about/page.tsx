@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { isLocale } from "@/lib/i18n";
 import { localizedAlternates } from "@/lib/metadata";
-import { getSiteSettings } from "@/lib/content";
+import { getArticles, getSiteSettings } from "@/lib/content";
 
 import styles from "./about.module.css";
 
@@ -29,7 +29,9 @@ export default async function About({ params }: { params: Promise<{ locale: stri
   if (!isLocale(locale)) notFound();
 
   const th = locale === "th";
-  const settings = await getSiteSettings();
+  const [articles, settings] = await Promise.all([getArticles(), getSiteSettings()]);
+  const author = articles[0]?.author;
+  if (!author) notFound();
   const focus = th
     ? [
         {
@@ -120,8 +122,8 @@ export default async function About({ params }: { params: Promise<{ locale: stri
         </div>
         <div className={styles.profile}>
           <div>
-            <p className={styles.name}>Aitthikorn Khammee</p>
-            <p className={styles.role}>{th ? "ผู้ก่อตั้งและผู้เขียน" : "Founder & writer"}</p>
+            <p className={styles.name}>{author.name}</p>
+            <p className={styles.role}>{author.role[locale]}</p>
           </div>
           <p>
             {th
@@ -138,11 +140,13 @@ export default async function About({ params }: { params: Promise<{ locale: stri
         </div>
         <div className={styles.socials}>
           {settings.socialLinks.map((url) => {
-            const network = new URL(url).hostname.includes("instagram") ? "Instagram" : "Facebook";
+            const socialUrl = new URL(url);
+            const network = socialUrl.hostname.includes("instagram") ? "Instagram" : "Facebook";
+            const account = socialUrl.pathname.split("/").filter(Boolean).at(-1) ?? socialUrl.hostname;
             return (
               <a href={url} key={url} target="_blank" rel="noopener noreferrer">
                 <span>{network}</span>
-                <strong>{network === "Instagram" ? "@z2zs.lab" : "Aitthikorn Khammee"}</strong>
+                <strong>@{account}</strong>
                 <b aria-hidden="true">↗</b>
               </a>
             );

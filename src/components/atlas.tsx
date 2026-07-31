@@ -1,5 +1,5 @@
 import { AtlasInteractionLoader } from "@/components/atlas-interaction-loader";
-import type { Article } from "@/lib/content-types";
+import type { Article, Project } from "@/lib/content-types";
 import { getAtlasCountry } from "@/lib/atlas-countries";
 import type { AtlasMapNode } from "@/lib/atlas-types";
 import type { Locale } from "@/lib/i18n";
@@ -7,28 +7,18 @@ import { ui } from "@/lib/i18n";
 
 import styles from "./atlas.module.css";
 
-const products = [
-  {
-    author: "Z2Zs Lab",
-    countryCode: "TH",
-    label: "Lumixia Brief",
-    latitude: 13.7563,
-    longitude: 100.5018,
-    slug: "lumixia-brief",
-  },
-] as const;
-
 export function Atlas({
   articles,
   locale,
+  projects,
   reactionTotals,
 }: Readonly<{
   articles: Article[];
   locale: Locale;
+  projects: Project[];
   reactionTotals: Record<string, number>;
 }>) {
-  const latestArticle = articles[0];
-  if (!latestArticle) return null;
+  if (!articles.length && !projects.length) return null;
   const articleGroups = new Map<string, Article[]>();
   for (const item of articles) {
     const current = articleGroups.get(item.atlasLocation.countryCode) ?? [];
@@ -62,28 +52,29 @@ export function Atlas({
       };
     },
   );
-  const productNodes: AtlasMapNode[] = products.map((product) => ({
-    accessibleLabel:
-      locale === "th"
-        ? `เปิดผลิตภัณฑ์ของ Z2Zs Lab ในประเทศไทย`
-        : `Open Z2Zs Lab products in Thailand`,
-    countryCode: product.countryCode,
-    id: `products-${product.countryCode}`,
-    kind: "product-country",
-    latitude: product.latitude,
-    longitude: product.longitude,
-    offset: [40, 32],
-    signals: [
-      {
-        author: product.author,
-        href: `/${locale}/projects/${product.slug}` as AtlasMapNode["signals"][number]["href"],
-        publishedAt: latestArticle.publishedAt,
-        reactionScore: 0,
-        slug: product.slug,
-        title: product.label,
-      },
-    ],
-  }));
+  const promotedProjects = projects.filter((project) => project.promoted);
+  const thailand = getAtlasCountry("TH");
+  const productNodes: AtlasMapNode[] = promotedProjects.length
+    ? [{
+        accessibleLabel:
+          locale === "th"
+            ? `เปิดผลงานของ Z2Zs Lab ${String(promotedProjects.length)} รายการในประเทศไทย`
+            : `Open ${String(promotedProjects.length)} Z2Zs Lab projects in Thailand`,
+        countryCode: "TH",
+        id: "products-TH",
+        kind: "product-country",
+        latitude: thailand?.latitude ?? 13.7563,
+        longitude: thailand?.longitude ?? 100.5018,
+        offset: [40, 32],
+        signals: promotedProjects.map((project) => ({
+          author: "Z2Zs Lab",
+          href: `/${locale}/projects/${project.slug}` as AtlasMapNode["signals"][number]["href"],
+          reactionScore: 0,
+          slug: project.slug,
+          title: project.title[locale],
+        })),
+      }]
+    : [];
   const mapNodes = [...storyNodes, ...productNodes];
 
   return (
@@ -104,6 +95,7 @@ export function Atlas({
             </section>
           ))}
         </nav>
+
         <AtlasInteractionLoader
           navigationLabel={
             locale === "th" ? "ประเทศที่มีข่าวและผลงานบนแผนที่โลก" : "Countries with stories and products"

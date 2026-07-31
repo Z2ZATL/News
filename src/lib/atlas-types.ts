@@ -3,7 +3,7 @@ import type { Route } from "next";
 export interface AtlasSignal {
   author: string;
   href: Route;
-  publishedAt: string;
+  publishedAt?: string;
   reactionScore: number;
   slug: string;
   title: string;

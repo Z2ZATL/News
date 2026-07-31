@@ -290,12 +290,6 @@
   pointer-events: none;
 }
 
-.node[data-hemisphere="back"]:focus-visible,
-.node[data-hemisphere="back"][aria-expanded="true"] {
-  opacity: 1;
-  pointer-events: auto;
-}
-
 .node[data-country="TH"] { top: 38%; left: 66%; }
 .node[data-country="CN"] { top: 31%; left: 61%; }
 .node[data-country="US"] { top: 34%; left: 35%; }
@@ -407,6 +401,7 @@
   .axis {
     top: 96px;
     left: 20px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   }
 
   .legend {

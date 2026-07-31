@@ -8,12 +8,13 @@
 
 ## DNS change rule
 
-Inspect the live Cloudflare zone before every change. During migration, keep the
-current Vercel record until the Netlify preview has passed every gate. Change
-only the exact `news` or `studio` CNAME approved for cutover. Never delete or
-replace existing `brief`, `preview.brief`, `bot`, MX, DKIM, or tracking records.
+Inspect the live Cloudflare zone before every change. The production site is on
+Netlify; change only an explicitly approved application CNAME. Never delete or
+replace existing `brief`, `preview.brief`, MX, DKIM, or tracking records.
 
-DMARC begins at `p=none; sp=none`. Do not move to quarantine or reject until aggregate reports prove that Google Workspace and every newsletter sender pass aligned SPF or DKIM.
+The apex DMARC rollout is currently `p=quarantine; pct=25; sp=none`. Do not
+advance it further until aggregate reports prove that every legitimate sender
+passes aligned SPF or DKIM.
 
 The application hostnames are CNAMEs and therefore cannot carry null MX or SPF
 TXT records at the same owner names. After exact DNS approval, publish explicit
@@ -69,29 +70,23 @@ controls.
 
 ## Decommissioning
 
-Delete a DNS record before deleting the corresponding hosted project. Keep the
-old Vercel project until the Netlify cutover has been verified and the rollback
-window has closed. This prevents both downtime and dangling CNAME takeover.
+Delete a DNS record before deleting the corresponding hosted project. The
+Vercel rollback window is closed; do not recreate a Vercel deployment or domain
+claim without a new founder decision.
 
-## Netlify cutover and rollback
+## Netlify release and rollback
 
 1. Confirm the worktree is clean, the deployed commit is the reviewed PR head,
    and every required CI check passed.
-2. Record the current `news.z2zs.space` CNAME target and TTL before any change.
-3. Verify the Netlify preview with the same production environment variables,
-   then claim `news.z2zs.space` in Netlify before changing DNS.
-4. Change only the `news` CNAME in Cloudflare. Leave the Vercel project and its
-   deployment untouched for at least 24 hours.
-5. Verify HTTPS, nonce CSP, headers, `/th`, both RSS feeds, sitemap, reactions,
+2. Verify the Netlify preview with the same production environment variables.
+3. Deploy only after the public quality job passes for the same commit.
+4. Verify HTTPS, nonce CSP, headers, `/th`, both RSS feeds, sitemap, reactions,
    Sanity reads, and webhook invalidation from two independent networks.
-6. If any critical check fails, restore the exact recorded Vercel CNAME target.
-   Do not delete or recreate either hosted project during rollback.
-7. After the rollback window closes, remove the old domain claim before deleting
-   any obsolete project, then confirm that no dangling CNAME remains.
+5. If a critical check fails, publish the previous reviewed Netlify release and
+   verify the same surfaces again.
 
-The scheduled `production-audit.yml` workflow is fail-closed: it checks live
-headers, feeds, the authenticated-preview boundary, DNSSEC, mail policy, and
-exact CNAME targets for both public and Studio hosts every month. If an approved
-hosting target changes, update the hardcoded `AUDIT_PUBLIC_CNAME` and
-`AUDIT_STUDIO_CNAME` values in that reviewed workflow; do not weaken them to a
-suffix match or disable a readiness check.
+The scheduled `production-audit.yml` workflow is fail-closed for the public
+news site: it checks live headers, feeds, security endpoints, DNSSEC, and the
+exact public CNAME every month. If the approved host changes, update
+`AUDIT_PUBLIC_CNAME` in the reviewed workflow; do not weaken it to a suffix
+match or disable a readiness check.

@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { coordinatesToPosition } from "../src/lib/atlas-geo.ts";
+import {
+  coordinatesToPosition,
+  isPositionVisibleFromCamera,
+} from "../src/lib/atlas-geo.ts";
 
 const EPSILON = 1e-10;
 
@@ -25,5 +28,43 @@ void describe("coordinatesToPosition", () => {
     approximatelyEqual(x, 0);
     approximatelyEqual(y, 0);
     approximatelyEqual(z, -1);
+  });
+});
+
+void describe("isPositionVisibleFromCamera", () => {
+  void it("keeps a marker visible when OrbitControls moves the camera in front of it", () => {
+    assert.equal(isPositionVisibleFromCamera([2.18, 0, 0], [7, 0, 0]), true);
+  });
+
+  void it("hides a marker when the globe blocks it from the current camera", () => {
+    assert.equal(isPositionVisibleFromCamera([-2.18, 0, 0], [7, 0, 0]), false);
+  });
+
+  void it("uses the current camera direction on every axis", () => {
+    const directions = [
+      [1, 0, 0],
+      [-1, 0, 0],
+      [0, 1, 0],
+      [0, -1, 0],
+      [0, 0, 1],
+      [0, 0, -1],
+    ] as const;
+
+    for (const [x, y, z] of directions) {
+      assert.equal(
+        isPositionVisibleFromCamera(
+          [x * 2.18, y * 2.18, z * 2.18],
+          [x * 7, y * 7, z * 7],
+        ),
+        true,
+      );
+      assert.equal(
+        isPositionVisibleFromCamera(
+          [-x * 2.18, -y * 2.18, -z * 2.18],
+          [x * 7, y * 7, z * 7],
+        ),
+        false,
+      );
+    }
   });
 });
