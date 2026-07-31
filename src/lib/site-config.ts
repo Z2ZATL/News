@@ -1,6 +1,6 @@
 import "server-only";
 
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://news.z2zs.space";
+  process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export const SITE_NAME = "Z2Zs Lab";

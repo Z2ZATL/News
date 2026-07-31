@@ -36,19 +36,8 @@ jobs:
       - run: pnpm test:unit
       - run: pnpm content:migrate
       - run: pnpm scan:secrets
-      - name: Validate production-audit runtime
-        env:
-          AUDIT_DNSSEC_ENABLED: "true"
-          AUDIT_DRY_RUN: "true"
-          AUDIT_PRODUCTION_READY: "true"
-          AUDIT_PUBLIC_CNAME: z2zs-lab-news.netlify.app
-        run: node scripts/production-audit.mjs
       - run: pnpm build
-      # Measure the first clean production build. Netlify's offline verification
-      # invokes the build command again and must not run immediately before
-      # timing-sensitive Lighthouse traces on a shared two-core runner.
       - run: pnpm test:lighthouse
-      - run: pnpm --package=netlify-cli@27.0.0 dlx netlify build --offline --context deploy-preview
       - run: pnpm audit --audit-level=moderate
       - run: pnpm test:e2e
 
@@ -78,5 +67,4 @@ jobs:
       - run: pnpm typegen
       - run: git diff --exit-code -- ../src/sanity.types.ts schema.json
       - run: pnpm build
-      - run: pnpm --package=netlify-cli@27.0.0 dlx netlify build --offline --context deploy-preview
       - run: pnpm audit --audit-level=moderate

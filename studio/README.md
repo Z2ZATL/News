@@ -1,20 +1,17 @@
 # Z2Zs Lab Studio
 
-Sanity Studio for the public Free-plan Z2Zs Lab dataset. This is a separate
-deployment from the public site so Studio dependencies and its relaxed runtime
-policy never affect `news.z2zs.space`. Drafts require Sanity authentication and
-do not appear to unauthenticated API clients.
+Optional Sanity Studio workspace for managing bilingual articles, projects,
+authors, categories, and site settings.
 
-## Setup
+No Sanity project is bundled or connected. Create your own project, copy
+`.env.example` to `.env.local`, and set `SANITY_STUDIO_PROJECT_ID` before
+starting the Studio.
 
-1. Authenticate the Sanity CLI.
-2. Use project `kbore3rf` and the public `production` dataset.
-3. Copy `.env.example` to `.env.local` and set the project ID, dataset, server-side preview-ticket secret, broker origin, and news origin.
-4. Run `corepack pnpm typecheck`.
-5. Run `corepack pnpm build`.
-6. Deploy this directory as a separate Netlify Free site for `studio.z2zs.space`.
+```bash
+corepack pnpm install --frozen-lockfile
+corepack pnpm dev
+```
 
-Require Sanity authentication for editorial access and keep
-`X-Robots-Tag: noindex, nofollow`. Sanity CORS is restricted to
-`https://news.z2zs.space` and `https://studio.z2zs.space`.
-The preview URL opens a new tab through `/api/preview`; no reusable secret is embedded in Studio's client bundle or query configuration.
+The preview broker settings are optional and default to local development
+origins. Any hosted preview implementation must authenticate editors, keep
+tokens out of URLs, and restrict destination origins.

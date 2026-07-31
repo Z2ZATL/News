@@ -1,49 +1,67 @@
 # Z2Zs Lab
 
-Bilingual technology news and analysis for `news.z2zs.space`.
+Open-source bilingual technology news and analysis site with an experimental
+3D Orbiting Atlas. The application is built with Next.js 15, strict TypeScript,
+React Three Fiber, and an optional Sanity CMS.
+
+The former hosted instances at `news.z2zs.space` and `studio.z2zs.space` were
+decommissioned before this repository was made public. This repository has no
+active production deployment, domain, webhook, database, or service token.
 
 ## Local development
 
-1. Copy `.env.example` to `.env.local`.
-2. Use `CONTENT_SOURCE=fixture` locally, or set the public Sanity project ID and
-   dataset. A server-only viewer token is required only for draft preview.
-3. Run `corepack pnpm install`.
-4. Run `corepack pnpm dev`.
+1. Install Node.js 22 and enable Corepack.
+2. Copy `.env.example` to `.env.local`.
+3. Keep `CONTENT_SOURCE=fixture` to run without any external account.
+4. Install and start the site:
 
-Checked-in fixture content is only for local development and CI. A production
-deployment defaults to Sanity and fails closed when the CMS is not configured.
+```bash
+corepack pnpm install --frozen-lockfile
+corepack pnpm dev
+```
 
-## Required checks
+Open `http://localhost:3000`. The root route redirects to `/th`.
 
-```text
+## Optional Sanity CMS
+
+The checked-in fixture content is enough for local development and CI. To use
+your own Sanity project, create a project and dataset, then supply your own
+project ID and credentials in local environment files. Do not commit tokens.
+
+The Studio is a separate workspace:
+
+```bash
+cd studio
+copy .env.example .env.local
+corepack pnpm install --frozen-lockfile
+corepack pnpm dev
+```
+
+## Quality gates
+
+```bash
 corepack pnpm typecheck
 corepack pnpm lint
 corepack pnpm test:unit
+corepack pnpm scan:secrets
 corepack pnpm build
 corepack pnpm test:e2e
 corepack pnpm test:lighthouse
+corepack pnpm audit --audit-level=moderate
 ```
 
-## Deployment
+## Security
 
-- Public site: Netlify Free site for `news.z2zs.space`
-- Studio: separate Netlify Free site from the sibling `studio` directory
-- The Netlify sites are intentionally not linked to the private organization
-  repository. CI runs on GitHub; reviewed commits are released with the manual
-  `Deploy Netlify` workflow, which invokes the authenticated CLI on Linux and
-  stays within the Free plan.
-- Sanity dataset: public Free-plan `production`; never store secrets or
-  confidential personal data in editorial documents
-- Preview uses a short-lived, single-use signed ticket. The Studio sends its
-  current Sanity session token to the same-origin broker in an authorization
-  header; the broker verifies an editor role with Sanity before issuing the
-  ticket. Neither the session token nor the shared `PREVIEW_TICKET_SECRET`
-  enters a URL.
-- Webhook, reaction, rate-limit, Redis, and viewer credentials are server-side
-  host variables only.
-- Keep both Netlify sites on the Free plan with the hard credit limit. Do not
-  enable auto recharge, paid analytics, image CDN transforms, scheduled jobs,
-  or repository-linked automatic deploys. Build reviewed releases locally and
-  deploy deliberately through the authenticated CLI.
+Production credentials must remain server-only. Copy the example environment
+files and generate new random values for every deployment. Never reuse secrets
+from the former Z2Zs Lab deployment.
 
-Nonce CSP is generated per request in `src/middleware.ts`. Do not replace it with a static CSP or add `unsafe-inline` to `script-src`.
+Please report vulnerabilities through a private GitHub Security Advisory rather
+than a public issue.
+
+## License
+
+The source code is available under the [MIT License](LICENSE). Z2Zs names,
+logos, editorial articles, screenshots, and original media are not covered by
+the MIT license; see [CONTENT-LICENSE.md](CONTENT-LICENSE.md). Third-party
+assets retain their own licenses and attribution notices.
