@@ -137,6 +137,7 @@ export default async function ArticlePage({
             width={article.cover.width ?? 1456}
             height={article.cover.height ?? 1456}
             sizes="(max-width: 640px) calc(100vw - 40px), (max-width: 1348px) 92vw, 1240px"
+            priority
           />
           {article.cover.caption ? (
             <figcaption>{article.cover.caption[locale]}</figcaption>

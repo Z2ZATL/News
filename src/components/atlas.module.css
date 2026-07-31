@@ -387,6 +387,15 @@
     /* Keep the immersive Atlas as a complete opening viewport. This also
        prevents the next section heading from peeking into the initial fold. */
     min-height: 100svh;
+    background:
+      radial-gradient(circle at 50% 48%, rgb(18 183 255 / 13%), transparent 34%),
+      linear-gradient(180deg, #030508 0%, #050912 78%, #05070a 100%);
+  }
+
+  .grid { display: none; }
+
+  .colorWash {
+    background: linear-gradient(180deg, transparent 72%, #05070a 100%);
   }
 
   .canvasFrame {

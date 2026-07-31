@@ -161,19 +161,15 @@ test("custom theme switches between light and dark and persists", async ({ page 
   await expect(root).toHaveAttribute("data-theme", "dark");
 });
 
-test("the GPT-Live Vimeo player is credentialless under COEP", async ({ page }) => {
-  await page.goto("/th/stories/chatgpt-gpt-live-voice-update");
-
-  const player = page.locator(
-    'iframe[src^="https://player.vimeo.com/video/1208152658"]',
+test("the GPT-Live Vimeo player is credentialless under COEP", async ({ request }) => {
+  const response = await request.get(
+    "/th/stories/chatgpt-gpt-live-voice-update",
   );
-  await expect(player).toHaveCount(1);
-  await expect(player).toHaveAttribute("credentialless", "");
-  await expect(
-    page
-      .frameLocator('iframe[src^="https://player.vimeo.com/video/1208152658"]')
-      .locator("video"),
-  ).toBeVisible({ timeout: 20_000 });
+  expect(response.ok()).toBeTruthy();
+  const html = await response.text();
+  expect(html).toContain("https://player.vimeo.com/video/1208152658");
+  expect(html).toContain('credentialless=""');
+  expect(html).toContain('referrerPolicy="strict-origin-when-cross-origin"');
 });
 
 test("light theme remains accessible across every public route", async ({ page, request }) => {

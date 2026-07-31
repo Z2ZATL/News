@@ -67,8 +67,6 @@
 }
 
 .cover {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 760px;
   display: grid;
   place-items: center;
   width: min(1240px, calc(100% - 8vw));
