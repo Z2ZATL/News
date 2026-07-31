@@ -382,14 +382,21 @@
 }
 
 @media (max-width: 640px) {
+  .hero {
+    background: linear-gradient(120deg, rgb(47 191 242 / 4%), transparent 45%);
+  }
+
+  .hero::after { display: none; }
+
   .heroInner,
   .cover,
   .articleGrid { width: calc(100% - 40px); }
 
-  .heroInner { padding-top: 5.5rem; }
+  .heroInner { padding-top: 4.5rem; }
   .hero h1 {
     font-family: system-ui, -apple-system, "Segoe UI", "Leelawadee UI", Tahoma, sans-serif;
-    font-size: 2.6rem;
+    font-size: 2.25rem;
+    line-height: 1.15;
     letter-spacing: -.035em;
     /* Balancing a multi-line Thai headline repeatedly shapes and measures
        complex glyph clusters on the critical render path. Natural wrapping is
