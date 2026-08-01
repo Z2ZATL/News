@@ -1,0 +1,21 @@
+Earth texture assets (MIT License):
+
+- earth-atmos-2048.jpg
+- earth-normal-2048.jpg
+- earth-specular-2048.jpg
+- earth-lights-2048.png
+
+Copyright (c) 2010-2026 three.js authors
+
+Exact upstream commit:
+https://github.com/mrdoob/three.js/tree/d6835b78a16948f03c4d01f1339695613df8f215/examples/textures/planets
+
+The four files in this directory are byte-for-byte identical to the files at
+that commit. Their Git blob hashes are recorded in THIRD_PARTY_NOTICES.md.
+
+License:
+https://github.com/mrdoob/three.js/blob/d6835b78a16948f03c4d01f1339695613df8f215/LICENSE
+
+The upstream project describes the imagery as derived from NASA Earth
+observation material. This repository redistributes the exact MIT-licensed
+three.js files and does not claim NASA endorsement.

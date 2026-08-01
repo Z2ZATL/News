@@ -1,0 +1,141 @@
+import { AtlasInteractionLoader } from "@/components/atlas-interaction-loader";
+import type { Article, Project } from "@/lib/content-types";
+import { getAtlasCountry } from "@/lib/atlas-countries";
+import type { AtlasMapNode } from "@/lib/atlas-types";
+import type { Locale } from "@/lib/i18n";
+import { ui } from "@/lib/i18n";
+
+import styles from "./atlas.module.css";
+
+export function Atlas({
+  articles,
+  locale,
+  projects,
+  reactionTotals,
+}: Readonly<{
+  articles: Article[];
+  locale: Locale;
+  projects: Project[];
+  reactionTotals: Record<string, number>;
+}>) {
+  if (!articles.length && !projects.length) return null;
+  const articleGroups = new Map<string, Article[]>();
+  for (const item of articles) {
+    const current = articleGroups.get(item.atlasLocation.countryCode) ?? [];
+    articleGroups.set(item.atlasLocation.countryCode, [...current, item]);
+  }
+  const storyNodes: AtlasMapNode[] = [...articleGroups.entries()].map(
+    ([countryCode, countryArticles]) => {
+      const country = getAtlasCountry(countryCode);
+      const first = countryArticles[0];
+      if (!first) throw new Error(`Atlas country ${countryCode} has no articles.`);
+      const countryName = country?.name[locale] ?? first.atlasLocation.label[locale];
+      return {
+        accessibleLabel:
+          locale === "th"
+            ? `เปิดข่าวจาก${countryName} ${String(countryArticles.length)} เรื่อง`
+            : `Open ${String(countryArticles.length)} stories from ${countryName}`,
+        countryCode,
+        id: `stories-${countryCode}`,
+        kind: "story-country",
+        latitude: country?.latitude ?? first.atlasLocation.latitude,
+        longitude: country?.longitude ?? first.atlasLocation.longitude,
+        offset: [0, 0],
+        signals: countryArticles.map((item) => ({
+          author: item.author.name,
+          href: `/${locale}/stories/${item.slug}` as AtlasMapNode["signals"][number]["href"],
+          publishedAt: item.publishedAt,
+          reactionScore: reactionTotals[item.slug] ?? 0,
+          slug: item.slug,
+          title: item.title[locale],
+        })),
+      };
+    },
+  );
+  const promotedProjects = projects.filter((project) => project.promoted);
+  const thailand = getAtlasCountry("TH");
+  const productNodes: AtlasMapNode[] = promotedProjects.length
+    ? [{
+        accessibleLabel:
+          locale === "th"
+            ? `เปิดผลงานของ Z2Zs Lab ${String(promotedProjects.length)} รายการในประเทศไทย`
+            : `Open ${String(promotedProjects.length)} Z2Zs Lab projects in Thailand`,
+        countryCode: "TH",
+        id: "products-TH",
+        kind: "product-country",
+        latitude: thailand?.latitude ?? 13.7563,
+        longitude: thailand?.longitude ?? 100.5018,
+        offset: [40, 32],
+        signals: promotedProjects.map((project) => ({
+          author: "Z2Zs Lab",
+          href: `/${locale}/projects/${project.slug}` as AtlasMapNode["signals"][number]["href"],
+          reactionScore: 0,
+          slug: project.slug,
+          title: project.title[locale],
+        })),
+      }]
+    : [];
+  const mapNodes = [...storyNodes, ...productNodes];
+
+  return (
+    <section className={styles.atlas} aria-label={ui[locale].atlasLabel}>
+      <div className={styles.globeStage}>
+        <nav
+          className={styles.semanticIndex}
+          aria-label={locale === "th" ? "ลิงก์ข่าวและผลงานในแผนที่โลก" : "Atlas story and project links"}
+        >
+          {mapNodes.map((node) => (
+            <section key={node.id}>
+              <h2>{node.accessibleLabel}</h2>
+              {node.signals.map((signal) => (
+                <a href={signal.href} key={signal.slug}>
+                  {signal.title} · {signal.author}
+                </a>
+              ))}
+            </section>
+          ))}
+        </nav>
+
+        <AtlasInteractionLoader
+          navigationLabel={
+            locale === "th" ? "ประเทศที่มีข่าวและผลงานบนแผนที่โลก" : "Countries with stories and products"
+          }
+          nodes={mapNodes}
+        />
+        <div className={styles.grid} aria-hidden="true" />
+        <div className={styles.colorWash} aria-hidden="true" />
+
+        <div className={styles.axis}>
+          <span>{String(storyNodes.length).padStart(2, "0")}</span>
+          <span>Z2ZS / COUNTRIES</span>
+        </div>
+
+        <div className={styles.orbitCaption} aria-hidden="true">
+          <span>{locale === "th" ? "ลากโลกเพื่อหมุน แล้วเลือกประเทศที่สนใจ" : "Drag the globe, then choose a country"}</span>
+          <b>{locale === "th" ? "หนึ่งจุดต่อหนึ่งประเทศ" : "ONE POINT PER COUNTRY"}</b>
+        </div>
+
+        <div className={styles.legend} aria-hidden="true">
+          <span><i className={styles.legendStory} />{locale === "th" ? "ประเทศที่มีข่าว" : "News countries"}</span>
+          <span><i className={styles.legendProduct} />{locale === "th" ? "ประเทศที่มีผลงาน Lab" : "Lab countries"}</span>
+        </div>
+
+        <div className={styles.scrollHint} aria-hidden="true">
+          <span />
+          {locale === "th" ? "คลิกค้างแล้วลากเพื่อหมุนโลก" : "Click and drag to spin the globe"}
+        </div>
+      </div>
+
+      <noscript>
+        <nav className={styles.noScriptIndex} aria-label={locale === "th" ? "ข่าวทั้งหมดในแผนที่" : "All Atlas stories"}>
+          {articles.map((item) => (
+            <a href={`/${locale}/stories/${item.slug}`} key={item.slug}>
+              {item.title[locale]} · {item.author.name}
+            </a>
+          ))}
+        </nav>
+      </noscript>
+
+    </section>
+  );
+}

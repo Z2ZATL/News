@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  public-site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.16.0
+          run_install: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Install system/browser dependencies early so apt and browser setup have
+      # the full validation/build window to settle before performance tracing.
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm peers check
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test:unit
+      - run: pnpm content:migrate
+      - run: pnpm scan:secrets
+      - run: pnpm build
+      - run: pnpm test:lighthouse
+      - run: pnpm audit --audit-level=moderate
+      - run: pnpm test:e2e
+
+  studio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SANITY_STUDIO_PROJECT_ID: testproject
+      SANITY_STUDIO_NEWS_ORIGIN: https://preview-news.example.test
+      SANITY_STUDIO_PREVIEW_BROKER_ORIGIN: https://preview-studio.example.test
+    defaults:
+      run:
+        working-directory: studio
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.16.0
+          run_install: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm peers check
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm typegen
+      - run: git diff --exit-code -- ../src/sanity.types.ts schema.json
+      - run: pnpm build
+      - run: pnpm audit --audit-level=moderate

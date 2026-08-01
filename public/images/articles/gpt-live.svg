@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="t d">
+  <title id="t">GPT Live voice conversation</title><desc id="d">Original waveform illustration for a voice AI article.</desc>
+  <defs><linearGradient id="g" x2="1"><stop stop-color="#07111c"/><stop offset=".5" stop-color="#053b4c"/><stop offset="1" stop-color="#17102e"/></linearGradient></defs>
+  <rect width="1600" height="900" fill="url(#g)"/><g fill="none" stroke-linecap="round"><path d="M80 450h100l45-90 70 220 75-360 80 460 80-320 85 175 80-250 85 330 80-185 85 75 80-290 85 430 80-260 70 85h150" stroke="#38bdf8" stroke-width="18"/><path d="M80 450h1440" stroke="#f472b6" stroke-width="3" opacity=".55"/></g>
+  <text x="95" y="155" fill="#f8fafc" font-family="system-ui,sans-serif" font-size="62" font-weight="700">VOICE / REAL TIME</text><text x="95" y="790" fill="#f8fafc" font-family="system-ui,sans-serif" font-size="145" font-weight="700">GPT LIVE</text>
+</svg>

@@ -1,0 +1,121 @@
+.menu {
+  position: relative;
+}
+
+.menu > summary {
+  list-style: none;
+}
+
+.menu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 38px;
+  padding: 0 0.85rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--control-bg);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.7rem;
+  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.trigger:hover,
+.trigger:focus-visible,
+.menu[open] .trigger {
+  color: var(--text);
+  border-color: var(--cyan);
+  background: var(--control-hover);
+}
+
+.themeDot,
+.lightPreview,
+.darkPreview {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+}
+
+:global(html:not([data-theme="light"])) .themeDot,
+.darkPreview {
+  background: #09111a;
+  box-shadow: inset 3px 0 #2fbff2;
+}
+
+:global(html[data-theme="light"]) .themeDot,
+.lightPreview {
+  background: #f6f3ec;
+  box-shadow: inset 3px 0 #007da8;
+}
+
+.options {
+  position: absolute;
+  top: calc(100% + 0.65rem);
+  right: 0;
+  display: grid;
+  width: 190px;
+  padding: 0.45rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--menu-bg);
+  box-shadow: 0 24px 70px var(--shadow);
+  backdrop-filter: blur(22px) saturate(130%);
+}
+
+.options button {
+  display: grid;
+  grid-template-columns: 18px 1fr auto;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.75rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: left;
+}
+
+.options button::after {
+  color: var(--cyan);
+  content: "";
+}
+
+.options button[aria-pressed="true"] {
+  background: var(--control-hover);
+  color: var(--text);
+}
+
+.options button[aria-pressed="true"]::after {
+  content: "✓";
+}
+
+@media (max-width: 640px) {
+  .trigger {
+    width: 38px;
+    padding: 0;
+    overflow: hidden;
+    justify-content: center;
+    color: transparent;
+    white-space: nowrap;
+  }
+
+  .themeDot {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trigger {
+    transition: none;
+  }
+}

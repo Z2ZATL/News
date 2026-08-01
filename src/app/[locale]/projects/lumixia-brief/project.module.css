@@ -1,0 +1,476 @@
+.project {
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.hero,
+.statement,
+.flow,
+.architecture,
+.difference,
+.technology,
+.next {
+  width: min(1480px, calc(100% - 12vw));
+  margin: 0 auto;
+}
+
+.hero {
+  min-height: 100svh;
+  padding: clamp(9rem, 14vw, 13rem) 0 clamp(6rem, 10vw, 9rem);
+  background:
+    radial-gradient(circle at 75% 34%, rgb(47 191 242 / 14%), transparent 24%),
+    linear-gradient(120deg, rgb(47 191 242 / 5%), transparent 34%);
+}
+
+.heroMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .7rem;
+  color: var(--cyan);
+  font-family: var(--font-display);
+  font-size: .62rem;
+  letter-spacing: .12em;
+}
+
+.heroMeta span {
+  padding: .48rem .7rem;
+  border: 1px solid rgb(47 191 242 / 26%);
+  border-radius: 999px;
+}
+
+.product {
+  margin: clamp(5rem, 10vw, 9rem) 0 1.5rem;
+  color: var(--cyan);
+  font-family: var(--font-display);
+  font-size: .75rem;
+  letter-spacing: .18em;
+}
+
+.hero h1 {
+  max-width: 12ch;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 9.5vw, 10rem);
+  font-weight: 520;
+  line-height: .96;
+  letter-spacing: -.065em;
+  text-wrap: balance;
+}
+
+.intro {
+  max-width: 850px;
+  margin: clamp(3rem, 5vw, 5rem) 0 0;
+  color: var(--copy);
+  font-size: clamp(1.1rem, 1.8vw, 1.45rem);
+  line-height: 1.85;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.actions a {
+  display: inline-flex;
+  gap: 1rem;
+  justify-content: space-between;
+  min-width: 190px;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--line-strong);
+  transition: border-color .2s ease, color .2s ease;
+}
+
+.actions a:first-child {
+  color: var(--on-accent);
+  border-color: var(--cyan);
+  background: var(--cyan);
+}
+
+.actions a:hover,
+.actions a:focus-visible {
+  color: var(--cyan);
+  border-color: var(--cyan);
+  background: transparent;
+}
+
+.statement,
+.technology {
+  display: grid;
+  grid-template-columns: minmax(180px, .45fr) minmax(0, 1.55fr);
+  gap: clamp(3rem, 8vw, 9rem);
+  padding: clamp(6rem, 11vw, 11rem) 0;
+  border-top: 1px solid var(--line);
+}
+
+.sectionNo {
+  margin: 0;
+  color: var(--cyan);
+  font-family: var(--font-display);
+  font-size: .68rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.statement h2,
+.sectionHeading h2,
+.technology h2,
+.next h2 {
+  max-width: 15ch;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.7rem, 6vw, 6.8rem);
+  font-weight: 520;
+  line-height: 1.03;
+  letter-spacing: -.055em;
+  text-wrap: balance;
+}
+
+.statement p:last-child {
+  max-width: 760px;
+  margin: 2.5rem 0 0;
+  color: var(--copy);
+  font-size: clamp(1.05rem, 1.45vw, 1.25rem);
+  line-height: 1.9;
+}
+
+.projectBody {
+  max-width: 820px;
+  margin-top: 2.5rem;
+  color: var(--copy);
+  font-size: clamp(1.05rem, 1.45vw, 1.25rem);
+  line-height: 1.9;
+}
+
+.projectBody h2,
+.projectBody h3 {
+  max-width: 18ch;
+  margin: 3.5rem 0 1.5rem;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 520;
+  line-height: 1.25;
+}
+
+.projectBody p,
+.projectBody ul,
+.projectBody ol {
+  margin: 1.25rem 0;
+}
+
+.flow,
+.architecture,
+.difference {
+  padding: clamp(6rem, 11vw, 11rem) 0;
+  border-top: 1px solid var(--line);
+}
+
+.sectionHeading {
+  display: grid;
+  grid-template-columns: minmax(180px, .45fr) minmax(0, 1.55fr);
+  gap: clamp(3rem, 8vw, 9rem);
+  margin-bottom: clamp(4rem, 8vw, 8rem);
+}
+
+.flow ol {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line-strong);
+  list-style: none;
+}
+
+.flow li {
+  display: grid;
+  grid-template-columns: 80px minmax(220px, .7fr) minmax(0, 1.3fr);
+  gap: clamp(1.5rem, 4vw, 5rem);
+  padding: 2.2rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.flow li > span,
+.differenceGrid > div > span {
+  color: var(--cyan);
+  font-family: var(--font-display);
+  font-size: .68rem;
+  letter-spacing: .1em;
+}
+
+.flow h3,
+.differenceGrid h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2.3vw, 2.2rem);
+  font-weight: 520;
+  line-height: 1.28;
+  letter-spacing: -.025em;
+}
+
+.flow li p,
+.differenceGrid p {
+  margin: 0;
+  color: var(--copy-soft);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.architectureFigure {
+  margin: 0;
+}
+
+.architectureIntro {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1.5rem, 4vw, 4rem);
+  margin: calc(clamp(4rem, 8vw, 8rem) * -.45) 0 clamp(3rem, 6vw, 5rem);
+}
+
+.architectureIntro p {
+  margin: 0;
+  color: var(--copy-soft);
+  font-size: clamp(.95rem, 1.25vw, 1.08rem);
+  line-height: 1.85;
+}
+
+.architectureCanvas {
+  overflow-x: auto;
+  border: 1px solid var(--line-strong);
+  background:
+    linear-gradient(rgb(47 191 242 / 4%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(47 191 242 / 4%) 1px, transparent 1px),
+    radial-gradient(circle at 50% 50%, rgb(47 191 242 / 8%), transparent 55%);
+  background-size: 38px 38px, 38px 38px, auto;
+  scrollbar-color: rgb(47 191 242 / 48%) transparent;
+}
+
+.architectureDiagram {
+  display: block;
+  width: 100%;
+  min-width: 1000px;
+  height: auto;
+  padding: clamp(1rem, 2vw, 1.75rem);
+}
+
+.architectureEdges path {
+  fill: none;
+  stroke: rgb(47 191 242 / 72%);
+  stroke-width: 3;
+  marker-end: url("#lumixia-arrow");
+  vector-effect: non-scaling-stroke;
+}
+
+.architectureEdges .architectureLoopEdge {
+  stroke: rgb(213 56 199 / 82%);
+}
+
+.architectureMarker {
+  fill: var(--cyan);
+}
+
+.architectureNodeSvg rect {
+  fill: rgb(4 11 15 / 96%);
+  stroke: rgb(140 160 174 / 52%);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.architectureNodeSvg text {
+  fill: #f4f8fa;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 520;
+}
+
+.architectureNodeSvg .architectureSubtext {
+  fill: #93a2ac;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.architectureNodePrimary rect {
+  stroke: rgb(47 191 242 / 82%);
+  filter: drop-shadow(0 0 12px rgb(47 191 242 / 12%));
+}
+
+.architectureNodeLoop rect {
+  stroke: rgb(213 56 199 / 76%);
+}
+
+.architectureFigure figcaption {
+  margin-top: 1.25rem;
+  color: var(--muted);
+  font-size: .78rem;
+  line-height: 1.7;
+}
+
+.architectureFigure figcaption a {
+  color: var(--cyan);
+  border-bottom: 1px solid rgb(47 191 242 / 38%);
+}
+
+.differenceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 2.5rem;
+  background: var(--line);
+}
+
+.differenceGrid > div {
+  min-height: 420px;
+  padding: clamp(1.7rem, 3.5vw, 3rem);
+  background: var(--surface);
+}
+
+.differenceGrid h3 {
+  margin: clamp(5rem, 9vw, 8rem) 0 1.5rem;
+}
+
+.technology h2 {
+  max-width: 14ch;
+  font-size: clamp(2.4rem, 4.8vw, 5.2rem);
+}
+
+.status {
+  align-self: end;
+  max-width: 620px;
+  padding: clamp(1.8rem, 4vw, 3rem);
+  border: 1px solid var(--line-strong);
+  background: linear-gradient(130deg, rgb(47 191 242 / 7%), rgb(255 255 255 / 2%));
+}
+
+.status p {
+  margin: 0;
+  color: var(--cyan);
+  font-size: .7rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.status strong {
+  display: block;
+  margin: 1.2rem 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 3vw, 2.8rem);
+  font-weight: 520;
+}
+
+.status span {
+  display: block;
+  color: var(--copy);
+  line-height: 1.8;
+}
+
+.next {
+  padding: clamp(6rem, 11vw, 11rem) 0;
+  border-top: 1px solid var(--line);
+}
+
+.next > p {
+  color: var(--cyan);
+  font-family: var(--font-display);
+  font-size: .68rem;
+  letter-spacing: .15em;
+}
+
+.next h2 {
+  margin-top: 2rem;
+}
+
+.next > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 3rem;
+}
+
+.next a {
+  padding-bottom: .35rem;
+  border-bottom: 1px solid rgb(47 191 242 / 45%);
+}
+
+:global(html[lang="th"]) .hero h1 {
+  padding-block: .05em .1em;
+  font-size: clamp(3.6rem, 7.6vw, 8rem);
+  line-height: 1.16;
+  letter-spacing: -.035em;
+}
+
+:global(html[lang="th"]) .statement h2,
+:global(html[lang="th"]) .sectionHeading h2,
+:global(html[lang="th"]) .technology h2,
+:global(html[lang="th"]) .next h2 {
+  padding-block: .04em .09em;
+  line-height: 1.2;
+  letter-spacing: -.03em;
+}
+
+:global(html[lang="th"]) .flow h3,
+:global(html[lang="th"]) .differenceGrid h3 {
+  line-height: 1.45;
+  letter-spacing: -.015em;
+}
+
+@media (max-width: 900px) {
+  .hero,
+  .statement,
+  .flow,
+  .architecture,
+  .difference,
+  .technology,
+  .next {
+    width: calc(100% - 40px);
+  }
+
+  .statement,
+  .sectionHeading,
+  .technology {
+    grid-template-columns: 1fr;
+  }
+
+  .differenceGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .differenceGrid > div {
+    min-height: auto;
+  }
+
+  .differenceGrid h3 {
+    margin-top: 4rem;
+  }
+
+  .architectureIntro {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    margin-top: -1.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero {
+    min-height: auto;
+    padding-top: 8rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(3.5rem, 17vw, 5rem);
+  }
+
+  :global(html[lang="th"]) .hero h1 {
+    font-size: clamp(3rem, 13vw, 4.4rem);
+  }
+
+  .flow li {
+    grid-template-columns: 48px 1fr;
+  }
+
+  .flow li p {
+    grid-column: 2;
+  }
+
+  .architectureDiagram {
+    min-width: 920px;
+  }
+}
