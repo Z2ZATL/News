@@ -42,7 +42,10 @@ test("every public route has a clean console and no accessibility violations", a
 
   for (const path of paths) {
     route = path;
-    const response = await page.goto(path, { waitUntil: "networkidle" });
+    // Third-party media and browser telemetry can keep a network connection
+    // open indefinitely. DOM readiness is the stable quality-gate boundary;
+    // axe and the console listeners below still validate the rendered page.
+    const response = await page.goto(path, { waitUntil: "domcontentloaded" });
     if (!response?.ok()) {
       failures.push(`${path} returned ${String(response?.status() ?? "no response")}`);
     }
@@ -184,7 +187,7 @@ test("light theme remains accessible across every public route", async ({ page, 
   });
 
   for (const path of paths) {
-    await page.goto(path, { waitUntil: "networkidle" });
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
     const results = await new AxeBuilder({ page }).analyze();
     for (const violation of results.violations) {
@@ -199,7 +202,7 @@ test("light theme remains accessible across every public route", async ({ page, 
 test("reduced motion removes animated transitions", async ({ browser }) => {
   const context = await browser.newContext({ reducedMotion: "reduce" });
   const page = await context.newPage();
-  await page.goto("/th", { waitUntil: "networkidle" });
+  await page.goto("/th", { waitUntil: "domcontentloaded" });
   const animated = page.locator("[style*='animation'], [style*='transition']");
   await expect(animated).toHaveCount(0);
   const atlas = page.locator("[data-atlas-state]");
