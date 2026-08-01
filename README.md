@@ -1,4 +1,4 @@
-# Z2Zs Lab
+# Z2Zs Lab News Web
 
 Open-source bilingual technology news and analysis site with an experimental
 3D Orbiting Atlas. The application is built with Next.js 15, strict TypeScript,
