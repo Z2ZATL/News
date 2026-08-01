@@ -9,7 +9,7 @@ The root [MIT License](LICENSE) covers:
 
 - all source code, tests, scripts, configuration, and documentation;
 - original interface artwork in `public/images/articles/*.svg`;
-- `src/app/icon.svg`; and
+- `src/app/icon.png`; and
 - other files unless this document or `THIRD_PARTY_NOTICES.md` says otherwise.
 
 ## CC BY 4.0 editorial material
