@@ -36,7 +36,7 @@
     "@sanity/webhook": "^4.0.4",
     "groq": "6.6.0",
     "lucide-react": "^0.548.0",
-    "next": "15.5.21",
+    "next": "15.5.24",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "server-only": "^0.0.1",
